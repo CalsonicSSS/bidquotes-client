@@ -16,7 +16,11 @@ export default function Home() {
         <Image src='/images/hero/hero-background.jpg' alt='Home maintenance professionals at work' fill className='object-cover object-[center_30%]' priority />
         <div className='absolute inset-0 bg-black opacity-40'></div>
         <div className='container mx-auto px-5 relative z-10 text-center'>
-          <h1 className='font-inter text-3xl md:text-5xl md:px-96 font-bold text-white mb-14 leading-tight'>Home maintenance with competitive bidding</h1>
+          <div className='font-inter text-3xl md:text-5xl md:px-96 font-bold text-white mb-14 leading-tight'>
+            <h1 className='mb-3'>Home Maintenance</h1>
+            <h1 className='mb-3'>With</h1>
+            <h1>Competitive Bidding</h1>
+          </div>
           <p className='font-inter text-xl text-gray-200 mb-6'>Post your job and get multiple bids from qualified contractors with us.</p>
 
           {/* Conditional buttons based on auth status */}
@@ -53,8 +57,12 @@ export default function Home() {
         <div className='container mx-auto px-5'>
           <div className='max-w-4xl mx-auto text-center'>
             <div className='bg-white rounded-lg shadow-lg p-8 border-2 border-blue-200'>
-              <p className='font-inter text-xl font-semibold text-gray-700 leading-relaxed px-20'>
-                Your job shouldn't break the bank or leave you questioning its value. We connect you with qualified contractors who bid for your job, ensuring the best deal.
+              <p className='font-inter text-xl font-semibold text-gray-700 leading-relaxed md:px-20'>
+                Your job shouldn't break the bank or leave you helpless.{' '}
+                <div className='md:hidden'>
+                  <br />
+                </div>
+                We connect you with qualified contractors who bid for your job, ensuring the best deal!
               </p>
             </div>
           </div>
@@ -108,27 +116,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Illustration Section - Optimized */}
+      {/* Illustration Section - Mobile Responsive Fix */}
       <section className='py-16 bg-white'>
         <div className='container mx-auto px-5'>
           {/* First Row */}
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-16'>
-            {/* Left side - Cards in diagonal arrangement like Jiffy */}
-            <div className='relative h-96 flex justify-center lg:justify-center'>
-              {/* Background card - rotated */}
-              <div className='absolute top-4 left-24 w-80 h-72 bg-blue-100 rounded-lg transform rotate-3'></div>
-              {/* Main job card */}
-              <div className='absolute top-0 left-12 w-80 bg-white rounded-lg shadow-lg transform -rotate-2 p-6'>
-                <div className='text-blue-500 font-roboto font-semibold text-sm mb-3 uppercase tracking-wide'>BID SUBMITTED</div>
-                <h3 className='font-inter text-lg font-bold mb-2 text-gray-900'>Hi Sarah,</h3>
-                <p className='text-gray-700 mb-4'>Meet Mike, your Kitchen Renovation Pro.</p>
-                <div className='flex items-center gap-3'>
-                  <div className='w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center'>
-                    <span className='font-roboto font-semibold text-gray-600'>M</span>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-14'>
+            {/* Left side - Cards in diagonal arrangement - Mobile Responsive */}
+            <div className='relative h-72 flex justify-center lg:justify-center'>
+              {/* Background card - rotated - Responsive positioning */}
+              <div className='absolute top-2 sm:top-4 left-4 sm:left-8 lg:left-24 w-64 sm:w-72 lg:w-80 h-56 sm:h-64 lg:h-72 bg-blue-100 rounded-lg rotate-3'></div>
+              {/* Main job card - Responsive positioning */}
+              <div className='absolute top-0 left-0 sm:left-4 lg:left-12 w-64 sm:w-72 lg:w-80 bg-white rounded-lg shadow-lg -rotate-2 p-4 sm:p-6'>
+                <div className='text-blue-500 font-roboto font-semibold text-xs sm:text-sm mb-2 sm:mb-3 uppercase tracking-wide'>BID SUBMITTED</div>
+                <h3 className='font-inter text-base sm:text-lg font-bold mb-2 text-gray-900'>Hi Sarah,</h3>
+                <p className='text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base'>Meet Mike, your Kitchen Renovation Pro.</p>
+                <div className='flex items-center gap-2 sm:gap-3'>
+                  <div className='w-10 h-10 sm:w-12 sm:h-12 bg-gray-300 rounded-full flex items-center justify-center'>
+                    <span className='font-roboto font-semibold text-gray-600 text-sm sm:text-base'>M</span>
                   </div>
                   <div>
-                    <div className='font-roboto font-semibold text-gray-900'>Mike</div>
-                    <div className='text-blue-600 text-sm'>✓ Bidquotes Verified Pro</div>
+                    <div className='font-roboto font-semibold text-gray-900 text-sm sm:text-base'>Mike</div>
+                    <div className='text-blue-600 text-xs sm:text-sm'>✓ Bidquotes Verified Pro</div>
                   </div>
                 </div>
               </div>
@@ -136,13 +144,14 @@ export default function Home() {
 
             {/* Right side - Content */}
             <div className='text-center lg:text-left'>
-              <h2 className='font-inter text-4xl font-bold text-gray-900 mb-6'>Get multiple competitive bids in minutes.</h2>
-              <div className='flex items-center gap-3 mb-6 justify-center lg:justify-start'>
-                <Clock className='h-6 w-6 text-blue-600' />
-                <span className='font-inter text-lg text-blue-600'>Average 10 minute response time</span>
+              <h2 className='font-inter text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6'>Get multiple competitive bids in minutes.</h2>
+              <div className='flex items-center gap-3 mb-4 sm:mb-6 justify-center lg:justify-start'>
+                <Clock className='h-5 w-5 sm:h-6 sm:w-6 text-blue-600' />
+                <span className='font-inter text-base sm:text-lg text-blue-600'>Average 10 minute response time</span>
               </div>
-              <p className='font-inter text-gray-600 mb-8 text-lg'>Your job posting instantly goes out to our network of contractors. Post your anytime, bid on jobs anytime!</p>
-              {/* <UserAuthConditionalButtons /> */}
+              <p className='font-inter text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg'>
+                Your job posting instantly goes out to our network of contractors. Post your anytime, bid on jobs anytime!
+              </p>
             </div>
           </div>
 
@@ -150,20 +159,20 @@ export default function Home() {
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 items-center'>
             {/* Left side - Content */}
             <div className='text-center lg:text-left order-2 lg:order-1'>
-              <h2 className='font-inter text-4xl font-bold text-gray-900 mb-6'>Quality contractors you can trust.</h2>
-              <div className='flex items-center gap-3 mb-6 justify-center lg:justify-start'>
-                <CheckCircle className='h-6 w-6 text-green-600' />
-                <span className='font-inter text-lg text-green-600'>Background checked & verified</span>
+              <h2 className='font-inter text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6'>Quality contractors you can trust.</h2>
+              <div className='flex items-center gap-3 mb-4 sm:mb-6 justify-center lg:justify-start'>
+                <CheckCircle className='h-5 w-5 sm:h-6 sm:w-6 text-green-600' />
+                <span className='font-inter text-base sm:text-lg text-green-600'>Background checked & verified</span>
               </div>
-              <p className='font-inter text-gray-600 mb-8 text-lg'>
+              <p className='font-inter text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg'>
                 All contractors on Bidquotes are licensed, insured, and background-checked. If you&apos;re not satisfied with the work, we&apos;ll make it right with our
                 satisfaction guarantee.
               </p>
             </div>
 
-            {/* Right side - Image */}
-            <div className='relative h-96 flex justify-center lg:justify-end order-1 lg:order-2'>
-              <div className='w-80 h-72 bg-gray-200 rounded-lg flex items-center justify-center'>
+            {/* Right side - Image - Mobile Responsive */}
+            <div className='relative h-64 sm:h-80 lg:h-96 flex justify-center lg:justify-end order-1 lg:order-2'>
+              <div className='w-64 h-48 sm:w-80 sm:h-64 lg:h-72 bg-gray-200 rounded-lg flex items-center justify-center relative overflow-hidden'>
                 <Image src='/images/contractor-profile.jpg' alt='Professional contractor at work' fill className='object-cover rounded-lg shadow-xl' />
               </div>
             </div>
