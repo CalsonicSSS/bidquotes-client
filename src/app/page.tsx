@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { UserAuthConditionalButtons } from '@/components/UserAuthConditionalButtons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Clock, CheckCircle, Facebook, Instagram } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -12,7 +13,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className='relative h-[450px] bg-gradient-to-r from-blue-900 to-blue-700 flex items-center'>
-        <Image src='/images/hero/hero-background.jpg' alt='Home maintenance professionals at work' fill className='object-cover' priority />
+        <Image src='/images/hero/hero-background.jpg' alt='Home maintenance professionals at work' fill className='object-cover object-[center_30%]' priority />
         <div className='absolute inset-0 bg-black opacity-40'></div>
         <div className='container mx-auto px-5 relative z-10 text-center'>
           <h1 className='font-inter text-3xl md:text-5xl md:px-96 font-bold text-white mb-14 leading-tight'>Home maintenance with competitive bidding</h1>
@@ -99,7 +100,7 @@ export default function Home() {
               ))}
             </div>
             <blockquote className='font-inter text-xl md:text-2xl text-gray-700 mb-6 italic'>
-              &apos;Bidquote made it so easy to setup my service on the platform and and expose my business to new customers. The bidding process is straightforward and I love how
+              &apos;Bidquotes made it so easy to setup my service on the platform and and expose my business to new customers. The bidding process is straightforward and I love how
               I can compare multiple contractors quickly.&apos;
             </blockquote>
             <cite className='font-roboto text-gray-600'>— Xuhan S., PVC Contracting Inc.</cite>
@@ -127,7 +128,7 @@ export default function Home() {
                   </div>
                   <div>
                     <div className='font-roboto font-semibold text-gray-900'>Mike</div>
-                    <div className='text-blue-600 text-sm'>✓ Bidquote Verified Pro</div>
+                    <div className='text-blue-600 text-sm'>✓ Bidquotes Verified Pro</div>
                   </div>
                 </div>
               </div>
@@ -155,7 +156,7 @@ export default function Home() {
                 <span className='font-inter text-lg text-green-600'>Background checked & verified</span>
               </div>
               <p className='font-inter text-gray-600 mb-8 text-lg'>
-                All contractors on Bidquote are licensed, insured, and background-checked. If you&apos;re not satisfied with the work, we&apos;ll make it right with our
+                All contractors on Bidquotes are licensed, insured, and background-checked. If you&apos;re not satisfied with the work, we&apos;ll make it right with our
                 satisfaction guarantee.
               </p>
             </div>
@@ -173,7 +174,7 @@ export default function Home() {
       {/* Services Section with Images */}
       <section className='py-16 bg-white'>
         <div className='container mx-auto px-5'>
-          <h2 className='font-inter text-4xl font-bold text-center text-gray-900 mb-12'>What jobs are done with Bidquote</h2>
+          <h2 className='font-inter text-4xl font-bold text-center text-gray-900 mb-12'>What jobs are done with Bidquotes</h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
             {[
               {
@@ -220,15 +221,27 @@ export default function Home() {
         <div className='container mx-auto px-5'>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
             <div>
-              <div className='font-roboto text-2xl font-bold mb-4'>Bidquote</div>
+              <div className='font-roboto text-2xl font-bold mb-4'>Bidquotes</div>
               <p className='font-inter text-gray-400'>Connecting homeowners with quality contractors.</p>
             </div>
             <div>
               <h4 className='font-roboto font-semibold mb-4'>Company</h4>
               <ul className='font-inter space-y-2 text-gray-400'>
-                <li>About Us</li>
-                <li>Terms of Service</li>
-                <li>Privacy Policy</li>
+                <li>
+                  <Link href='/about' className='hover:text-white'>
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href='/terms' className='hover:text-white'>
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href='/privacy' className='hover:text-white'>
+                    Privacy Policy
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
@@ -244,7 +257,7 @@ export default function Home() {
             </div>
           </div>
           <div className='border-t border-gray-700 mt-8 pt-8 text-center'>
-            <p className='font-inter text-gray-400'>© 2025 Bidquote Service. All rights reserved.</p>
+            <p className='font-inter text-gray-400'>© 2025 Bidquotes Service. All rights reserved.</p>
           </div>
         </div>
       </footer>

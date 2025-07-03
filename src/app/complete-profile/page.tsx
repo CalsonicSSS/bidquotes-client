@@ -44,7 +44,7 @@ export default function CompleteProfilePage() {
         <Card>
           <CardHeader className='text-center'>
             <CardTitle className='font-roboto text-2xl'>Complete Your Profile</CardTitle>
-            <p className='font-inter text-gray-600'>Hi {user?.firstName}! Please tell us how you plan to use Bidquote</p>
+            <p className='font-inter text-gray-600'>Hi {user?.firstName}! Please tell us how you plan to use Bidquotes</p>
           </CardHeader>
           <CardContent className='space-y-4'>
             <Button

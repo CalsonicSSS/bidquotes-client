@@ -18,7 +18,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: 'Bidquote Service',
+  title: 'Bidquotes Service',
   description: 'Home services marketplace connecting buyers with contractors',
 };
 

@@ -16,7 +16,7 @@ export default function SignUpPage() {
         <div className='max-w-md w-full mx-4'>
           <Card>
             <CardHeader className='text-center'>
-              <CardTitle className='font-roboto text-2xl'>Join Bidquote</CardTitle>
+              <CardTitle className='font-roboto text-2xl'>Join Bidquotes</CardTitle>
               <p className='font-inter text-gray-600'>Choose how you want to use our platform</p>
             </CardHeader>
             <CardContent className='space-y-6'>

@@ -20,7 +20,7 @@ export function HomeHeader() {
     <header className='sticky top-0 z-50 bg-blue-theme text-white'>
       <div className='container mx-auto px-5 h-16 flex justify-between items-center'>
         <Link href='/' className='font-roboto text-2xl font-bold hover:text-blue-200 transition-colors'>
-          Bidquote
+          Bidquotes
         </Link>
         <div className='flex items-center gap-4'>
           <SignedOut>
