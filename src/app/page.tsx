@@ -53,17 +53,13 @@ export default function Home() {
       </section>
 
       {/* mission statement section */}
-      <section className='pb-16 pt-4 bg-white'>
+      <section className='pb-16 pt-4 bg-white overflow-hidden'>
         <div className='container mx-auto px-5'>
           <div className='max-w-4xl mx-auto text-center'>
             <div className='bg-white rounded-lg shadow-lg p-8 border-2 border-blue-200'>
-              <p className='font-inter text-xl font-semibold text-gray-700 leading-relaxed md:px-20'>
-                Your job shouldn't break the bank or leave you helpless.{' '}
-                <div className='md:hidden'>
-                  <br />
-                </div>
-                We connect you with qualified contractors who bid for your job, ensuring the best deal!
-              </p>
+              <p className='font-inter text-xl font-semibold text-gray-700 leading-relaxed md:px-20'>Your job shouldn't break the bank or leave you helpless.</p>
+              <br />
+              <p className='font-normal text-md font-inter'> We connect you with qualified contractors who bid for your job, ensuring the best deal!</p>
             </div>
           </div>
         </div>
@@ -122,7 +118,7 @@ export default function Home() {
           {/* First Row */}
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-14'>
             {/* Left side - Cards in diagonal arrangement - Mobile Responsive */}
-            <div className='relative h-72 flex justify-center lg:justify-center'>
+            <div className='relative h-72 md:h-96 flex justify-center lg:justify-center'>
               {/* Background card - rotated - Responsive positioning */}
               <div className='absolute top-2 sm:top-4 left-4 sm:left-8 lg:left-24 w-64 sm:w-72 lg:w-80 h-56 sm:h-64 lg:h-72 bg-blue-100 rounded-lg rotate-3'></div>
               {/* Main job card - Responsive positioning */}
