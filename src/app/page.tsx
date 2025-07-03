@@ -2,8 +2,7 @@ import { HomeHeader } from '@/components/HomeHeader';
 import Image from 'next/image';
 import { UserAuthConditionalButtons } from '@/components/UserAuthConditionalButtons';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, Clock, CheckCircle } from 'lucide-react';
-import { DynamicIcon } from 'lucide-react/dynamic';
+import { Star, Clock, CheckCircle, Facebook, Instagram } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -52,7 +51,6 @@ export default function Home() {
       <section className='pb-16 pt-4 bg-white'>
         <div className='container mx-auto px-5'>
           <div className='max-w-4xl mx-auto text-center'>
-            {/* <h2 className='font-inter text-4xl font-bold text-gray-900 mb-8'>Our Mission</h2> */}
             <div className='bg-white rounded-lg shadow-lg p-8 border-2 border-blue-200'>
               <p className='font-inter text-xl font-semibold text-gray-700 leading-relaxed px-20'>
                 Your job shouldn't break the bank or leave you questioning its value. We connect you with qualified contractors who bid for your job, ensuring the best deal.
@@ -109,7 +107,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Illustration Section */}
+      {/* Illustration Section - Optimized */}
       <section className='py-16 bg-white'>
         <div className='container mx-auto px-5'>
           {/* First Row */}
@@ -217,7 +215,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer section */}
+      {/* Footer section - Optimized with Static Icons */}
       <footer className='bg-gray-800 text-white py-12'>
         <div className='container mx-auto px-5'>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
@@ -233,17 +231,17 @@ export default function Home() {
                 <li>Privacy Policy</li>
               </ul>
             </div>
-            {/* <div>
+            <div>
               <h4 className='font-roboto font-semibold mb-4'>Follow Us</h4>
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                <a href='#' target='_blank' rel='noopener noreferrer'>
-                  <DynamicIcon name='facebook' size={32} color='#1877f2' />
+              <div className='flex gap-4 items-center'>
+                <a href='#' target='_blank' rel='noopener noreferrer' className='text-gray-400 hover:text-blue-400 transition-colors'>
+                  <Facebook size={32} />
                 </a>
-                <a href='#' target='_blank' rel='noopener noreferrer'>
-                  <DynamicIcon name='instagram' size={32} color='#e1306c' />
+                <a href='#' target='_blank' rel='noopener noreferrer' className='text-gray-400 hover:text-pink-400 transition-colors'>
+                  <Instagram size={32} />
                 </a>
               </div>
-            </div> */}
+            </div>
           </div>
           <div className='border-t border-gray-700 mt-8 pt-8 text-center'>
             <p className='font-inter text-gray-400'>© 2025 Bidquote Service. All rights reserved.</p>
