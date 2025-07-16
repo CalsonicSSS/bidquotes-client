@@ -1,13 +1,9 @@
-import { HomeHeader } from '@/components/HomeHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Users, Shield, Zap } from 'lucide-react';
 
 export default function AboutUsPage() {
   return (
     <main className='min-h-screen'>
-      {/* Header section */}
-      <HomeHeader />
-
       {/* Hero Section */}
       <section className='relative h-[300px] bg-gradient-to-r from-blue-900 to-blue-700 flex items-center'>
         <div className='absolute inset-0 bg-black opacity-20'></div>

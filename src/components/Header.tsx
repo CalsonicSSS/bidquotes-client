@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 // Automatically re-render when auth state changes
 // They are essentially client-side components that use hooks like useAuth() internally
 
-export function HomeHeader() {
+export function Header() {
   return (
     <header className='sticky top-0 z-50 bg-blue-theme text-white'>
       <div className='container mx-auto px-5 h-16 flex justify-between items-center'>

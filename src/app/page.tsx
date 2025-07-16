@@ -1,4 +1,3 @@
-import { HomeHeader } from '@/components/HomeHeader';
 import Image from 'next/image';
 import { UserAuthConditionalButtons } from '@/components/UserAuthConditionalButtons';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,9 +7,6 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <main className='min-h-screen'>
-      {/* Header section */}
-      <HomeHeader />
-
       {/* Hero Section */}
       <section className='relative h-[450px] bg-gradient-to-r from-blue-900 to-blue-700 flex items-center'>
         <Image src='/images/hero/hero-background.jpg' alt='Home maintenance professionals at work' fill className='object-cover object-[center_30%]' priority />

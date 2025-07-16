@@ -20,19 +20,6 @@ export default async function ContractorDashboard() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Header with home navigation */}
-      <header className='bg-white shadow-sm border-b'>
-        <div className='container mx-auto px-4 h-16 flex justify-between items-center'>
-          <div className='flex items-center gap-4'>
-            <Link href='/' className='font-roboto text-green-600 hover:text-green-800 text-sm'>
-              ← Back to Home
-            </Link>
-            <h1 className='font-roboto text-xl font-bold'>Contractor Dashboard</h1>
-          </div>
-          <div className='font-inter text-gray-600'>Welcome, {user?.firstName}!</div>
-        </div>
-      </header>
-
       {/* Main content */}
       <main className='container mx-auto px-4 py-8'>
         <div className='max-w-4xl mx-auto'>
