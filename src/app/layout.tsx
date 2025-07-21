@@ -3,6 +3,7 @@ import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Header } from '@/components/Header';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -50,8 +51,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <ClerkProvider>
       <html lang='en'>
         <body className={`${roboto.variable} ${inter.variable} antialiased`}>
-          <Header />
-          {children}
+          <QueryProvider>
+            <Header />
+            {children}
+          </QueryProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -17,12 +17,14 @@ export default function SignInPage() {
                 footerAction: 'hidden', // Hide default signup link
               },
             }}
-            signUpUrl='/sign-up' // Explicitly set sign-up URL
+            signUpUrl='/sign-up'
+            forceRedirectUrl='/dashboard' // This will redirect to our dashboard router
+            signUpForceRedirectUrl='/dashboard'
           />
         </div>
 
         <div className='text-center mt-8'>
-          {/* Sign-in link */}
+          {/* Sign-up link */}
           <div className='text-center mt-3'>
             <p className='font-inter text-gray-600'>
               Don't have an account yet?{' '}

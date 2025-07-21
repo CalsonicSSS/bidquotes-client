@@ -1,21 +1,41 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
+'use client';
+
+import { useAuth, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
-export default async function ContractorDashboard() {
-  const { userId } = await auth();
-  const user = await currentUser();
+export default function ContractorDashboard() {
+  const { userId, isLoaded } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
+  const router = useRouter();
 
-  // Redirect if not authenticated
-  if (!userId) {
-    redirect('/sign-in');
-  }
+  // Handle redirects with useEffect instead of redirect() function
+  useEffect(() => {
+    if (!userId) {
+      router.push('/sign-in');
+      return;
+    }
 
-  // Check if user is actually a contractor (security check)
-  const userType = user?.unsafeMetadata?.userType;
-  if (userType !== 'contractor') {
-    redirect('/buyer-dashboard');
+    if (userLoaded && user) {
+      const userType = user.unsafeMetadata?.userType;
+      if (userType === 'buyer') {
+        router.push('/buyer-dashboard');
+        return;
+      }
+    }
+  }, [userId, userLoaded, user, router]);
+
+  // Show loading while auth is loading or during redirects
+  if (!isLoaded || !userLoaded || !userId) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4'></div>
+          <p className='font-inter text-gray-600'>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

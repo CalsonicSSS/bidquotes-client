@@ -70,7 +70,6 @@ export default function SignUpPage() {
         <div className='flex justify-center'>
           <SignUp
             // Pass the userType as unsafeMetadata to Clerk
-            // This allows us to differentiate user types later in the application
             unsafeMetadata={{
               userType: userType,
             }}
@@ -79,6 +78,8 @@ export default function SignUpPage() {
                 footerAction: 'hidden', // Hide default sign-in link
               },
             }}
+            forceRedirectUrl='/dashboard' // This will redirect to our dashboard router
+            signInForceRedirectUrl='/dashboard'
           />
         </div>
 

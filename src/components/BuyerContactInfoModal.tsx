@@ -1,66 +1,49 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertCircle } from 'lucide-react';
+import { saveBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
 
-interface BuyerContactInfoModalProps {
+type BuyerContactInfoModalProps = {
   isOpen: boolean;
   userEmail: string;
   onSaved: () => void;
-}
+};
 
 export function BuyerContactInfoModal({ isOpen, userEmail, onSaved }: BuyerContactInfoModalProps) {
   const [email, setEmail] = useState(userEmail);
   const [phone, setPhone] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
   const { getToken } = useAuth();
-  const { user } = useUser();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-
-    try {
-      // Get the JWT token from Clerk
+  const { error, isPending, mutate } = useMutation({
+    mutationFn: async () => {
       const token = await getToken();
-
       if (!token) {
         throw new Error('Unable to get authentication token');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/buyer-contact-info`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      return saveBuyerContactInfo(
+        {
           contact_email: email,
           phone_number: phone,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to save contact information');
-      }
-
-      // Success - call onSaved to close modal and refresh parent
+        },
+        token
+      );
+    },
+    onSuccess: () => {
       onSaved();
-    } catch (error) {
-      console.error('Error saving contact info:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    mutate();
   };
 
   return (
@@ -68,9 +51,6 @@ export function BuyerContactInfoModal({ isOpen, userEmail, onSaved }: BuyerConta
       <DialogContent className='sm:max-w-md' onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className='font-roboto text-xl'>Complete Your Contact Information</DialogTitle>
-          {/* <DialogDescription className='font-inter text-gray-600'>
-            You must provide your contact details before posting jobs. This information will be shared with contractors when jobs are confirmed.
-          </DialogDescription> */}
         </DialogHeader>
 
         <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3'>
@@ -80,7 +60,7 @@ export function BuyerContactInfoModal({ isOpen, userEmail, onSaved }: BuyerConta
 
         {error && (
           <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
-            <p className='font-inter text-sm text-red-800'>{error}</p>
+            <p className='font-inter text-sm text-red-800'>{error instanceof Error ? error.message : 'An error occurred'}</p>
           </div>
         )}
 
@@ -101,8 +81,8 @@ export function BuyerContactInfoModal({ isOpen, userEmail, onSaved }: BuyerConta
             <p className='text-sm text-gray-500 font-inter'>For urgent contractor communications</p>
           </div>
 
-          <Button type='submit' className='w-full font-roboto' disabled={isSubmitting || !email || !phone}>
-            {isSubmitting ? 'Saving...' : 'Save Contact Information'}
+          <Button type='submit' className='w-full font-roboto' disabled={isPending || !email || !phone}>
+            {isPending ? 'Saving...' : 'Save Contact Information'}
           </Button>
         </form>
       </DialogContent>
