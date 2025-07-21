@@ -1,12 +1,23 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ContactInfoModal } from '@/components/ContactInfoModal';
+'use client';
 
-export default async function BuyerDashboard() {
-  const { userId } = await auth();
-  const user = await currentUser();
+import { useAuth, useUser } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { BuyerContactInfoModal } from '@/components/BuyerContactInfoModal';
+import { useState, useEffect } from 'react';
+
+export default function BuyerDashboard() {
+  const [hasContactInfo, setHasContactInfo] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { userId, isLoaded } = useAuth();
+  const { user } = useUser();
+
+  useEffect(() => {
+    // For now, simulate loading
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  }, []);
 
   // Redirect if not authenticated
   if (!userId) {
@@ -19,15 +30,33 @@ export default async function BuyerDashboard() {
     redirect('/contractor-dashboard');
   }
 
-  // For now, we'll simulate checking if contact info exists
-  // Later this will come from our database
-  const hasContactInfo = false; // This will be replaced with actual DB check
-  const userEmail = user?.emailAddresses[0]?.emailAddress || '';
+  const handleContactInfoSaved = () => {
+    setHasContactInfo(true);
+  };
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Wait for auth to load
+  if (!isLoaded) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Contact Info Modal - only shows if contact info is missing */}
-      <ContactInfoModal isOpen={!hasContactInfo} userEmail={userEmail} />
+      <BuyerContactInfoModal isOpen={!hasContactInfo} userEmail={user?.emailAddresses[0]?.emailAddress || ''} onSaved={handleContactInfoSaved} />
 
       {/* Main content */}
       <main className='container mx-auto px-4 py-8'>
