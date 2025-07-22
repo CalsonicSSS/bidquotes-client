@@ -3,10 +3,14 @@ import { UserAuthConditionalButtons } from '@/components/UserAuthConditionalButt
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Clock, CheckCircle, Facebook, Instagram } from 'lucide-react';
 import Link from 'next/link';
+import { Header } from '@/components/Header';
 
 export default function Home() {
   return (
     <main className='min-h-screen'>
+      {/* header section */}
+      <Header />
+
       {/* Hero Section */}
       <section className='relative h-[450px] bg-gradient-to-r from-blue-900 to-blue-700 flex items-center'>
         <Image src='/images/hero/hero-background.jpg' alt='Home maintenance professionals at work' fill className='object-cover object-[center_30%]' priority />

@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
-import { Header } from '@/components/Header';
 import { QueryProvider } from '@/providers/QueryProvider';
 
 const inter = Inter({
@@ -48,13 +47,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
+    // this afterSignOutUrl is to configured for auto redirect to home page after user signs out through the UserButton component
     <ClerkProvider afterSignOutUrl='/'>
       <html lang='en'>
         <body className={`${roboto.variable} ${inter.variable} antialiased`}>
-          <QueryProvider>
-            <Header />
-            {children}
-          </QueryProvider>
+          <QueryProvider>{children}</QueryProvider>
         </body>
       </html>
     </ClerkProvider>

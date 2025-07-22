@@ -7,8 +7,11 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BuyerContactInfoModal } from '@/components/BuyerContactInfoModal';
+import { BuyerSidebar } from '@/components/buyer-dashboard/BuyerSidebar';
+import { BuyerMobileHeader } from '@/components/buyer-dashboard/BuyerMobileHeader';
 import { getBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
-import { Briefcase, MessageCircle, Plus, Archive, Filter, Menu, X } from 'lucide-react';
+import { Briefcase, MessageCircle, Plus, Archive, Filter } from 'lucide-react';
+import { formatPhoneDisplay } from '@/lib/utils/phone-format';
 
 type ActiveSection = 'all-jobs' | 'contact-info';
 
@@ -19,11 +22,8 @@ export default function BuyerDashboard() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Client side real time redirect logic based on user type
   useEffect(() => {
-    if (!userId) {
-      router.push('/sign-in');
-    }
-
     if (user) {
       const userType = user.unsafeMetadata?.userType;
       if (userType === 'contractor') {
@@ -32,7 +32,7 @@ export default function BuyerDashboard() {
     }
   }, [userId, user, router]);
 
-  // Query to check if buyer has contact info
+  // Query to fetch buyer's contact info
   const {
     data: contactInfo,
     isLoading,
@@ -51,6 +51,14 @@ export default function BuyerDashboard() {
     refetch();
   };
 
+  // Mock stats data
+  const stats = {
+    activeJobs: 0,
+    totalBids: 0,
+    confirmedJobs: 0,
+    savedDrafts: 0,
+  };
+
   if (!user || isLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
@@ -62,82 +70,29 @@ export default function BuyerDashboard() {
     );
   }
 
-  // Mock stats data
-  const stats = {
-    activeJobs: 0,
-    totalBids: 0,
-    confirmedJobs: 0,
-    savedDrafts: 0,
-  };
-
-  const menuItems = [
-    { id: 'all-jobs' as ActiveSection, label: 'All Jobs', icon: Briefcase },
-    { id: 'contact-info' as ActiveSection, label: 'Contact Info', icon: MessageCircle },
-  ];
-
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Contact Info Modal */}
-      <BuyerContactInfoModal isOpen={!contactInfo} userEmail={user?.emailAddresses[0]?.emailAddress || ''} onSaved={handleContactInfoSaved} />
+      <BuyerContactInfoModal
+        isOpen={!contactInfo?.contact_email || !contactInfo?.phone_number}
+        userEmail={user?.emailAddresses[0]?.emailAddress || ''}
+        onSaved={handleContactInfoSaved}
+      />
 
       <div className='flex relative'>
-        {/* Mobile Sidebar Overlay */}
-        {sidebarOpen && <div className='fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden' onClick={() => setSidebarOpen(false)} />}
-
-        {/* Sidebar */}
-        <div
-          className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
-        >
-          <div className='p-4 lg:p-6'>
-            {/* Mobile Close Button */}
-            <div className='flex justify-between items-center mb-6 lg:mb-6'>
-              <h1 className='font-roboto text-lg lg:text-xl font-bold text-gray-900'>Welcome, {user?.firstName}</h1>
-              <button onClick={() => setSidebarOpen(false)} className='lg:hidden p-1 rounded-md hover:bg-gray-100'>
-                <X className='h-5 w-5' />
-              </button>
-            </div>
-
-            <nav className='space-y-2'>
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveSection(item.id);
-                      setSidebarOpen(false); // Close sidebar on mobile after selection
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                      activeSection === item.id ? 'bg-blue-50 text-blue-700 font-roboto font-semibold' : 'text-gray-700 hover:bg-gray-50 font-inter'
-                    }`}
-                  >
-                    <Icon className='h-5 w-5' />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+        {/* Sidebar Component */}
+        <BuyerSidebar user={user} activeSection={activeSection} setActiveSection={setActiveSection} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
         {/* Main Content Area */}
         <div className='flex-1 min-h-screen'>
-          {/* Mobile Header */}
-          <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between'>
-            <button onClick={() => setSidebarOpen(true)} className='p-2 rounded-md hover:bg-gray-100'>
-              <Menu className='h-5 w-5' />
-            </button>
-            <h2 className='font-roboto font-semibold text-gray-900'>{activeSection === 'all-jobs' ? 'All Jobs' : 'Contact Info'}</h2>
-            <div className='w-9' /> {/* Spacer for centering */}
-          </div>
+          {/* Mobile Header Component */}
+          <BuyerMobileHeader activeSection={activeSection} setSidebarOpen={setSidebarOpen} />
 
+          {/* Page Content */}
           <div className='p-4 lg:p-8'>
             {activeSection === 'all-jobs' && (
               <div className='space-y-6'>
-                {/* Stats Cards - Mobile Responsive */}
+                {/* Stats Cards */}
                 <div className='grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6'>
                   <Card>
                     <CardHeader className='pb-2 lg:pb-3'>
@@ -176,7 +131,7 @@ export default function BuyerDashboard() {
                   </Card>
                 </div>
 
-                {/* Action Buttons - Mobile Responsive */}
+                {/* Action Buttons */}
                 <div className='flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4'>
                   <Button variant='outline' className='font-roboto flex items-center justify-center gap-2 w-full lg:w-auto'>
                     <Archive className='h-4 w-4' />
@@ -214,6 +169,7 @@ export default function BuyerDashboard() {
                   </CardContent>
                 </Card>
 
+                {/* Warning Banner */}
                 {!contactInfo && (
                   <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
                     <p className='font-inter text-sm lg:text-base text-red-800'>⚠️ Please complete your contact information to start posting jobs.</p>
@@ -239,7 +195,7 @@ export default function BuyerDashboard() {
                         </div>
                         <div>
                           <label className='font-roboto text-sm font-semibold text-gray-700'>Phone Number</label>
-                          <p className='font-inter text-gray-900 mt-1'>{contactInfo.phone_number}</p>
+                          <p className='font-inter text-gray-900 mt-1'>{formatPhoneDisplay(contactInfo.phone_number)}</p>
                         </div>
                         <Button className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:w-auto'>Update Contact Info</Button>
                       </div>

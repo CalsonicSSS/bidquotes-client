@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertCircle } from 'lucide-react';
 import { saveBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
+import { formatPhoneInput, getCleanPhoneNumber } from '@/lib/utils/phone-format';
 
 type BuyerContactInfoModalProps = {
   isOpen: boolean;
@@ -31,7 +32,7 @@ export function BuyerContactInfoModal({ isOpen, userEmail, onSaved }: BuyerConta
       return saveBuyerContactInfo(
         {
           contact_email: email,
-          phone_number: phone,
+          phone_number: getCleanPhoneNumber(phone), // Store clean digits only
         },
         token
       );
@@ -40,6 +41,11 @@ export function BuyerContactInfoModal({ isOpen, userEmail, onSaved }: BuyerConta
       onSaved();
     },
   });
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneInput(e.target.value);
+    setPhone(formatted);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,11 +83,20 @@ export function BuyerContactInfoModal({ isOpen, userEmail, onSaved }: BuyerConta
             <Label htmlFor='phone' className='font-roboto'>
               Phone Number <span className='text-red-500'>*</span>
             </Label>
-            <Input id='phone' type='tel' value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='(123) 456-7890' className='font-inter' required />
+            <Input
+              id='phone'
+              type='tel'
+              value={phone}
+              onChange={handlePhoneChange}
+              placeholder='(123) 456-7890'
+              className='font-inter'
+              maxLength={14} // Max length for formatted phone
+              required
+            />
             <p className='text-sm text-gray-500 font-inter'>For urgent contractor communications</p>
           </div>
 
-          <Button type='submit' className='w-full font-roboto' disabled={isPending || !email || !phone}>
+          <Button type='submit' className='w-full font-roboto' disabled={isPending || !email || !phone || getCleanPhoneNumber(phone).length !== 10}>
             {isPending ? 'Saving...' : 'Save Contact Information'}
           </Button>
         </form>
