@@ -78,7 +78,7 @@ export default function SignUpPage() {
                 footerAction: 'hidden', // Hide default sign-in link
               },
             }}
-            forceRedirectUrl='/dashboard' // This will redirect to our dashboard router
+            forceRedirectUrl='/dashboard'
             signInForceRedirectUrl='/dashboard'
           />
         </div>
