@@ -11,7 +11,9 @@ import { BuyerSidebar } from '@/components/buyer-dashboard/BuyerSidebar';
 import { BuyerMobileHeader } from '@/components/buyer-dashboard/BuyerMobileHeader';
 import { getBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
 import { Briefcase, MessageCircle, Plus, Archive, Filter } from 'lucide-react';
-import { formatPhoneDisplay } from '@/lib/utils/phone-format';
+import { formatPhoneDisplay } from '@/lib/utils/custom-format';
+import Link from 'next/link';
+import { isContactInfoCompleteChecker } from '@/lib/utils/condition-checkers';
 
 type ActiveSection = 'all-jobs' | 'contact-info';
 
@@ -74,7 +76,12 @@ export default function BuyerDashboard() {
     <div className='min-h-screen bg-gray-50'>
       {/* Contact Info Modal */}
       <BuyerContactInfoModal
-        isOpen={!contactInfo?.contact_email || !contactInfo?.phone_number}
+        isOpen={
+          !isContactInfoCompleteChecker({
+            email: contactInfo?.contact_email || '',
+            phone: contactInfo?.phone_number || '',
+          })
+        }
         userEmail={user?.emailAddresses[0]?.emailAddress || ''}
         onSaved={handleContactInfoSaved}
       />
@@ -144,11 +151,35 @@ export default function BuyerDashboard() {
                       Filter Jobs
                     </Button>
 
-                    <Button className='font-roboto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 w-full lg:w-auto' disabled={!contactInfo}>
-                      <Plus className='h-4 w-4' />
-                      <span className='hidden lg:inline'>{contactInfo ? 'Post New Job' : 'Complete Profile First'}</span>
-                      <span className='lg:hidden'>{contactInfo ? 'Post Job' : 'Complete Profile'}</span>
-                    </Button>
+                    <Link href='/buyer-dashboard/post-job'>
+                      <Button
+                        className='font-roboto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 w-full lg:w-auto'
+                        disabled={
+                          !isContactInfoCompleteChecker({
+                            email: contactInfo?.contact_email || '',
+                            phone: contactInfo?.phone_number || '',
+                          })
+                        }
+                      >
+                        <Plus className='h-4 w-4' />
+                        <span className='hidden lg:inline'>
+                          {isContactInfoCompleteChecker({
+                            email: contactInfo?.contact_email || '',
+                            phone: contactInfo?.phone_number || '',
+                          })
+                            ? 'Post New Job'
+                            : 'Complete Profile First'}
+                        </span>
+                        <span className='lg:hidden'>
+                          {isContactInfoCompleteChecker({
+                            email: contactInfo?.contact_email || '',
+                            phone: contactInfo?.phone_number || '',
+                          })
+                            ? 'Post Job'
+                            : 'Complete Profile First'}
+                        </span>
+                      </Button>
+                    </Link>
                   </div>
                 </div>
 
@@ -162,15 +193,33 @@ export default function BuyerDashboard() {
                       <Briefcase className='h-12 lg:h-16 w-12 lg:w-16 text-gray-300 mx-auto mb-4' />
                       <h3 className='font-roboto text-base lg:text-lg font-semibold text-gray-900 mb-2'>No jobs posted yet</h3>
                       <p className='font-inter text-sm lg:text-base text-gray-600 mb-4 px-4'>Get started by posting your first job to receive bids from contractors.</p>
-                      <Button className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:w-auto' disabled={!contactInfo}>
-                        {contactInfo ? 'Post Your First Job' : 'Complete Profile First'}
-                      </Button>
+                      <Link href='/buyer-dashboard/post-job'>
+                        <Button
+                          className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:w-auto'
+                          disabled={
+                            !isContactInfoCompleteChecker({
+                              email: contactInfo?.contact_email || '',
+                              phone: contactInfo?.phone_number || '',
+                            })
+                          }
+                        >
+                          {isContactInfoCompleteChecker({
+                            email: contactInfo?.contact_email || '',
+                            phone: contactInfo?.phone_number || '',
+                          })
+                            ? 'Post Your First Job'
+                            : 'Complete Profile First'}
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Warning Banner */}
-                {!contactInfo && (
+                {!isContactInfoCompleteChecker({
+                  email: contactInfo?.contact_email || '',
+                  phone: contactInfo?.phone_number || '',
+                }) && (
                   <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
                     <p className='font-inter text-sm lg:text-base text-red-800'>⚠️ Please complete your contact information to start posting jobs.</p>
                   </div>
