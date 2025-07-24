@@ -2,32 +2,23 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Send, AlertTriangle, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Send, Plus, X } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createJob, saveJobDraft, type JobFormData } from '@/lib/apis/jobs';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
-type JobType = (typeof JOB_TYPES)[number];
-
-type JobFormData = {
-  title: string;
-  job_type: JobType | '';
-  description: string;
-  location_address: string;
-  city: string;
-  other_requirements: string;
-  images: File[];
-};
-
 export default function PostJobPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const queryClient = useQueryClient();
+  const { getToken } = useAuth();
 
   const [formData, setFormData] = useState<JobFormData>({
     title: '',
@@ -124,23 +115,54 @@ export default function PostJobPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSaveDraft = async () => {
-    setIsSaving(true);
-    try {
-      // TODO: Implement save draft API call
-      console.log('Saving draft:', formData);
+  const createJobMutation = useMutation({
+    mutationFn: async (jobData: typeof formData) => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return createJob(jobData, token);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch buyer jobs data
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+      alert('Job posted successfully!');
+      router.push('/buyer-dashboard');
+    },
+    onError: (error) => {
+      console.error('Error posting job:', error);
+      alert(error instanceof Error ? error.message : 'Failed to post job. Please try again.');
+    },
+  });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  const saveDraftMutation = useMutation({
+    mutationFn: async (draftData: typeof formData) => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return saveJobDraft(draftData, token);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch buyer jobs data
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
       setHasUnsavedChanges(false);
       alert('Draft saved successfully!');
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error saving draft:', error);
-      alert('Failed to save draft. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
+      alert(error instanceof Error ? error.message : 'Failed to save draft. Please try again.');
+    },
+  });
+
+  const handleSaveDraft = async () => {
+    const draftData = {
+      title: formData.title,
+      job_type: formData.job_type,
+      description: formData.description,
+      location_address: formData.location_address,
+      city: formData.city,
+      other_requirements: formData.other_requirements,
+      images: formData.images,
+    };
+
+    saveDraftMutation.mutate(draftData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -150,22 +172,17 @@ export default function PostJobPage() {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      // TODO: Implement job posting API call
-      console.log('Submitting job:', formData);
+    const jobData = {
+      title: formData.title,
+      job_type: formData.job_type,
+      description: formData.description,
+      location_address: formData.location_address,
+      city: formData.city,
+      other_requirements: formData.other_requirements,
+      images: formData.images,
+    };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      alert('Job posted successfully!');
-      router.push('/buyer-dashboard');
-    } catch (error) {
-      console.error('Error posting job:', error);
-      alert('Failed to post job. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    createJobMutation.mutate(jobData);
   };
 
   // Warn about unsaved changes when navigating away
@@ -369,14 +386,24 @@ export default function PostJobPage() {
 
           {/* Action Buttons */}
           <div className='flex flex-col sm:flex-row gap-3 pt-6'>
-            <Button type='button' variant='outline' onClick={handleSaveDraft} disabled={isSaving || isSubmitting} className='font-roboto flex items-center gap-2'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={handleSaveDraft}
+              disabled={saveDraftMutation.isPending || createJobMutation.isPending}
+              className='font-roboto flex items-center gap-2'
+            >
               <Save className='h-4 w-4' />
-              {isSaving ? 'Saving...' : 'Save as Draft'}
+              {saveDraftMutation.isPending ? 'Saving...' : 'Save as Draft'}
             </Button>
 
-            <Button type='submit' disabled={isSubmitting || isSaving} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
+            <Button
+              type='submit'
+              disabled={createJobMutation.isPending || saveDraftMutation.isPending}
+              className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'
+            >
               <Send className='h-4 w-4' />
-              {isSubmitting ? 'Posting Job...' : 'Post Job'}
+              {createJobMutation.isPending ? 'Posting Job...' : 'Post Job'}
             </Button>
           </div>
         </form>

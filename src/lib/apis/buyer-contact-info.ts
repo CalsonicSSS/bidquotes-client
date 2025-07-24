@@ -34,11 +34,11 @@ export async function saveBuyerContactInfo(data: BuyerContactInfoData, clerkJwt:
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getBuyerContactInfo(token: string): Promise<BuyerContactInfoResponse | null> {
+export async function getBuyerContactInfo(clerkJwt: string): Promise<BuyerContactInfoResponse | null> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/buyer-contact-info`, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${clerkJwt}`,
     },
   });
 

@@ -10,10 +10,11 @@ import { BuyerContactInfoModal } from '@/components/BuyerContactInfoModal';
 import { BuyerSidebar } from '@/components/buyer-dashboard/BuyerSidebar';
 import { BuyerMobileHeader } from '@/components/buyer-dashboard/BuyerMobileHeader';
 import { getBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
-import { Briefcase, MessageCircle, Plus, Archive, Filter } from 'lucide-react';
+import { Briefcase, MessageCircle, Plus } from 'lucide-react';
 import { formatPhoneDisplay } from '@/lib/utils/custom-format';
 import Link from 'next/link';
 import { isContactInfoCompleteChecker } from '@/lib/utils/condition-checkers';
+import { getBuyerJobs } from '@/lib/apis/jobs';
 
 type ActiveSection = 'all-jobs' | 'contact-info';
 
@@ -23,6 +24,8 @@ export default function BuyerDashboard() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [activeFilter, setActiveFilter] = useState<'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed'>('all');
 
   // Client side real time redirect logic based on user type
   useEffect(() => {
@@ -49,19 +52,152 @@ export default function BuyerDashboard() {
     enabled: !!userId,
   });
 
+  const {
+    data: allJobs = [],
+    isLoading: jobsLoading,
+    refetch: refetchJobs,
+  } = useQuery({
+    queryKey: ['buyer-jobs'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('No token available');
+      return getBuyerJobs(token); // Get all jobs, we'll filter on frontend
+    },
+    enabled: !!userId,
+  });
+
   const handleContactInfoSaved = () => {
     refetch();
   };
 
-  // Mock stats data
+  const filteredJobs = allJobs.filter((job) => {
+    if (activeFilter === 'all') return true;
+    return job.status === activeFilter;
+  });
+
+  // Directly Calculate stats from all jobs in real time
   const stats = {
-    activeJobs: 0,
-    totalBids: 0,
-    confirmedJobs: 0,
-    savedDrafts: 0,
+    activeJobs: allJobs.filter((job) => job.status === 'open' || job.status === 'full_bid').length,
+    totalBids: allJobs.reduce((total, job) => total + job.bid_count, 0),
+    confirmedJobs: allJobs.filter((job) => job.status === 'confirmed').length,
+    savedDrafts: allJobs.filter((job) => job.status === 'draft').length,
   };
 
-  if (!user || isLoading) {
+  // Filter options for the dropdown
+  const filterOptions = [
+    { value: 'all', label: 'All Jobs', count: allJobs.length },
+    { value: 'draft', label: 'Drafts', count: stats.savedDrafts },
+    { value: 'open', label: 'Open', count: allJobs.filter((j) => j.status === 'open').length },
+    { value: 'full_bid', label: 'Full Bids', count: allJobs.filter((j) => j.status === 'full_bid').length },
+    { value: 'waiting_confirmation', label: 'Waiting confirmation', count: allJobs.filter((j) => j.status === 'waiting_confirmation').length },
+    { value: 'confirmed', label: 'Confirmed', count: stats.confirmedJobs },
+  ];
+
+  // Updated jobs list renderer
+  const renderJobsList = () => {
+    if (filteredJobs.length === 0) {
+      if (activeFilter === 'all') {
+        return (
+          <div className='text-center py-8 lg:py-12'>
+            <Briefcase className='h-12 lg:h-16 w-12 lg:w-16 text-gray-300 mx-auto mb-4' />
+            <h3 className='font-roboto text-base lg:text-lg font-semibold text-gray-900 mb-2'>No jobs posted yet</h3>
+            <p className='font-inter text-sm lg:text-base text-gray-600 mb-4 px-4'>Get started by posting your first job to receive bids from contractors.</p>
+            <Link href='/buyer-dashboard/post-job'>
+              <Button
+                className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:w-auto'
+                disabled={
+                  !isContactInfoCompleteChecker({
+                    email: contactInfo?.contact_email || '',
+                    phone: contactInfo?.phone_number || '',
+                  })
+                }
+              >
+                {isContactInfoCompleteChecker({
+                  email: contactInfo?.contact_email || '',
+                  phone: contactInfo?.phone_number || '',
+                })
+                  ? 'Post Your First Job'
+                  : 'Complete Profile First'}
+              </Button>
+            </Link>
+          </div>
+        );
+      }
+
+      return (
+        <div className='text-center py-8'>
+          <Briefcase className='h-12 w-12 text-gray-300 mx-auto mb-4' />
+          <h3 className='font-roboto text-lg font-semibold text-gray-900 mb-2'>No {activeFilter === 'draft' ? 'drafts' : `${activeFilter.replace('_', ' ')} jobs`}</h3>
+          <p className='font-inter text-gray-600'>
+            {activeFilter === 'draft' ? 'Your saved drafts will appear here.' : `You don't have any ${activeFilter.replace('_', ' ')} jobs yet.`}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className='space-y-4'>
+        {filteredJobs.map((job) => (
+          <div
+            key={job.id}
+            className='bg-white rounded-lg border p-4 hover:shadow-md transition-shadow cursor-pointer'
+            onClick={() => {
+              if (job.status === 'draft') {
+                router.push(`/buyer-dashboard/post-job?draft=${job.id}`);
+              } else {
+                router.push(`/buyer-dashboard/jobs/${job.id}`);
+              }
+            }}
+          >
+            <div className='flex items-start justify-between'>
+              <div className='flex-1'>
+                <div className='flex items-center gap-3 mb-2'>
+                  {job.thumbnail_image && <img src={job.thumbnail_image} alt='Job thumbnail' className='w-12 h-12 rounded-lg object-cover' />}
+                  <div>
+                    <h3 className='font-roboto font-semibold text-gray-900'>{job.title || 'Untitled Job'}</h3>
+                    <p className='font-inter text-sm text-gray-600'>{job.job_type || 'No job type selected'}</p>
+                  </div>
+                </div>
+
+                <div className='flex items-center gap-4 text-sm text-gray-500'>
+                  {job.status !== 'draft' && (
+                    <span className='font-inter'>
+                      {job.bid_count} {job.bid_count === 1 ? 'bid' : 'bids'}
+                    </span>
+                  )}
+                  <span className='font-inter'>
+                    {job.status === 'draft' ? 'Saved' : 'Posted'} {new Date(job.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className='flex items-center gap-2'>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-roboto ${
+                    job.status === 'open'
+                      ? 'bg-green-100 text-green-800'
+                      : job.status === 'draft'
+                      ? 'bg-gray-100 text-gray-800'
+                      : job.status === 'full_bid'
+                      ? 'bg-blue-100 text-blue-800'
+                      : job.status === 'confirmed'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}
+                >
+                  {job.status === 'full_bid' ? 'Full Bids' : job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  if (!user || isLoading || jobsLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -97,6 +233,8 @@ export default function BuyerDashboard() {
 
           {/* Page Content */}
           <div className='p-4 lg:p-8'>
+            {/* ------------------------------------------------------------------------------------------------------------------------------------ */}
+
             {activeSection === 'all-jobs' && (
               <div className='space-y-6'>
                 {/* Stats Cards */}
@@ -140,17 +278,23 @@ export default function BuyerDashboard() {
 
                 {/* Action Buttons */}
                 <div className='flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4'>
-                  <Button variant='outline' className='font-roboto flex items-center justify-center gap-2 w-full lg:w-auto'>
-                    <Archive className='h-4 w-4' />
-                    Saved Drafts
-                  </Button>
+                  {/* Left side - Filter tabs for mobile/desktop */}
+                  <div className='flex gap-2 overflow-x-auto lg:gap-3'>
+                    {filterOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setActiveFilter(option.value as any)}
+                        className={`flex-shrink-0 px-3 py-2 rounded-lg text-sm font-roboto transition-colors ${
+                          activeFilter === option.value ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {option.label} ({option.count})
+                      </button>
+                    ))}
+                  </div>
 
-                  <div className='flex flex-col lg:flex-row gap-3'>
-                    <Button variant='outline' className='font-roboto flex items-center justify-center gap-2 w-full lg:w-auto'>
-                      <Filter className='h-4 w-4' />
-                      Filter Jobs
-                    </Button>
-
+                  {/* Right side - Post Job button */}
+                  <div className='flex-shrink-0'>
                     <Link href='/buyer-dashboard/post-job'>
                       <Button
                         className='font-roboto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 w-full lg:w-auto'
@@ -176,7 +320,7 @@ export default function BuyerDashboard() {
                             phone: contactInfo?.phone_number || '',
                           })
                             ? 'Post Job'
-                            : 'Complete Profile First'}
+                            : 'Complete Profile'}
                         </span>
                       </Button>
                     </Link>
@@ -186,33 +330,17 @@ export default function BuyerDashboard() {
                 {/* Jobs List Area */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className='font-roboto'>Your Posted Jobs</CardTitle>
+                    <CardTitle className='font-roboto'>
+                      {activeFilter === 'all'
+                        ? 'All Jobs'
+                        : activeFilter === 'draft'
+                        ? 'Saved Drafts'
+                        : activeFilter === 'full_bid'
+                        ? 'Jobs with Full Bids'
+                        : `${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Jobs`}
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className='text-center py-8 lg:py-12'>
-                      <Briefcase className='h-12 lg:h-16 w-12 lg:w-16 text-gray-300 mx-auto mb-4' />
-                      <h3 className='font-roboto text-base lg:text-lg font-semibold text-gray-900 mb-2'>No jobs posted yet</h3>
-                      <p className='font-inter text-sm lg:text-base text-gray-600 mb-4 px-4'>Get started by posting your first job to receive bids from contractors.</p>
-                      <Link href='/buyer-dashboard/post-job'>
-                        <Button
-                          className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:w-auto'
-                          disabled={
-                            !isContactInfoCompleteChecker({
-                              email: contactInfo?.contact_email || '',
-                              phone: contactInfo?.phone_number || '',
-                            })
-                          }
-                        >
-                          {isContactInfoCompleteChecker({
-                            email: contactInfo?.contact_email || '',
-                            phone: contactInfo?.phone_number || '',
-                          })
-                            ? 'Post Your First Job'
-                            : 'Complete Profile First'}
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
+                  <CardContent>{renderJobsList()}</CardContent>
                 </Card>
 
                 {/* Warning Banner */}
@@ -226,6 +354,8 @@ export default function BuyerDashboard() {
                 )}
               </div>
             )}
+
+            {/* ------------------------------------------------------------------------------------------------------------------------------------ */}
 
             {activeSection === 'contact-info' && (
               <div className='space-y-6'>
