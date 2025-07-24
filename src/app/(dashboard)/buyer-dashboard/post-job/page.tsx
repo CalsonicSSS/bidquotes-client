@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Send, AlertTriangle, Plus, X } from 'lucide-react';
-import Link from 'next/link';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
@@ -26,8 +25,6 @@ type JobFormData = {
 
 export default function PostJobPage() {
   const router = useRouter();
-  const { userId } = useAuth();
-  const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -180,7 +177,7 @@ export default function PostJobPage() {
     router.back();
   };
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <div className='min-h-screen bg-gray-50'>
