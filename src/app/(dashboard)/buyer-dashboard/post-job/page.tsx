@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Send, Plus, X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createJob, saveJobDraft, type JobFormData } from '@/lib/apis/jobs';
+import { SuccessModal } from '@/components/SuccessModal';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
@@ -25,8 +26,12 @@ export default function PostJobPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof JobFormData, string>>>({});
   const router = useRouter();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successType, setSuccessType] = useState<'job' | 'draft'>('job');
+
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
+
   const [formData, setFormData] = useState<JobFormData>({
     title: '',
     job_type: '',
@@ -36,6 +41,39 @@ export default function PostJobPage() {
     other_requirements: '',
     images: [],
   });
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (hasUnsavedChanges) {
+        const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+        // when user not confirmed (so to stay on the current nav)
+        if (!confirmed) {
+          // Push the current state back to prevent navigation
+          window.history.pushState(null, '', window.location.href);
+        }
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [hasUnsavedChanges]);
+
+  // ------------------------------------------------------------------------------------------------------------
 
   const handleFormInputChange = (field: keyof JobFormData, value: string) => {
     // update form data on any specific field with value change
@@ -62,8 +100,6 @@ export default function PostJobPage() {
       }
     }
   };
-
-  // ------------------------------------------------------------------------------------------------------------
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -118,8 +154,6 @@ export default function PostJobPage() {
   };
 
   // ------------------------------------------------------------------------------------------------------------
-  // TypeScript lets you use typeof to refer to the type of a value or variable
-  // The operator here does not output a string; it produces a type shape matching the value
 
   const createJobMutation = useMutation({
     mutationFn: async (jobData: JobFormData) => {
@@ -128,11 +162,19 @@ export default function PostJobPage() {
       return createJob(jobData, token);
     },
     onSuccess: () => {
-      // Invalidate and refetch buyer jobs data
+      setFormData({
+        title: '',
+        job_type: '',
+        description: '',
+        location_address: '',
+        city: '',
+        other_requirements: '',
+        images: [],
+      });
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
       setHasUnsavedChanges(false);
-      alert('Job posted successfully!');
-      router.push('/buyer-dashboard');
+      setSuccessType('job');
+      setShowSuccessModal(true);
     },
     onError: (error) => {
       console.error('Error posting job:', error);
@@ -147,10 +189,10 @@ export default function PostJobPage() {
       return saveJobDraft(draftData, token);
     },
     onSuccess: () => {
-      // Invalidate and refetch buyer jobs data
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
       setHasUnsavedChanges(false);
-      alert('Draft saved successfully!');
+      setSuccessType('draft');
+      setShowSuccessModal(true);
     },
     onError: (error) => {
       console.error('Error saving draft:', error);
@@ -176,7 +218,7 @@ export default function PostJobPage() {
 
   // ------------------------------------------------------------------------------------------------------------
 
-  // Warn about unsaved changes when navigating away
+  // Warn about unsaved changes when navigating back through button click
   const handleBackNavigation = () => {
     if (hasUnsavedChanges) {
       const confirm = window.confirm('You have unsaved changes. Are you sure you want to leave?');
@@ -185,10 +227,27 @@ export default function PostJobPage() {
     router.back();
   };
 
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    router.push('/buyer-dashboard');
+  };
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <div className='min-h-screen bg-gray-50'>
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title={successType === 'job' ? 'Job Posted Successfully!' : 'Draft Saved Successfully!'}
+        message={
+          successType === 'job'
+            ? 'Your job posting is now live and contractors can start submitting bids.'
+            : 'Your job draft has been saved. You can continue editing it anytime from your dashboard.'
+        }
+        buttonText={successType === 'job' ? 'View Dashboard' : 'Back to Dashboard'}
+        onClose={handleSuccessModalClose}
+      />
       {/* Mobile Header */}
       <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10'>
         <button onClick={handleBackNavigation} className='p-2 rounded-md hover:bg-gray-100'>
