@@ -14,12 +14,19 @@ import { createJob, saveJobDraft, type JobFormData } from '@/lib/apis/jobs';
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
 export default function PostJobPage() {
+  //  Form errors
+  //  keyof is ts specific syntax, as "type operator" used to get the union of the keys of a object type.
+  //  such as: type User = { name: string; age: number; };
+  //  "keyof User" will be "name" | "age"
+
+  //  Partial<Type>: makes all properties in Type optional
+  //  such as: type User = { name: string; age: number; };
+  //  Partial<User> will be { name?: string; age?: number; }
+  const [errors, setErrors] = useState<Partial<Record<keyof JobFormData, string>>>({});
   const router = useRouter();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
-
   const [formData, setFormData] = useState<JobFormData>({
     title: '',
     job_type: '',
@@ -30,22 +37,14 @@ export default function PostJobPage() {
     images: [],
   });
 
-  // Form errors
-  //  keyof is ts specific syntax, as "type operator" used to get the union of the keys of a object type.
-  //  such as: type User = { name: string; age: number; };
-  //  keyof User will be "name" | "age"
-
-  //  Partial<Type>: makes all properties in Type optional
-  //  such as: type User = { name: string; age: number; };
-  //  Partial<User> will be { name?: string; age?: number; }
-  const [errors, setErrors] = useState<Partial<Record<keyof JobFormData, string>>>({});
-
-  const handleInputChange = (field: keyof JobFormData, value: string) => {
-    // update form data on specific field change
+  const handleFormInputChange = (field: keyof JobFormData, value: string) => {
+    // update form data on any specific field with value change
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // set "hasUnsavedChanges" to true
     setHasUnsavedChanges(true);
 
-    // Clear error when user starts typing on specific field
+    // Clear error when user starts typing / valule change on any specific field
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -64,6 +63,8 @@ export default function PostJobPage() {
     }
   };
 
+  // ------------------------------------------------------------------------------------------------------------
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (formData.images.length > 6) {
@@ -75,6 +76,7 @@ export default function PostJobPage() {
       ...prev,
       images: [...prev.images, ...files],
     }));
+
     setHasUnsavedChanges(true);
   };
 
@@ -86,7 +88,9 @@ export default function PostJobPage() {
     setHasUnsavedChanges(true);
   };
 
-  const validateForm = (): boolean => {
+  // ------------------------------------------------------------------------------------------------------------
+
+  const validateRequiredFields = (): boolean => {
     const newErrors: Partial<Record<keyof JobFormData, string>> = {};
 
     if (!formData.title.trim()) {
@@ -99,8 +103,6 @@ export default function PostJobPage() {
 
     if (!formData.description.trim()) {
       newErrors.description = 'Job description is required';
-    } else if (formData.description.trim().length < 20) {
-      newErrors.description = 'Description must be at least 20 characters';
     }
 
     if (!formData.location_address.trim()) {
@@ -115,8 +117,12 @@ export default function PostJobPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // ------------------------------------------------------------------------------------------------------------
+  // TypeScript lets you use typeof to refer to the type of a value or variable
+  // The operator here does not output a string; it produces a type shape matching the value
+
   const createJobMutation = useMutation({
-    mutationFn: async (jobData: typeof formData) => {
+    mutationFn: async (jobData: JobFormData) => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
       return createJob(jobData, token);
@@ -124,6 +130,7 @@ export default function PostJobPage() {
     onSuccess: () => {
       // Invalidate and refetch buyer jobs data
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+      setHasUnsavedChanges(false);
       alert('Job posted successfully!');
       router.push('/buyer-dashboard');
     },
@@ -134,7 +141,7 @@ export default function PostJobPage() {
   });
 
   const saveDraftMutation = useMutation({
-    mutationFn: async (draftData: typeof formData) => {
+    mutationFn: async (draftData: JobFormData) => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
       return saveJobDraft(draftData, token);
@@ -151,39 +158,23 @@ export default function PostJobPage() {
     },
   });
 
-  const handleSaveDraft = async () => {
-    const draftData = {
-      title: formData.title,
-      job_type: formData.job_type,
-      description: formData.description,
-      location_address: formData.location_address,
-      city: formData.city,
-      other_requirements: formData.other_requirements,
-      images: formData.images,
-    };
+  // ------------------------------------------------------------------------------------------------------------
 
-    saveDraftMutation.mutate(draftData);
+  const handleSaveDraft = async () => {
+    saveDraftMutation.mutate(formData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateRequiredFields()) {
       return;
     }
 
-    const jobData = {
-      title: formData.title,
-      job_type: formData.job_type,
-      description: formData.description,
-      location_address: formData.location_address,
-      city: formData.city,
-      other_requirements: formData.other_requirements,
-      images: formData.images,
-    };
-
-    createJobMutation.mutate(jobData);
+    createJobMutation.mutate(formData);
   };
+
+  // ------------------------------------------------------------------------------------------------------------
 
   // Warn about unsaved changes when navigating away
   const handleBackNavigation = () => {
@@ -233,7 +224,7 @@ export default function PostJobPage() {
                 <Input
                   id='title'
                   value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  onChange={(e) => handleFormInputChange('title', e.target.value)}
                   placeholder='e.g., Kitchen Plumbing Repair Needed'
                   className={`font-inter ${errors.title ? 'border-red-500' : ''}`}
                 />
@@ -248,7 +239,7 @@ export default function PostJobPage() {
                 <select
                   id='job_type'
                   value={formData.job_type}
-                  onChange={(e) => handleInputChange('job_type', e.target.value)}
+                  onChange={(e) => handleFormInputChange('job_type', e.target.value)}
                   className={`w-full h-9 px-3 py-1 text-sm border rounded-md font-inter ${errors.job_type ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value=''>Select a job type...</option>
@@ -269,14 +260,11 @@ export default function PostJobPage() {
                 <textarea
                   id='description'
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={(e) => handleFormInputChange('description', e.target.value)}
                   placeholder='Describe your project in detail. Include what needs to be done, current issues, timeline preferences, and any specific requirements...'
                   className={`w-full min-h-32 px-3 py-2 text-sm border rounded-md font-inter resize-y ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
                 />
-                <div className='flex justify-between items-center'>
-                  {errors.description && <p className='font-inter text-sm text-red-600'>{errors.description}</p>}
-                  <p className='font-inter text-xs text-gray-500 ml-auto'>{formData.description.length} characters (minimum 20)</p>
-                </div>
+                <div className='flex justify-between items-center'>{errors.description && <p className='font-inter text-sm text-red-600'>{errors.description}</p>}</div>
               </div>
             </CardContent>
           </Card>
@@ -295,7 +283,7 @@ export default function PostJobPage() {
                 <Input
                   id='location_address'
                   value={formData.location_address}
-                  onChange={(e) => handleInputChange('location_address', e.target.value)}
+                  onChange={(e) => handleFormInputChange('location_address', e.target.value)}
                   placeholder='Enter the full address where work will be done'
                   className={`font-inter ${errors.location_address ? 'border-red-500' : ''}`}
                 />
@@ -311,7 +299,7 @@ export default function PostJobPage() {
                 <Input
                   id='city'
                   value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  onChange={(e) => handleFormInputChange('city', e.target.value)}
                   placeholder='City name'
                   className={`font-inter ${errors.city ? 'border-red-500' : ''}`}
                 />
@@ -335,7 +323,7 @@ export default function PostJobPage() {
                 <textarea
                   id='other_requirements'
                   value={formData.other_requirements}
-                  onChange={(e) => handleInputChange('other_requirements', e.target.value)}
+                  onChange={(e) => handleFormInputChange('other_requirements', e.target.value)}
                   placeholder='Any special requirements, preferred timing, budget considerations, or other important details...'
                   className='w-full min-h-24 px-3 py-2 text-sm border border-gray-300 rounded-md font-inter resize-y'
                 />

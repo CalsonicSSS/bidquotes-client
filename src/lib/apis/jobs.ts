@@ -5,7 +5,7 @@ export type JobFormData = {
   description: string;
   location_address: string;
   city: string;
-  other_requirements?: string;
+  other_requirements: string;
   images: File[];
 };
 
@@ -67,13 +67,13 @@ export type JobDetailResponse = {
 export async function createJob(data: JobFormData, clerkJwt: string): Promise<JobResponse> {
   const formData = new FormData();
 
-  // Add text fields
+  // use append to build the formData class object
   formData.append('title', data.title);
   formData.append('job_type', data.job_type);
   formData.append('description', data.description);
   formData.append('location_address', data.location_address);
   formData.append('city', data.city);
-  formData.append('other_requirements', data.other_requirements || '');
+  formData.append('other_requirements', data.other_requirements);
 
   // Add images if provided
   if (data.images) {
@@ -104,12 +104,12 @@ export async function saveJobDraft(data: JobFormData, clerkJwt: string): Promise
   const formData = new FormData();
 
   // Add text fields (all optional for drafts)
-  formData.append('title', data.title || '');
-  formData.append('job_type', data.job_type || '');
-  formData.append('description', data.description || '');
-  formData.append('location_address', data.location_address || '');
-  formData.append('city', data.city || '');
-  formData.append('other_requirements', data.other_requirements || '');
+  formData.append('title', data.title);
+  formData.append('job_type', data.job_type);
+  formData.append('description', data.description);
+  formData.append('location_address', data.location_address);
+  formData.append('city', data.city);
+  formData.append('other_requirements', data.other_requirements);
 
   // Add images if provided
   if (data.images) {

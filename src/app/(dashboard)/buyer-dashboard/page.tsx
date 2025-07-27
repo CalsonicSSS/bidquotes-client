@@ -24,10 +24,9 @@ export default function BuyerDashboard() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [activeFilter, setActiveFilter] = useState<'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed'>('all');
 
-  // Client side real time redirect logic based on user type
+  // Client side real time redirection based on user type
   useEffect(() => {
     if (user) {
       const userType = user.unsafeMetadata?.userType;
@@ -61,7 +60,7 @@ export default function BuyerDashboard() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-      return getBuyerJobs(token); // Get all jobs, we'll filter on frontend
+      return getBuyerJobs(token); // Get all jobs, we'll filter on frontend in real time instead of re-fetching from backend
     },
     enabled: !!userId,
   });
@@ -75,7 +74,7 @@ export default function BuyerDashboard() {
     return job.status === activeFilter;
   });
 
-  // Directly Calculate stats from all jobs in real time
+  // Directly Calculate all 4 stats for stats cards from all jobs in real time
   const stats = {
     activeJobs: allJobs.filter((job) => job.status === 'open' || job.status === 'full_bid').length,
     totalBids: allJobs.reduce((total, job) => total + job.bid_count, 0),
@@ -210,7 +209,7 @@ export default function BuyerDashboard() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Contact Info Modal */}
+      {/* Contact Info Modal Popup */}
       <BuyerContactInfoModal
         isOpen={
           !isContactInfoCompleteChecker({
@@ -342,16 +341,6 @@ export default function BuyerDashboard() {
                   </CardHeader>
                   <CardContent>{renderJobsList()}</CardContent>
                 </Card>
-
-                {/* Warning Banner */}
-                {!isContactInfoCompleteChecker({
-                  email: contactInfo?.contact_email || '',
-                  phone: contactInfo?.phone_number || '',
-                }) && (
-                  <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
-                    <p className='font-inter text-sm lg:text-base text-red-800'>⚠️ Please complete your contact information to start posting jobs.</p>
-                  </div>
-                )}
               </div>
             )}
 
