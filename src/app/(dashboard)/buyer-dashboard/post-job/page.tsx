@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,9 @@ export default function PostJobPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successType, setSuccessType] = useState<'job' | 'draft'>('job');
 
+  const hasPushed = useRef(false);
+  const blockPop = useRef(true); // controls blocking behavior
+
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
 
@@ -42,6 +45,7 @@ export default function PostJobPage() {
     images: [],
   });
 
+  // Browser navigation protection
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -51,14 +55,24 @@ export default function PostJobPage() {
       }
     };
 
-    const handlePopState = (e: PopStateEvent) => {
-      if (hasUnsavedChanges) {
+    if (!hasPushed.current) {
+      window.history.pushState(null, '', window.location.href);
+      hasPushed.current = true;
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (blockPop.current && hasUnsavedChanges) {
         const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
-        // when user not confirmed (so to stay on the current nav)
-        if (!confirmed) {
-          // Push the current state back to prevent navigation
+        if (confirmed) {
+          blockPop.current = false;
+          router.back(); // Try to go back again, but this time allow it
+        } else {
+          // Re-push once to retain position — no loop
           window.history.pushState(null, '', window.location.href);
         }
+      } else {
+        // Allow navigation without prompt
+        router.back();
       }
     };
 
@@ -71,7 +85,7 @@ export default function PostJobPage() {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges, router]);
 
   // ------------------------------------------------------------------------------------------------------------
 
@@ -224,7 +238,7 @@ export default function PostJobPage() {
       const confirm = window.confirm('You have unsaved changes. Are you sure you want to leave?');
       if (!confirm) return;
     }
-    router.back();
+    router.push('/buyer-dashboard');
   };
 
   const handleSuccessModalClose = () => {
@@ -259,7 +273,6 @@ export default function PostJobPage() {
 
       <div className='container mx-auto px-4 py-6 max-w-4xl'>
         {/* Desktop Header */}
-
         <div className='hidden lg:block mb-8'>
           <div className='flex justify-between items-center'>
             <h1 className='font-roboto text-3xl font-bold text-gray-900 '>Post New Job</h1>
