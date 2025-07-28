@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // this afterSignOutUrl is to configured for auto redirect to home page after user signs out through the UserButton component
     <ClerkProvider afterSignOutUrl='/'>
       <html lang='en'>
-        <body className={`${roboto.variable} ${inter.variable} antialiased`}>
+        <body className={`${roboto.variable} ${inter.variable} antialiased`} cz-shortcut-listen='true'>
           <QueryProvider>{children}</QueryProvider>
         </body>
       </html>

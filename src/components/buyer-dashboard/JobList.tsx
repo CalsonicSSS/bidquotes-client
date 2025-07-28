@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Briefcase, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { JobCardResponse } from '@/lib/apis/jobs';
+import { truncate } from '@/lib/utils/custom-format';
 
 type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
 
@@ -60,7 +61,7 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
         >
           <div className='flex h-full relative'>
             {/* Image Section - Left side, full height, square */}
-            <div className='w-32 h-full bg-gray-100 flex-shrink-0 relative'>
+            <div className='w-24 lg:w-32 h-full bg-gray-100 flex-shrink-0 relative'>
               {job.thumbnail_image ? (
                 <Image src={job.thumbnail_image} alt='Job thumbnail' fill className='object-cover' quality={100} />
               ) : (
@@ -96,11 +97,11 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
                 {' '}
                 {/* Add padding to avoid overlap with status badge */}
                 <h3 className='font-roboto font-semibold text-gray-900 text-sm line-clamp-2 leading-tight'>{job.title || 'Untitled Job'}</h3>
-                <p className='font-inter text-xs font-medium text-gray-600 mt-1'>Type: {job.job_type}</p>
+                <p className='font-inter text-xs text-gray-600 mt-1'>{job.job_type || 'No job type selected'}</p>
               </div>
 
               {/* Bottom row - Date and bids */}
-              <div className='flex items-center justify-between text-sm font-medium text-gray-500 font-inter'>
+              <div className='flex items-center justify-between text-xs lg:text-sm font-medium text-gray-500 font-inter'>
                 <span>
                   {job.status === 'draft' ? 'Saved' : 'Posted'} {new Date(job.created_at).toLocaleDateString()}
                 </span>

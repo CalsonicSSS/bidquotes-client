@@ -31,3 +31,9 @@ export function formatPhoneInput(value: string): string {
 export function getCleanPhoneNumber(phone: string): string {
   return phone.replace(/\D/g, '');
 }
+
+// truncate text
+export function truncate(str: string, max = 35) {
+  if (!str) return '';
+  return str.length > max ? str.slice(0, max) + '...' : str;
+}
