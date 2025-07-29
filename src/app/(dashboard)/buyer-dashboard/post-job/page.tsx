@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Send, Plus, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createJob, saveJobDraft, getJobDetail, updateJob, type JobFormData } from '@/lib/apis/jobs';
 import { SuccessModal } from '@/components/SuccessModal';
+import { LocationSection } from '@/components/buyer-dashboard/LocationSection';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
@@ -19,19 +20,11 @@ export default function PostJobPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftId = searchParams.get('draft');
-  const isEditingDraft = !!draftId;
+  const isEditingDraft = !!draftId; // this is to double negate the boolean
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successType, setSuccessType] = useState<'job' | 'draft'>('job');
-  const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
-
-  // Address autocomplete refs and state
-  const addressInputRef = useRef<HTMLInputElement>(null);
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
-  const [suggestions, setSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const hasPushed = useRef(false);
   const blockPop = useRef(true);
@@ -48,39 +41,6 @@ export default function PostJobPage() {
     other_requirements: '',
     images: [],
   });
-
-  // Load Google Maps script manually
-  useEffect(() => {
-    const loadGoogleMaps = () => {
-      if (window.google && window.google.maps) {
-        setIsGoogleMapsLoaded(true);
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setIsGoogleMapsLoaded(true);
-      };
-      document.head.appendChild(script);
-    };
-
-    loadGoogleMaps();
-  }, []);
-
-  // Initialize Google Places services when loaded
-  useEffect(() => {
-    if (isGoogleMapsLoaded && window.google) {
-      autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-
-      // Create a hidden map for PlacesService (requirement for Places API)
-      const mapDiv = document.createElement('div');
-      const map = new google.maps.Map(mapDiv);
-      placesServiceRef.current = new google.maps.places.PlacesService(map);
-    }
-  }, [isGoogleMapsLoaded]);
 
   // Fetch draft data if editing
   const { data: draftData, isLoading: isDraftLoading } = useQuery({
@@ -153,104 +113,19 @@ export default function PostJobPage() {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-
-    // Handle address autocomplete
-    if (field === 'location_address' && value.length > 2 && autocompleteServiceRef.current) {
-      autocompleteServiceRef.current.getPlacePredictions(
-        {
-          input: value,
-          componentRestrictions: { country: 'ca' },
-          types: ['address'],
-        },
-        (predictions, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-            setSuggestions(predictions);
-            setShowSuggestions(true);
-          } else {
-            setSuggestions([]);
-            setShowSuggestions(false);
-          }
-        }
-      );
-    } else if (field === 'location_address' && value.length <= 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
   };
 
-  const handleSuggestionClick = (suggestion: google.maps.places.AutocompletePrediction) => {
-    if (!placesServiceRef.current) return;
+  const handleLocationChange = (locationData: Partial<{ location_address: string; city: string }>) => {
+    setFormData((prev) => ({ ...prev, ...locationData }));
+    setHasUnsavedChanges(true);
 
-    // Get place details
-    placesServiceRef.current.getDetails(
-      {
-        placeId: suggestion.place_id,
-        fields: ['formatted_address', 'address_components', 'geometry'],
-      },
-      (place, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-          console.log('Place details:', place);
-          console.log('Address components:', place.address_components);
-
-          setFormData((prev) => ({
-            ...prev,
-            location_address: place.formatted_address || suggestion.description,
-          }));
-
-          // Extract city from address components - Enhanced for Canadian addresses
-          let cityName = '';
-
-          if (place.address_components) {
-            // Log all components for debugging
-            place.address_components.forEach((component, index) => {
-              console.log(`Component ${index}:`, component.long_name, component.types);
-            });
-
-            // Priority order for Canadian addresses:
-            // 1. sublocality_level_1 (neighborhoods like North York, Scarborough)
-            // 2. neighborhood (smaller areas)
-            // 3. locality (main city)
-            // 4. administrative_area_level_2 (broader region)
-
-            const sublocalityComponent = place.address_components.find((component) => component.types.includes('sublocality_level_1') || component.types.includes('sublocality'));
-
-            const neighborhoodComponent = place.address_components.find((component) => component.types.includes('neighborhood'));
-
-            const localityComponent = place.address_components.find((component) => component.types.includes('locality'));
-
-            const adminLevel2Component = place.address_components.find((component) => component.types.includes('administrative_area_level_2'));
-
-            // Use the most specific available (prioritizing sublocality for Toronto area)
-            if (sublocalityComponent && sublocalityComponent.long_name !== 'Toronto') {
-              cityName = sublocalityComponent.long_name;
-              console.log('Using sublocality:', cityName);
-            } else if (neighborhoodComponent) {
-              cityName = neighborhoodComponent.long_name;
-              console.log('Using neighborhood:', cityName);
-            } else if (localityComponent) {
-              cityName = localityComponent.long_name;
-              console.log('Using locality:', cityName);
-            } else if (adminLevel2Component) {
-              cityName = adminLevel2Component.long_name;
-              console.log('Using admin level 2:', cityName);
-            }
-          }
-
-          console.log('Final city name:', cityName);
-
-          if (cityName) {
-            setFormData((prev) => ({
-              ...prev,
-              city: cityName,
-            }));
-          }
-
-          setHasUnsavedChanges(true);
-          setSuggestions([]);
-          setShowSuggestions(false);
-        }
-      }
-    );
+    // Clear location-related errors
+    if (locationData.location_address && errors.location_address) {
+      setErrors((prev) => ({ ...prev, location_address: undefined }));
+    }
+    if (locationData.city && errors.city) {
+      setErrors((prev) => ({ ...prev, city: undefined }));
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -366,24 +241,14 @@ export default function PostJobPage() {
     router.push('/buyer-dashboard');
   };
 
-  // Show loading while fetching draft or loading Google Maps
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Show loading while fetching draft
   if (isEditingDraft && isDraftLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
           <p className='font-inter text-gray-600'>Loading draft...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isGoogleMapsLoaded) {
-    return (
-      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
-        <div className='text-center'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-          <p className='font-inter text-gray-600'>Loading Google Maps...</p>
         </div>
       </div>
     );
@@ -484,64 +349,18 @@ export default function PostJobPage() {
             </CardContent>
           </Card>
 
-          {/* Location Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='font-roboto'>Location</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-6'>
-              {/* Address with Autocomplete */}
-              <div className='space-y-2 relative'>
-                <Label htmlFor='location_address' className='font-roboto'>
-                  Job Address <span className='text-red-500'>*</span>
-                </Label>
-                <Input
-                  ref={addressInputRef}
-                  id='location_address'
-                  value={formData.location_address}
-                  onChange={(e) => handleFormInputChange('location_address', e.target.value)}
-                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  placeholder='Start typing your address...'
-                  className={`font-inter ${errors.location_address ? 'border-red-500' : ''}`}
-                />
-
-                {/* Autocomplete Suggestions */}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className='absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto'>
-                    {suggestions.map((suggestion, index) => (
-                      <div
-                        key={suggestion.place_id}
-                        className='px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm font-inter border-b border-gray-100 last:border-b-0'
-                        onClick={() => handleSuggestionClick(suggestion)}
-                      >
-                        <div className='font-medium'>{suggestion.structured_formatting.main_text}</div>
-                        <div className='text-gray-500 text-xs'>{suggestion.structured_formatting.secondary_text}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {errors.location_address && <p className='font-inter text-sm text-red-600'>{errors.location_address}</p>}
-                <p className='font-inter text-xs text-gray-500'>This address will be shared with selected contractors only</p>
-              </div>
-
-              {/* City */}
-              <div className='space-y-2'>
-                <Label htmlFor='city' className='font-roboto'>
-                  City <span className='text-red-500'>*</span>
-                </Label>
-                <Input
-                  id='city'
-                  value={formData.city}
-                  onChange={(e) => handleFormInputChange('city', e.target.value)}
-                  placeholder='City name'
-                  className={`font-inter ${errors.city ? 'border-red-500' : ''}`}
-                />
-                {errors.city && <p className='font-inter text-sm text-red-600'>{errors.city}</p>}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Location Section - Now using the extracted component */}
+          <LocationSection
+            locationData={{
+              location_address: formData.location_address,
+              city: formData.city,
+            }}
+            onLocationChange={handleLocationChange}
+            errors={{
+              location_address: errors.location_address,
+              city: errors.city,
+            }}
+          />
 
           {/* Additional Information */}
           <Card>
