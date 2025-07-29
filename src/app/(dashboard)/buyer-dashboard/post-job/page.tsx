@@ -11,7 +11,7 @@ import { ArrowLeft, Save, Send, Plus, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createJob, saveJobDraft, getJobDetail, updateJob, type JobFormData } from '@/lib/apis/jobs';
 import { SuccessModal } from '@/components/SuccessModal';
-import { LocationSection } from '@/components/buyer-dashboard/LocationSection';
+import { LocationSection } from '@/components/buyer-dashboard/Forms/LocationSection';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
@@ -19,8 +19,6 @@ export default function PostJobPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof JobFormData, string>>>({});
   const router = useRouter();
   const searchParams = useSearchParams();
-  const draftId = searchParams.get('draft');
-  const isEditingDraft = !!draftId; // this is to double negate the boolean
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -42,31 +40,37 @@ export default function PostJobPage() {
     images: [],
   });
 
-  // Fetch draft data if editing
-  const { data: draftData, isLoading: isDraftLoading } = useQuery({
+  // identify if this is draft or new post creation
+  const draftId = searchParams.get('draft');
+  const isEditingDraft = !!draftId; // this is to double negate the boolean
+
+  // ----------------------------------------------------------------------------------------------------------
+
+  // Fetch draft data if this is editing draft case
+  const { data: existingDraftData, isLoading: isDraftLoading } = useQuery({
     queryKey: ['job-detail', draftId],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !draftId) throw new Error('No token or draft ID available');
+      if (!token || !draftId) throw new Error('No token or existing draft ID available');
       return getJobDetail(draftId, token);
     },
     enabled: !!draftId && !!getToken,
   });
 
-  // Pre-populate form when draft data loads
+  // Pre-populate form field data if this is the draft case
   useEffect(() => {
-    if (draftData && isEditingDraft) {
+    if (existingDraftData && isEditingDraft) {
       setFormData({
-        title: draftData.title || '',
-        job_type: draftData.job_type || '',
-        description: draftData.description || '',
-        location_address: draftData.location_address || '',
-        city: draftData.city || '',
-        other_requirements: draftData.other_requirements || '',
-        images: [],
+        title: existingDraftData.title || '',
+        job_type: existingDraftData.job_type || '',
+        description: existingDraftData.description || '',
+        location_address: existingDraftData.location_address || '',
+        city: existingDraftData.city || '',
+        other_requirements: existingDraftData.other_requirements || '',
+        images: [], // this needs update
       });
     }
-  }, [draftData, isEditingDraft]);
+  }, [existingDraftData, isEditingDraft]);
 
   // Browser navigation protection
   useEffect(() => {
@@ -106,10 +110,13 @@ export default function PostJobPage() {
     };
   }, [hasUnsavedChanges, router]);
 
+  // ------------------------------------------------------------------------------------------------------------------
+
   const handleFormInputChange = (field: keyof JobFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
 
+    // Clear corresponding field errors upon value change
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -119,7 +126,7 @@ export default function PostJobPage() {
     setFormData((prev) => ({ ...prev, ...locationData }));
     setHasUnsavedChanges(true);
 
-    // Clear location-related errors
+    // Clear location-related errors field upon value change
     if (locationData.location_address && errors.location_address) {
       setErrors((prev) => ({ ...prev, location_address: undefined }));
     }
@@ -162,6 +169,8 @@ export default function PostJobPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  // ----------------------------------------------------------------------------------------------------------------------
 
   const createJobMutation = useMutation({
     mutationFn: async (jobData: JobFormData) => {
@@ -218,11 +227,13 @@ export default function PostJobPage() {
     },
   });
 
+  // ------------------------------------------------------------------------------------------------------------------------
+
   const handleSaveDraft = async () => {
     saveDraftMutation.mutate(formData);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleJobSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateRequiredFields()) return;
     createJobMutation.mutate(formData);
@@ -289,7 +300,7 @@ export default function PostJobPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className='space-y-6'>
+        <form onSubmit={handleJobSubmit} className='space-y-6'>
           {/* Basic Job Information */}
           <Card>
             <CardHeader>
