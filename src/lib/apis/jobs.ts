@@ -136,7 +136,7 @@ export async function saveJobDraft(data: JobFormData, clerkJwt: string): Promise
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function updateJob(jobId: string, data: Partial<JobFormData>, clerkJwt: string): Promise<JobResponse> {
+export async function updateJob(jobId: string, data: Partial<JobFormData>, clerkJwt: string, isDraftPost: boolean): Promise<JobResponse> {
   const formData = new FormData();
 
   // Add only provided fields
@@ -154,7 +154,10 @@ export async function updateJob(jobId: string, data: Partial<JobFormData>, clerk
     });
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}`, {
+  const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}`;
+  const url = isDraftPost ? `${baseUrl}?is-draft-post=true` : baseUrl;
+
+  const response = await fetch(url, {
     method: 'PUT',
     headers: {
       Authorization: `Bearer ${clerkJwt}`,

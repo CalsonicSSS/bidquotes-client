@@ -52,6 +52,7 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
           key={job.id}
           className='bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer overflow-hidden h-32'
           onClick={() => {
+            // important differentiation between draft and non-draft job type
             if (job.status === 'draft') {
               router.push(`/buyer-dashboard/post-job?draft=${job.id}`);
             } else {

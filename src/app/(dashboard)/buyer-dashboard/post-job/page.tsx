@@ -180,7 +180,7 @@ export default function PostJobPage() {
 
       // very important: distinguish if this is either job posting or draft posting (essentially updates)
       if (isEditingDraft && draftId) {
-        return updateJob(draftId, jobData, token);
+        return updateJob(draftId, jobData, token, true);
       } else {
         return createJob(jobData, token);
       }
@@ -213,7 +213,7 @@ export default function PostJobPage() {
 
       // very important: distinguish if this is the first time draft save or its the continuous updates for the existing draft
       if (isEditingDraft && draftId) {
-        return updateJob(draftId, draftData, token);
+        return updateJob(draftId, draftData, token, false);
       } else {
         return saveJobDraft(draftData, token);
       }
