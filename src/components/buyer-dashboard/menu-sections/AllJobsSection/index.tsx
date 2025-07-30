@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { JobCardResponse } from '@/lib/apis/jobs';
-import { JobsActions } from '../JobActions';
-import { StatsCards } from '../StatsCards';
-import { JobsList } from '../JobList';
+import { JobsActions } from './JobActions';
+import { StatsCards } from './StatsCards';
+import { JobsList } from './JobList';
 
 type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
 

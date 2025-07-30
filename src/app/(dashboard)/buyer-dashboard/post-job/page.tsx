@@ -11,7 +11,7 @@ import { ArrowLeft, Save, Send, Plus, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createJob, saveJobDraft, getJobDetail, updateJob, type JobFormData } from '@/lib/apis/jobs';
 import { SuccessModal } from '@/components/SuccessModal';
-import { LocationSection } from '@/components/buyer-dashboard/Forms/LocationSection';
+import { LocationSection } from '@/components/buyer-dashboard/forms/LocationSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
@@ -43,49 +43,50 @@ export default function PostJobPage() {
   });
 
   // identify if this is draft or new post creation
-  const draftId = searchParams.get('draft');
-  const isEditingDraft = !!draftId; // this is to double negate the boolean
+  const jobId = searchParams.get('draft') || searchParams.get('edit');
+  const isEditingDraft = !!searchParams.get('draft');
+  const isEditingJob = !!searchParams.get('edit');
+  const isEditing = isEditingDraft || isEditingJob;
 
   // ----------------------------------------------------------------------------------------------------------
 
   // Fetch draft data if this is editing draft case
-  const { data: existingDraftData, isLoading: isDraftLoading } = useQuery({
-    queryKey: ['job-detail', draftId],
+  const { data: existingJobData, isLoading: isJobLoading } = useQuery({
+    queryKey: ['job-detail', jobId],
     queryFn: async () => {
       const token = await getToken();
-      if (!token || !draftId) throw new Error('No token or existing draft ID available');
-      return getJobDetail(draftId, token);
+      if (!token || !jobId) throw new Error('No token or job ID available');
+      return getJobDetail(jobId, token);
     },
     staleTime: 0,
-    enabled: !!draftId && !!getToken,
+    enabled: !!jobId && !!getToken,
   });
 
   // Pre-populate form field data if this is the draft case
   useEffect(() => {
-    const loadDraftData = async () => {
-      if (existingDraftData && isEditingDraft) {
-        // Pre-populate text fields (existing logic)
+    const loadJobData = async () => {
+      if (existingJobData && isEditing) {
+        // Pre-populate text fields
         setFormData({
-          title: existingDraftData.title || '',
-          job_type: existingDraftData.job_type || '',
-          description: existingDraftData.description || '',
-          location_address: existingDraftData.location_address || '',
-          city: existingDraftData.city || '',
-          other_requirements: existingDraftData.other_requirements || '',
-          images: [], // Will be populated below
+          title: existingJobData.title || '',
+          job_type: existingJobData.job_type || '',
+          description: existingJobData.description || '',
+          location_address: existingJobData.location_address || '',
+          city: existingJobData.city || '',
+          other_requirements: existingJobData.other_requirements || '',
+          images: [],
         });
 
         // Load existing images if any
-        if (existingDraftData.images && existingDraftData.images.length > 0) {
+        if (existingJobData.images && existingJobData.images.length > 0) {
           setIsLoadingImages(true);
           try {
-            const existingImageFiles = await convertImageUrlsToFiles(existingDraftData.images);
+            const existingImageFiles = await convertImageUrlsToFiles(existingJobData.images);
             setFormData((prev) => ({
               ...prev,
               images: existingImageFiles,
             }));
-
-            console.log(`✅ Loaded ${existingImageFiles.length} existing images for draft`);
+            console.log(`✅ Loaded ${existingImageFiles.length} existing images`);
           } catch (error) {
             console.error('Error loading existing images:', error);
           } finally {
@@ -95,8 +96,8 @@ export default function PostJobPage() {
       }
     };
 
-    loadDraftData();
-  }, [existingDraftData, isEditingDraft]);
+    loadJobData();
+  }, [existingJobData, isEditing]);
 
   // Browser navigation protection
   useEffect(() => {
@@ -204,9 +205,9 @@ export default function PostJobPage() {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
 
-      // very important: distinguish if this is either job posting or draft posting (essentially updates)
-      if (isEditingDraft && draftId) {
-        return updateJob(draftId, jobData, token, true);
+      // very important: distinguish if this is either first job posting or existing draft to posting (essentially updates)
+      if (isEditingDraft && jobId) {
+        return updateJob(jobId, jobData, token, true);
       } else {
         return createJob(jobData, token);
       }
@@ -238,8 +239,8 @@ export default function PostJobPage() {
       if (!token) throw new Error('Unable to get authentication token');
 
       // very important: distinguish if this is the first time draft save or its the continuous updates for the existing draft
-      if (isEditingDraft && draftId) {
-        return updateJob(draftId, draftData, token, false);
+      if (isEditingDraft && jobId) {
+        return updateJob(jobId, draftData, token, false);
       } else {
         return saveJobDraft(draftData, token);
       }
@@ -284,12 +285,12 @@ export default function PostJobPage() {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading while fetching draft
 
-  if (isEditingDraft && (isDraftLoading || isLoadingImages)) {
+  if (isEditingDraft && (isJobLoading || isLoadingImages)) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-          <p className='font-inter text-gray-600'>{isDraftLoading ? 'Loading draft...' : 'Loading images...'}</p>
+          <p className='font-inter text-gray-600'>{isJobLoading ? 'Loading draft...' : 'Loading images...'}</p>
         </div>
       </div>
     );

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle } from 'lucide-react';
 import { formatPhoneDisplay } from '@/lib/utils/custom-format';
-import { UpdateContactInfoModal } from '../UpdateContactInfoModal';
+import { UpdateContactInfoModal } from './UpdateContactInfoModal';
 
 type ContactInfo = {
   id: string;
