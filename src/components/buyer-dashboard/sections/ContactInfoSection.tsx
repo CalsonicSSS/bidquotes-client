@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle } from 'lucide-react';
 import { formatPhoneDisplay } from '@/lib/utils/custom-format';
+import { UpdateContactInfoModal } from '../UpdateContactInfoModal';
 
 type ContactInfo = {
   id: string;
@@ -14,16 +16,38 @@ type ContactInfo = {
 
 type ContactInfoSectionProps = {
   contactInfo: ContactInfo | null | undefined;
+  onContactInfoUpdated: () => void;
 };
 
-export function ContactInfoSection({ contactInfo }: ContactInfoSectionProps) {
+export function ContactInfoSection({ contactInfo, onContactInfoUpdated }: ContactInfoSectionProps) {
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  const handleUpdateClick = () => {
+    setShowUpdateModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowUpdateModal(false);
+  };
+
+  const handleContactInfoUpdated = () => {
+    onContactInfoUpdated();
+  };
+
   return (
     <div className='space-y-6'>
       <h2 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900 hidden lg:block'>Contact Information</h2>
 
       <Card className='lg:max-w-2xl'>
         <CardHeader>
-          <CardTitle className='font-roboto'>Your Contact Details</CardTitle>
+          <CardTitle className='font-roboto flex items-center justify-between'>
+            <span>Your Contact Details</span>
+            {contactInfo && (
+              <Button onClick={handleUpdateClick} size='sm' className='font-roboto text-sm px-5 bg-blue-600 hover:bg-blue-700 hidden lg:inline-flex'>
+                Update
+              </Button>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {contactInfo ? (
@@ -36,7 +60,12 @@ export function ContactInfoSection({ contactInfo }: ContactInfoSectionProps) {
                 <label className='font-roboto text-sm font-semibold text-gray-700'>Phone Number</label>
                 <p className='font-inter text-gray-900 mt-1'>{formatPhoneDisplay(contactInfo.phone_number)}</p>
               </div>
-              <Button className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:w-auto'>Update Contact Info</Button>
+              <div className='pt-2'>
+                <p className='font-inter text-xs text-gray-500 mb-3'>Last updated: {new Date(contactInfo.updated_at).toLocaleDateString()}</p>
+                <Button onClick={handleUpdateClick} className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:hidden'>
+                  Update Contact Info
+                </Button>
+              </div>
             </div>
           ) : (
             <div className='text-center py-6 lg:py-8'>
@@ -47,6 +76,9 @@ export function ContactInfoSection({ contactInfo }: ContactInfoSectionProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Update Contact Info Modal */}
+      {contactInfo && <UpdateContactInfoModal isOpen={showUpdateModal} onClose={handleModalClose} currentContactInfo={contactInfo} onUpdated={handleContactInfoUpdated} />}
     </div>
   );
 }

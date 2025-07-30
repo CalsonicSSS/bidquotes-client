@@ -111,6 +111,20 @@ export default function PostJobPage() {
   }, [hasUnsavedChanges, router]);
 
   // ------------------------------------------------------------------------------------------------------------------
+  // form input logic and input error handling
+
+  const validateRequiredFields = (): boolean => {
+    const newErrors: Partial<Record<keyof JobFormData, string>> = {};
+
+    if (!formData.title.trim()) newErrors.title = 'Job title is required';
+    if (!formData.job_type) newErrors.job_type = 'Please select a job type';
+    if (!formData.description.trim()) newErrors.description = 'Job description is required';
+    if (!formData.location_address.trim()) newErrors.location_address = 'Job address is required';
+    if (!formData.city.trim()) newErrors.city = 'City is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleFormInputChange = (field: keyof JobFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -157,19 +171,6 @@ export default function PostJobPage() {
     setHasUnsavedChanges(true);
   };
 
-  const validateRequiredFields = (): boolean => {
-    const newErrors: Partial<Record<keyof JobFormData, string>> = {};
-
-    if (!formData.title.trim()) newErrors.title = 'Job title is required';
-    if (!formData.job_type) newErrors.job_type = 'Please select a job type';
-    if (!formData.description.trim()) newErrors.description = 'Job description is required';
-    if (!formData.location_address.trim()) newErrors.location_address = 'Job address is required';
-    if (!formData.city.trim()) newErrors.city = 'City is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   // ----------------------------------------------------------------------------------------------------------------------
 
   const createJobMutation = useMutation({
@@ -177,6 +178,7 @@ export default function PostJobPage() {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
 
+      // very important: distinguish if this is either job posting or draft posting (essentially updates)
       if (isEditingDraft && draftId) {
         return updateJob(draftId, jobData, token);
       } else {
@@ -209,6 +211,7 @@ export default function PostJobPage() {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
 
+      // very important: distinguish if this is the first time draft save or its the continuous updates for the existing draft
       if (isEditingDraft && draftId) {
         return updateJob(draftId, draftData, token);
       } else {
@@ -254,6 +257,7 @@ export default function PostJobPage() {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading while fetching draft
+
   if (isEditingDraft && isDraftLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>

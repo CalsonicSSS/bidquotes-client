@@ -36,7 +36,7 @@ export default function BuyerDashboard() {
   const {
     data: contactInfo,
     isLoading,
-    refetch,
+    refetch: refetchContactInfo,
   } = useQuery({
     queryKey: ['buyer-contact-info'],
     queryFn: async () => {
@@ -63,7 +63,11 @@ export default function BuyerDashboard() {
   });
 
   const handleContactInfoSaved = () => {
-    refetch();
+    refetchContactInfo();
+  };
+
+  const handleContactInfoUpdated = () => {
+    refetchContactInfo();
   };
 
   // Check if user can post jobs (contact info complete)
@@ -102,7 +106,7 @@ export default function BuyerDashboard() {
           <div className='p-4 lg:p-8'>
             {activeSection === 'all-jobs' && <AllJobsSection allJobs={allJobs} canPostJob={canPostJob} />}
 
-            {activeSection === 'contact-info' && <ContactInfoSection contactInfo={contactInfo} />}
+            {activeSection === 'contact-info' && <ContactInfoSection contactInfo={contactInfo} onContactInfoUpdated={handleContactInfoUpdated} />}
           </div>
         </div>
       </div>
