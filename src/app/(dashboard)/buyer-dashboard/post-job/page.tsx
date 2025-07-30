@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createJob, saveJobDraft, getJobDetail, updateJob, type JobFormData } from '@/lib/apis/jobs';
 import { SuccessModal } from '@/components/SuccessModal';
 import { LocationSection } from '@/components/buyer-dashboard/Forms/LocationSection';
+import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
@@ -22,6 +23,7 @@ export default function PostJobPage() {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [successType, setSuccessType] = useState<'job' | 'draft'>('job');
 
   const hasPushed = useRef(false);
@@ -54,22 +56,46 @@ export default function PostJobPage() {
       if (!token || !draftId) throw new Error('No token or existing draft ID available');
       return getJobDetail(draftId, token);
     },
+    staleTime: 0,
     enabled: !!draftId && !!getToken,
   });
 
   // Pre-populate form field data if this is the draft case
   useEffect(() => {
-    if (existingDraftData && isEditingDraft) {
-      setFormData({
-        title: existingDraftData.title || '',
-        job_type: existingDraftData.job_type || '',
-        description: existingDraftData.description || '',
-        location_address: existingDraftData.location_address || '',
-        city: existingDraftData.city || '',
-        other_requirements: existingDraftData.other_requirements || '',
-        images: [], // this needs update
-      });
-    }
+    const loadDraftData = async () => {
+      if (existingDraftData && isEditingDraft) {
+        // Pre-populate text fields (existing logic)
+        setFormData({
+          title: existingDraftData.title || '',
+          job_type: existingDraftData.job_type || '',
+          description: existingDraftData.description || '',
+          location_address: existingDraftData.location_address || '',
+          city: existingDraftData.city || '',
+          other_requirements: existingDraftData.other_requirements || '',
+          images: [], // Will be populated below
+        });
+
+        // Load existing images if any
+        if (existingDraftData.images && existingDraftData.images.length > 0) {
+          setIsLoadingImages(true);
+          try {
+            const existingImageFiles = await convertImageUrlsToFiles(existingDraftData.images);
+            setFormData((prev) => ({
+              ...prev,
+              images: existingImageFiles,
+            }));
+
+            console.log(`✅ Loaded ${existingImageFiles.length} existing images for draft`);
+          } catch (error) {
+            console.error('Error loading existing images:', error);
+          } finally {
+            setIsLoadingImages(false);
+          }
+        }
+      }
+    };
+
+    loadDraftData();
   }, [existingDraftData, isEditingDraft]);
 
   // Browser navigation protection
@@ -258,12 +284,12 @@ export default function PostJobPage() {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading while fetching draft
 
-  if (isEditingDraft && isDraftLoading) {
+  if (isEditingDraft && (isDraftLoading || isLoadingImages)) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-          <p className='font-inter text-gray-600'>Loading draft...</p>
+          <p className='font-inter text-gray-600'>{isDraftLoading ? 'Loading draft...' : 'Loading images...'}</p>
         </div>
       </div>
     );
@@ -422,7 +448,7 @@ export default function PostJobPage() {
                 {formData.images.length > 0 && (
                   <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
                     {formData.images.map((file, index) => (
-                      <div key={index} className='relative group'>
+                      <div key={`${file.name}-${index}`} className='relative group'>
                         <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className='w-full h-24 object-cover rounded-lg border' />
                         <button
                           type='button'

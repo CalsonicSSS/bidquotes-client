@@ -230,7 +230,7 @@ export function LocationSection({ locationData, onLocationChange, errors, isLoad
         {/* City */}
         <div className='space-y-2'>
           <Label htmlFor='city' className='font-roboto'>
-            City <span className='text-red-500'>*</span>
+            City & Region <span className='text-red-500'>*</span>
           </Label>
           <Input
             id='city'
