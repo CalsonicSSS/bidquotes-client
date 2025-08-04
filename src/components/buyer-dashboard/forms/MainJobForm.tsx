@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Send, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Send, Plus, X, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createJob, saveJobDraft, getJobDetail, updateJob, type JobFormData } from '@/lib/apis/jobs';
+import { createJob, saveJobDraft, getJobDetail, updateJob, deleteJob, type JobFormData } from '@/lib/apis/jobs';
 import { SuccessModal } from '@/components/SuccessModal';
 import { LocationSection } from '@/components/buyer-dashboard/forms/LocationSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
+import { DeleteDraftModal } from '../DeleteDraftModal';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
@@ -24,6 +25,7 @@ export default function MainJobForm() {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteDraftModal, setShowDeleteDraftModal] = useState(false);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [successType, setSuccessType] = useState<'job' | 'draft'>('job');
 
@@ -267,16 +269,42 @@ export default function MainJobForm() {
     },
   });
 
+  // Delete draft mutation
+  const deleteDraftMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token || !jobId) throw new Error('Unable to get authentication token or job ID');
+      return deleteJob(jobId, token);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+      setHasUnsavedChanges(false);
+      router.push('/buyer-dashboard');
+    },
+    onError: (error) => {
+      console.error('Error deleting draft:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete draft. Please try again.');
+    },
+  });
+
   // ------------------------------------------------------------------------------------------------------------------------
 
   const handleSaveDraft = async () => {
     saveDraftMutation.mutate();
   };
 
-  const handleJobSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleJobSubmit = async () => {
     if (!validateRequiredFields()) return;
     createOrUpdateJobMutation.mutate();
+  };
+
+  const handleDeleteDraft = () => {
+    setShowDeleteDraftModal(true);
+  };
+
+  const handleConfirmDeleteDraft = () => {
+    deleteDraftMutation.mutate();
+    setShowDeleteDraftModal(false);
   };
 
   const handleBackNavigation = () => {
@@ -320,6 +348,15 @@ export default function MainJobForm() {
         onClose={handleSuccessModalClose}
       />
 
+      {/* Delete Draft Confirmation Modal */}
+      <DeleteDraftModal
+        isOpen={showDeleteDraftModal}
+        onClose={() => setShowDeleteDraftModal(false)}
+        onConfirm={handleConfirmDeleteDraft}
+        isDeleting={deleteDraftMutation.isPending}
+        draftTitle={formData.title}
+      />
+
       {/* Mobile Header */}
       <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10'>
         <button onClick={handleBackNavigation} className='p-2 rounded-md hover:bg-gray-100'>
@@ -334,7 +371,16 @@ export default function MainJobForm() {
         <div className='hidden lg:block mb-8'>
           <div className='flex justify-between items-center'>
             <h1 className='font-roboto text-3xl font-bold text-gray-900'>{isEditingDraft ? 'Edit Draft' : isEditingJob ? 'Edit Job' : 'Post New Job'}</h1>
-            <Button onClick={handleBackNavigation}>Back to Dashboard</Button>
+            <div className='flex gap-3'>
+              {/* Delete Draft button - only show when editing a draft */}
+              {isEditingDraft && (
+                <Button onClick={handleDeleteDraft} variant='destructive' className='font-roboto flex items-center gap-2' disabled={deleteDraftMutation.isPending}>
+                  <Trash2 className='h-4 w-4' />
+                  {deleteDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
+                </Button>
+              )}
+              <Button onClick={handleBackNavigation}>Back to Dashboard</Button>
+            </div>
           </div>
           <p className='font-inter text-gray-600 mt-4'>
             {isEditingDraft
@@ -345,7 +391,7 @@ export default function MainJobForm() {
           </p>
         </div>
 
-        <form onSubmit={handleJobSubmit} className='space-y-6'>
+        <div className='space-y-6'>
           {/* Basic Job Information */}
           <Card>
             <CardHeader>
@@ -482,29 +528,44 @@ export default function MainJobForm() {
 
           {/* Action Buttons */}
           <div className='flex flex-col sm:flex-row gap-3 pt-6'>
+            {/* Mobile Delete Draft Button - only show when editing a draft */}
+            {isEditingDraft && (
+              <Button
+                type='button'
+                variant='destructive'
+                onClick={handleDeleteDraft}
+                disabled={deleteDraftMutation.isPending}
+                className='font-roboto flex items-center gap-2 lg:hidden'
+              >
+                <Trash2 className='h-4 w-4' />
+                {deleteDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
+              </Button>
+            )}
+
             {!isEditingJob && (
               <Button
                 type='button'
                 variant='outline'
                 onClick={handleSaveDraft}
-                disabled={saveDraftMutation.isPending || createOrUpdateJobMutation.isPending}
+                disabled={saveDraftMutation.isPending || createOrUpdateJobMutation.isPending || deleteDraftMutation.isPending}
                 className='font-roboto flex items-center gap-2'
               >
                 <Save className='h-4 w-4' />
-                {saveDraftMutation.isPending ? 'Saving...' : 'Save as Draft'}
+                {saveDraftMutation.isPending ? 'Saving...' : isEditingDraft ? 'Update Draft' : 'Save as Draft'}
               </Button>
             )}
 
             <Button
-              type='submit'
-              disabled={createOrUpdateJobMutation.isPending || saveDraftMutation.isPending}
+              type='button'
+              onClick={handleJobSubmit}
+              disabled={createOrUpdateJobMutation.isPending || saveDraftMutation.isPending || deleteDraftMutation.isPending}
               className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'
             >
               <Send className='h-4 w-4' />
               {createOrUpdateJobMutation.isPending ? 'Posting Job...' : isEditingJob ? 'Update Job' : 'Post Job'}
             </Button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
