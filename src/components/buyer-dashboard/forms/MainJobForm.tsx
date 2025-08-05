@@ -14,6 +14,7 @@ import { SuccessModal } from '@/components/SuccessModal';
 import { LocationSection } from '@/components/buyer-dashboard/forms/LocationSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
 import { DeleteDraftModal } from '../DeleteDraftModal';
+import { formatCurrency } from '@/lib/utils/custom-format';
 
 const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
@@ -38,6 +39,7 @@ export default function MainJobForm() {
   const [formData, setFormData] = useState<JobFormData>({
     title: '',
     job_type: '',
+    job_budget: '',
     description: '',
     location_address: '',
     city: '',
@@ -73,6 +75,7 @@ export default function MainJobForm() {
         setFormData({
           title: existingJobData.title || '',
           job_type: existingJobData.job_type || '',
+          job_budget: existingJobData.job_budget || '',
           description: existingJobData.description || '',
           location_address: existingJobData.location_address || '',
           city: existingJobData.city || '',
@@ -140,28 +143,15 @@ export default function MainJobForm() {
   }, [hasUnsavedChanges, router]);
 
   // ------------------------------------------------------------------------------------------------------------------
-  // form input logic and input error handling
-
-  const validateRequiredFields = (): boolean => {
-    const newErrors: Partial<Record<keyof JobFormData, string>> = {};
-
-    if (!formData.title.trim()) newErrors.title = 'Job title is required';
-    if (!formData.job_type) newErrors.job_type = 'Please select a job type';
-    if (!formData.description.trim()) newErrors.description = 'Job description is required';
-    if (!formData.location_address.trim()) newErrors.location_address = 'Job address is required';
-    if (!formData.city.trim()) newErrors.city = 'City is required';
-
-    setErrors(newErrors);
-    const isValid = Object.keys(newErrors).length === 0;
-    if (!isValid) {
-      alert('Please fill in all required fields before submitting.');
-    }
-
-    return isValid;
-  };
+  // form input update logic and error handling
 
   const handleFormInputChange = (field: keyof JobFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === 'job_budget') {
+      const formatted = formatCurrency(value);
+      setFormData((prev) => ({ ...prev, [field]: formatted }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
     setHasUnsavedChanges(true);
 
     // Clear corresponding field errors upon value change
@@ -205,7 +195,27 @@ export default function MainJobForm() {
     setHasUnsavedChanges(true);
   };
 
+  const validateRequiredFields = (): boolean => {
+    const newErrors: Partial<Record<keyof JobFormData, string>> = {};
+
+    if (!formData.title.trim()) newErrors.title = 'Job title is required';
+    if (!formData.job_type) newErrors.job_type = 'Please select a job type';
+    if (!formData.job_budget.trim()) newErrors.job_budget = 'Job budget is required';
+    if (!formData.description.trim()) newErrors.description = 'Job description is required';
+    if (!formData.location_address.trim()) newErrors.location_address = 'Job address is required';
+    if (!formData.city.trim()) newErrors.city = 'City is required';
+
+    setErrors(newErrors);
+    const isValid = Object.keys(newErrors).length === 0;
+    if (!isValid) {
+      alert('Please fill in all required fields before submitting.');
+    }
+
+    return isValid;
+  };
+
   // ----------------------------------------------------------------------------------------------------------------------
+  // Mutations for creating/updating job, saving draft, and deleting draft
 
   const createOrUpdateJobMutation = useMutation({
     mutationFn: async () => {
@@ -224,15 +234,6 @@ export default function MainJobForm() {
       }
     },
     onSuccess: () => {
-      setFormData({
-        title: '',
-        job_type: '',
-        description: '',
-        location_address: '',
-        city: '',
-        other_requirements: '',
-        images: [],
-      });
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
       setHasUnsavedChanges(false);
       setSuccessType('job');
@@ -288,6 +289,7 @@ export default function MainJobForm() {
   });
 
   // ------------------------------------------------------------------------------------------------------------------------
+  // Handlers for form actions
 
   const handleSaveDraft = async () => {
     saveDraftMutation.mutate();
@@ -432,6 +434,23 @@ export default function MainJobForm() {
                   ))}
                 </select>
                 {errors.job_type && <p className='font-inter text-sm text-red-600'>{errors.job_type}</p>}
+              </div>
+
+              {/* Job Budget */}
+              <div className='space-y-2'>
+                <Label htmlFor='job_budget' className='font-roboto'>
+                  Job Budget <span className='text-red-500'>*</span>
+                </Label>
+                <Input
+                  id='job_budget'
+                  type='text'
+                  inputMode='numeric'
+                  value={formData.job_budget}
+                  onChange={(e) => handleFormInputChange('job_budget', e.target.value)}
+                  placeholder='e.g., 500'
+                  className={`font-inter ${errors.job_budget ? 'border-red-500' : ''}`}
+                />
+                {errors.job_budget && <p className='font-inter text-sm text-red-600'>{errors.job_budget}</p>}
               </div>
 
               {/* Job Description */}

@@ -191,6 +191,12 @@ export default function JobDetailPage() {
                 <p className='font-inter text-gray-700 whitespace-pre-wrap leading-relaxed'>{jobDetail.description}</p>
               </div>
 
+              {/* job budget */}
+              <div>
+                <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Budget</h3>
+                <p className='font-inter text-gray-700'>{jobDetail.job_budget}</p>
+              </div>
+
               {/* Location */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>

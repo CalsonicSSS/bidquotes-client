@@ -102,8 +102,8 @@ export function LocationSection({ locationData, onLocationChange, errors, isLoad
       },
       (place, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-          console.log('Place details:', place);
-          console.log('Address components:', place.address_components);
+          // console.log('Place details:', place);
+          // console.log('Address components:', place.address_components);
 
           // Update address
           onLocationChange({
@@ -116,7 +116,7 @@ export function LocationSection({ locationData, onLocationChange, errors, isLoad
           if (place.address_components) {
             // Log all components for debugging
             place.address_components.forEach((component, index) => {
-              console.log(`Component ${index}:`, component.long_name, component.types);
+              // console.log(`Component ${index}:`, component.long_name, component.types);
             });
 
             // Priority order for Canadian addresses:
@@ -136,20 +136,20 @@ export function LocationSection({ locationData, onLocationChange, errors, isLoad
             // Use the most specific available (prioritizing sublocality for Toronto area)
             if (sublocalityComponent && sublocalityComponent.long_name !== 'Toronto') {
               cityName = sublocalityComponent.long_name;
-              console.log('Using sublocality:', cityName);
+              // console.log('Using sublocality:', cityName);
             } else if (neighborhoodComponent) {
               cityName = neighborhoodComponent.long_name;
-              console.log('Using neighborhood:', cityName);
+              // console.log('Using neighborhood:', cityName);
             } else if (localityComponent) {
               cityName = localityComponent.long_name;
-              console.log('Using locality:', cityName);
+              // console.log('Using locality:', cityName);
             } else if (adminLevel2Component) {
               cityName = adminLevel2Component.long_name;
-              console.log('Using admin level 2:', cityName);
+              // console.log('Using admin level 2:', cityName);
             }
           }
 
-          console.log('Final city name:', cityName);
+          // console.log('Final city name:', cityName);
 
           if (cityName) {
             onLocationChange({ city: cityName });

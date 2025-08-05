@@ -2,6 +2,7 @@
 export type JobFormData = {
   title: string;
   job_type: string;
+  job_budget: string;
   description: string;
   location_address: string;
   city: string;
@@ -14,6 +15,7 @@ export type JobResponse = {
   buyer_id: string;
   title: string;
   job_type: string;
+  job_budget: string;
   description: string;
   location_address: string;
   city: string;
@@ -49,6 +51,7 @@ export type JobDetailResponse = {
   buyer_id: string;
   title: string;
   job_type: string;
+  job_budget: string;
   description: string;
   location_address: string;
   city: string;
@@ -70,6 +73,7 @@ export async function createJob(data: JobFormData, clerkJwt: string): Promise<Jo
   // use append to build the formData class object
   formData.append('title', data.title);
   formData.append('job_type', data.job_type);
+  formData.append('job_budget', data.job_budget);
   formData.append('description', data.description);
   formData.append('location_address', data.location_address);
   formData.append('city', data.city);
@@ -106,6 +110,7 @@ export async function saveJobDraft(data: JobFormData, clerkJwt: string): Promise
   // Add text fields (all optional for drafts)
   formData.append('title', data.title);
   formData.append('job_type', data.job_type);
+  formData.append('job_budget', data.job_budget);
   formData.append('description', data.description);
   formData.append('location_address', data.location_address);
   formData.append('city', data.city);
@@ -142,6 +147,7 @@ export async function updateJob(jobId: string, data: Partial<JobFormData>, clerk
   // Add only provided fields
   if (data.title !== undefined) formData.append('title', data.title);
   if (data.job_type !== undefined) formData.append('job_type', data.job_type);
+  if (data.job_budget !== undefined) formData.append('job_budget', data.job_budget);
   if (data.description !== undefined) formData.append('description', data.description);
   if (data.location_address !== undefined) formData.append('location_address', data.location_address);
   if (data.city !== undefined) formData.append('city', data.city);

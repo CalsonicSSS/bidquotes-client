@@ -23,3 +23,12 @@ export function truncate(str: string, max = 35) {
   if (!str) return '';
   return str.length > max ? str.slice(0, max) + '...' : str;
 }
+
+// Format job budget input
+export const formatCurrency = (value: string) => {
+  const numericValue = value.replace(/[^\d]/g, '');
+  if (!numericValue) return '';
+
+  const number = parseInt(numericValue, 10);
+  return `$${number.toLocaleString()}`;
+};
