@@ -4,19 +4,17 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Send, Plus, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createJob, saveJobDraft, getJobDetail, updateJob, deleteJob, type JobFormData } from '@/lib/apis/jobs';
 import { SuccessModal } from '@/components/SuccessModal';
 import { LocationSection } from '@/components/buyer-dashboard/forms/LocationSection';
+import { JobBasicInfoSection } from '@/components/buyer-dashboard/forms/JobBasicInfoSection';
+import { FormActions } from '@/components/buyer-dashboard/forms/FormActions';
+import { ImageUploadSection } from '@/components/ImageUploadSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
 import { DeleteDraftModal } from '../DeleteDraftModal';
-import { formatCurrency } from '@/lib/utils/custom-format';
-
-const JOB_TYPES = ['Plumbing', 'Painting', 'Landscaping', 'Roofing', 'Indoor', 'Backyard', 'Fencing & Decking', 'Design'] as const;
 
 export default function MainJobForm() {
   // keyof creates a "union literal type" of the keys of the JobFormData type.
@@ -145,12 +143,7 @@ export default function MainJobForm() {
   // form input update logic and error handling
 
   const handleFormInputChange = (field: keyof JobFormData, value: string) => {
-    if (field === 'job_budget') {
-      const formatted = formatCurrency(value);
-      setFormData((prev) => ({ ...prev, [field]: formatted }));
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
 
     // Clear corresponding field errors upon value change
@@ -172,24 +165,10 @@ export default function MainJobForm() {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (formData.images.length + files.length > 6) {
-      alert('Maximum 6 images allowed per job');
-      return;
-    }
-
+  const handleImagesChange = (images: File[]) => {
     setFormData((prev) => ({
       ...prev,
-      images: [...prev.images, ...files],
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const removeImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
+      images,
     }));
     setHasUnsavedChanges(true);
   };
@@ -384,92 +363,25 @@ export default function MainJobForm() {
             </div>
           </div>
           <p className='font-inter text-gray-600 mt-4'>
-            {isEditingDraft
-              ? 'Continue editing your job draft below.'
-              : isEditingJob
-              ? 'Edit your job details below.'
-              : 'Fill out the details below to get competitive bids from qualified contractors.'}
+            {isEditingDraft ? 'Continue editing your job draft below.' : isEditingJob ? 'Edit your job details below.' : 'Fill out the details below to get competitive bids.'}
           </p>
         </div>
 
         <div className='space-y-6'>
-          {/* Basic Job Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='font-roboto'>Job Details</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-6'>
-              {/* Job Title */}
-              <div className='space-y-2'>
-                <Label htmlFor='title' className='font-roboto'>
-                  Job Title <span className='text-red-500'>*</span>
-                </Label>
-                <Input
-                  id='title'
-                  value={formData.title}
-                  onChange={(e) => handleFormInputChange('title', e.target.value)}
-                  placeholder='e.g., Kitchen Plumbing Repair Needed'
-                  className={`font-inter ${errors.title ? 'border-red-500' : ''}`}
-                />
-                {errors.title && <p className='font-inter text-sm text-red-600'>{errors.title}</p>}
-              </div>
+          {/* Job Basic Info Section */}
+          <JobBasicInfoSection
+            formData={{
+              title: formData.title,
+              job_type: formData.job_type,
+              job_budget: formData.job_budget,
+              description: formData.description,
+              other_requirements: formData.other_requirements,
+            }}
+            onFormInputChange={handleFormInputChange}
+            errors={errors}
+          />
 
-              {/* Job Type */}
-              <div className='space-y-2'>
-                <Label htmlFor='job_type' className='font-roboto'>
-                  Job Type <span className='text-red-500'>*</span>
-                </Label>
-                <select
-                  id='job_type'
-                  value={formData.job_type}
-                  onChange={(e) => handleFormInputChange('job_type', e.target.value)}
-                  className={`w-full h-9 px-3 py-1 text-sm border rounded-md font-inter ${errors.job_type ? 'border-red-500' : 'border-gray-300'}`}
-                >
-                  <option value=''>Select a job type...</option>
-                  {JOB_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-                {errors.job_type && <p className='font-inter text-sm text-red-600'>{errors.job_type}</p>}
-              </div>
-
-              {/* Job Budget */}
-              <div className='space-y-2'>
-                <Label htmlFor='job_budget' className='font-roboto'>
-                  Job Budget <span className='text-red-500'>*</span>
-                </Label>
-                <Input
-                  id='job_budget'
-                  type='text'
-                  inputMode='numeric'
-                  value={formData.job_budget}
-                  onChange={(e) => handleFormInputChange('job_budget', e.target.value)}
-                  placeholder='e.g., 500'
-                  className={`font-inter ${errors.job_budget ? 'border-red-500' : ''}`}
-                />
-                {errors.job_budget && <p className='font-inter text-sm text-red-600'>{errors.job_budget}</p>}
-              </div>
-
-              {/* Job Description */}
-              <div className='space-y-2'>
-                <Label htmlFor='description' className='font-roboto'>
-                  Job Description <span className='text-red-500'>*</span>
-                </Label>
-                <textarea
-                  id='description'
-                  value={formData.description}
-                  onChange={(e) => handleFormInputChange('description', e.target.value)}
-                  placeholder='Describe your project in detail. Include what needs to be done, current issues, timeline preferences, and any specific requirements...'
-                  className={`w-full min-h-32 px-3 py-2 text-sm border rounded-md font-inter resize-y ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
-                />
-                {errors.description && <p className='font-inter text-sm text-red-600'>{errors.description}</p>}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Location Section - Now using the extracted component */}
+          {/* Location Section */}
           <LocationSection
             locationData={{
               location_address: formData.location_address,
@@ -482,107 +394,49 @@ export default function MainJobForm() {
             }}
           />
 
-          {/* Additional Information */}
+          {/* Images Section */}
           <Card>
             <CardHeader>
-              <CardTitle className='font-roboto'>Additional Details</CardTitle>
+              <CardTitle className='font-roboto'>Photos Upload</CardTitle>
             </CardHeader>
             <CardContent className='space-y-6'>
-              {/* Other Requirements */}
-              <div className='space-y-2'>
-                <Label htmlFor='other_requirements' className='font-roboto'>
-                  Other Requirements
-                  <span className='font-inter text-sm text-gray-500 ml-2'>(Optional)</span>
-                </Label>
-                <textarea
-                  id='other_requirements'
-                  value={formData.other_requirements}
-                  onChange={(e) => handleFormInputChange('other_requirements', e.target.value)}
-                  placeholder='Any special requirements, preferred timing, budget considerations, or other important details...'
-                  className='w-full min-h-24 px-3 py-2 text-sm border border-gray-300 rounded-md font-inter resize-y'
-                />
-              </div>
-
-              {/* Image Upload */}
-              <div className='space-y-3'>
-                <Label className='font-roboto'>
-                  Job Photos
-                  <span className='font-inter text-sm text-gray-500 ml-2'>(Optional, max 6 images)</span>
-                </Label>
-
-                <div className='flex items-center gap-4'>
-                  <input type='file' accept='image/*' multiple onChange={handleImageUpload} className='hidden' id='image-upload' disabled={formData.images.length >= 6} />
-                  <label
-                    htmlFor='image-upload'
-                    className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-inter cursor-pointer hover:bg-gray-50 ${
-                      formData.images.length >= 6 ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    <Plus className='h-4 w-4' />
-                    Add Photos
-                  </label>
-                  <p className='font-inter text-xs text-gray-500'>{formData.images.length}/6 images</p>
-                </div>
-
-                {formData.images.length > 0 && (
-                  <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
-                    {formData.images.map((file, index) => (
-                      <div key={`${file.name}-${index}`} className='relative group'>
-                        <img src={URL.createObjectURL(file)} alt={`Upload ${index + 1}`} className='w-full h-24 object-cover rounded-lg border' />
-                        <button
-                          type='button'
-                          onClick={() => removeImage(index)}
-                          className='absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
-                        >
-                          <X className='h-3 w-3' />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ImageUploadSection
+                images={formData.images}
+                onImagesChange={handleImagesChange}
+                isLoading={isLoadingImages}
+                maxImages={6}
+                title='Job Photos'
+                description='Optional, max 6 images'
+              />
             </CardContent>
           </Card>
 
-          {/* Action Buttons */}
-          <div className='flex flex-col sm:flex-row gap-3 pt-6'>
-            {/* Mobile Delete Draft Button - only show when editing a draft */}
-            {isEditingDraft && (
+          {/* Mobile Delete Draft Button - only show when editing a draft */}
+          {isEditingDraft && (
+            <div className='lg:hidden'>
               <Button
                 type='button'
                 variant='destructive'
                 onClick={handleDeleteDraft}
                 disabled={deleteDraftMutation.isPending}
-                className='font-roboto flex items-center gap-2 lg:hidden'
+                className='font-roboto flex items-center gap-2 w-full'
               >
                 <Trash2 className='h-4 w-4' />
                 {deleteDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
               </Button>
-            )}
+            </div>
+          )}
 
-            {!isEditingJob && (
-              <Button
-                type='button'
-                variant='outline'
-                onClick={handleSaveDraft}
-                disabled={saveDraftMutation.isPending || createOrUpdateJobMutation.isPending || deleteDraftMutation.isPending}
-                className='font-roboto flex items-center gap-2'
-              >
-                <Save className='h-4 w-4' />
-                {saveDraftMutation.isPending ? 'Saving...' : isEditingDraft ? 'Update Draft' : 'Save as Draft'}
-              </Button>
-            )}
-
-            <Button
-              type='button'
-              onClick={handleJobSubmit}
-              disabled={createOrUpdateJobMutation.isPending || saveDraftMutation.isPending || deleteDraftMutation.isPending}
-              className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'
-            >
-              <Send className='h-4 w-4' />
-              {createOrUpdateJobMutation.isPending ? 'Posting Job...' : isEditingJob ? 'Update Job' : 'Post Job'}
-            </Button>
-          </div>
+          {/* Form Actions */}
+          <FormActions
+            isEditingDraft={isEditingDraft}
+            isEditingJob={isEditingJob}
+            onSaveDraft={handleSaveDraft}
+            onJobSubmit={handleJobSubmit}
+            saveDraftPending={saveDraftMutation.isPending}
+            createOrUpdateJobPending={createOrUpdateJobMutation.isPending}
+            deleteDraftPending={deleteDraftMutation.isPending}
+          />
         </div>
       </div>
     </div>
