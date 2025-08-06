@@ -6,17 +6,17 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type JobImage = {
+type Image = {
   id: string;
   image_url: string;
   image_order: number;
 };
 
-type JobImagesGalleryProps = {
-  images: JobImage[];
+type ImagesGalleryProps = {
+  images: Image[];
 };
 
-export function ImagesGallery({ images }: JobImagesGalleryProps) {
+export function ImagesGallery({ images }: ImagesGalleryProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const sortedImages = [...images].sort((a, b) => a.image_order - b.image_order);
