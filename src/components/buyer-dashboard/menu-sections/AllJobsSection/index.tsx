@@ -1,9 +1,9 @@
 'use client';
 
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { JobCardResponse } from '@/lib/apis/jobs';
-import { JobsActions } from './JobActions';
+import { Actions } from './Actions';
 import { StatsCards } from './StatsCards';
 import { JobsList } from './JobList';
 
@@ -17,7 +17,7 @@ type AllJobsSectionProps = {
 export function AllJobsSection({ allJobs, canPostJob }: AllJobsSectionProps) {
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
 
-  // Calculate all 4 stats card values based on the jobs data
+  // Calculate all 4 stats card values based on the fully fetch jobs data in client
   const stats = {
     activeJobs: allJobs.filter((job) => job.status === 'open' || job.status === 'full_bid').length,
     totalBids: allJobs.reduce((total, job) => total + job.bid_count, 0),
@@ -25,7 +25,7 @@ export function AllJobsSection({ allJobs, canPostJob }: AllJobsSectionProps) {
     savedDrafts: allJobs.filter((job) => job.status === 'draft').length,
   };
 
-  // formulate Filter options and calculate counts for the dropdown
+  // setup Filter options and calculate counts for each of the filter in the dropdown
   const filterOptions = [
     { value: 'all', label: 'All Jobs', count: allJobs.length },
     { value: 'draft', label: 'Drafts', count: stats.savedDrafts },
@@ -35,7 +35,7 @@ export function AllJobsSection({ allJobs, canPostJob }: AllJobsSectionProps) {
     { value: 'confirmed', label: 'Confirmed', count: stats.confirmedJobs },
   ];
 
-  // Filter jobs based on active filter
+  // Filter jobs calculated based on allJobs state and activeFilter state
   const filteredJobs = allJobs.filter((job) => {
     if (activeFilter === 'all') return true;
     return job.status === activeFilter;
@@ -63,7 +63,7 @@ export function AllJobsSection({ allJobs, canPostJob }: AllJobsSectionProps) {
       <StatsCards stats={stats} />
 
       {/* Action Buttons */}
-      <JobsActions activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterOptions={filterOptions} canPostJob={canPostJob} />
+      <Actions activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterOptions={filterOptions} canPostJob={canPostJob} />
 
       {/* Jobs List Area */}
       <Card>

@@ -8,10 +8,10 @@ import { ArrowLeft, Edit, Trash2, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getJobDetail, deleteJob } from '@/lib/apis/jobs';
-import { JobImagesGallery } from '@/components/buyer-dashboard/job-detail/JobImagesGallery';
 import { JobBidsSection } from '@/components/buyer-dashboard/job-detail/JobBidsSection';
 import { DeleteJobModal } from '@/components/buyer-dashboard/job-detail/DeleteJobModal';
-import { JobActions } from '@/components/buyer-dashboard/job-detail/JobAction';
+import { Actions } from '@/components/buyer-dashboard/job-detail/Actions';
+import { ImagesGallery } from '@/components/ImagesGallery';
 
 export default function JobDetailPage() {
   const router = useRouter();
@@ -55,7 +55,7 @@ export default function JobDetailPage() {
     },
   });
 
-  // Navigate to edit job page with "edit" query parameter
+  // Navigate to post job page with "edit" query parameter
   const handleEdit = () => {
     router.push(`/buyer-dashboard/post-job?edit=${jobId}`);
   };
@@ -135,7 +135,7 @@ export default function JobDetailPage() {
               <h1 className='font-roboto text-2xl lg:text-3xl font-bold text-gray-900 mb-2'>{jobDetail.title}</h1>
             </div>
 
-            {canModify && <JobActions onEdit={handleEdit} onDelete={handleDelete} isDeleting={deleteMutation.isPending} />}
+            {canModify && <Actions onEdit={handleEdit} onDelete={handleDelete} isDeleting={deleteMutation.isPending} />}
           </div>
         </div>
 
@@ -219,7 +219,7 @@ export default function JobDetailPage() {
               {jobDetail.images && jobDetail.images.length > 0 && (
                 <div>
                   <h3 className='font-roboto font-semibold text-gray-900 mb-3'>Job Photos</h3>
-                  <JobImagesGallery images={jobDetail.images} />
+                  <ImagesGallery images={jobDetail.images} />
                 </div>
               )}
             </CardContent>

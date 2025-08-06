@@ -7,7 +7,7 @@ type JobActionsProps = {
   isDeleting: boolean;
 };
 
-export function JobActions({ onEdit, onDelete, isDeleting }: JobActionsProps) {
+export function Actions({ onEdit, onDelete, isDeleting }: JobActionsProps) {
   return (
     <div className='flex gap-3'>
       <Button onClick={onEdit} variant='outline' className='font-roboto flex items-center gap-2'>

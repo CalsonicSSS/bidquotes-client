@@ -32,18 +32,19 @@ export default function BuyerDashboard() {
     }
   }, [userId, user, router]);
 
-  // here, we use two (multiple) useQuery hooks to fetch buyer's contact info and jobs.
+  // here, we use two (multiple) useQuery hooks to fetch buyer's contact info and their all jobs.
+  // even though it's not always explicitly shown, useQuery relies entirely on the QueryClient that you provide via the QueryClientProvider
   // By default, each useQuery() fetches concurrently in Non-blocking (You don't need to wrap them in a Promise.all() or similar—the QueryClient handles it for you).
   // However, you can enable waterfall for dependent queries by using the `enabled` option.
 
-  // the fn you pass to useQuery() or useMutation() must be a function object itself (not any other type) -> it must return a Promise or a non-undefined value
-  // “A query function can be literally any function (usually fetch api function) that returns a promise” - tanstack/react-query docs
+  // the fn you pass to useQuery() or useMutation() must be a function object itself (not any other type)
+  // "A query function can be literally any function (usually fetch api function) that returns a promise” -- tanstack/react-query docs
   // even "return await getBuyerContactInfo(token)" will work since the outer queryFn is already an async function.
 
-  // as long as the queryFn you pass to useQuery() returns a promise, React (TanStack) Query handles awaiting it automatically.
+  // as long as the queryFn you pass to useQuery() returns a promise, TanStack Query handles awaiting it automatically for the actual data object.
   // The final data you get in the hook is never a promise—it’s the fully resolved JSON object, with all code synchronized internally.
 
-  const { data: buyerContactInfo, isLoading } = useQuery({
+  const { data: buyerContactInfo, isLoading: isContactInfoLoading } = useQuery({
     queryKey: ['buyer-contact-info'],
     queryFn: async () => {
       const token = await getToken();
@@ -73,7 +74,7 @@ export default function BuyerDashboard() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Show loading state
-  if (!user || isLoading || isJobsLoading) {
+  if (!user || isJobsLoading || isContactInfoLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>

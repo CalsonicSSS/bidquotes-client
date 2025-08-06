@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 
 type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
 
-type JobsActionsProps = {
+type ActionsProps = {
   activeFilter: ActiveFilter;
   setActiveFilter: (filter: ActiveFilter) => void;
   filterOptions: Array<{
@@ -16,7 +16,7 @@ type JobsActionsProps = {
   canPostJob: boolean;
 };
 
-export function JobsActions({ activeFilter, setActiveFilter, filterOptions, canPostJob }: JobsActionsProps) {
+export function Actions({ activeFilter, setActiveFilter, filterOptions, canPostJob }: ActionsProps) {
   return (
     <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4'>
       {/* Left side - Filter dropdown */}

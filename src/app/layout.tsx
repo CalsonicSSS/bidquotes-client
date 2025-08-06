@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 // this ClerkProvider should be a client component, because it initializes context
 // other SignedIn and SignedOut components must also be client components that consume the context as subscribers
 // all the children of ClerkProvider will be rendered continued as SC as default.
-// as we have also tested, even if this ClerkProvider re-renders, the children will not re-render, so we can safely use ClerkProvider here as a parent component even as CC
+// as we have also tested, even if this ClerkProvider re-renders, the children will not re-render, so we can safely use ClerkProvider here as a top-level parent component even as CC
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

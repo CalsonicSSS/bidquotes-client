@@ -51,7 +51,6 @@ export default function MainJobForm() {
   const jobId = searchParams.get('draft') || searchParams.get('edit');
   const isEditingDraft = !!searchParams.get('draft');
   const isEditingJob = !!searchParams.get('edit');
-  const isEditing = isEditingDraft || isEditingJob;
 
   // ----------------------------------------------------------------------------------------------------------
 
@@ -70,7 +69,7 @@ export default function MainJobForm() {
   // Pre-populate form field data if existing job data is available from either draft or edit case
   useEffect(() => {
     const loadJobData = async () => {
-      if (existingJobData && isEditing) {
+      if (existingJobData) {
         // Pre-populate fields
         setFormData({
           title: existingJobData.title || '',
@@ -102,7 +101,7 @@ export default function MainJobForm() {
     };
 
     loadJobData();
-  }, [existingJobData, isEditing]);
+  }, [existingJobData]);
 
   // Browser navigation protection when there are unsaved changes
   useEffect(() => {

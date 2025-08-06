@@ -11,26 +11,6 @@ export function JobBidsSection({ jobId, jobStatus, bidCount }: JobBidsSectionPro
   // TODO: Implement bid fetching and display logic
   // For now, show a placeholder
 
-  if (jobStatus === 'draft') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className='font-roboto flex items-center gap-2'>
-            <MessageSquare className='h-5 w-5' />
-            Bids
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='text-center py-8'>
-            <Users className='h-12 w-12 text-gray-300 mx-auto mb-4' />
-            <h3 className='font-roboto text-lg font-semibold text-gray-900 mb-2'>Post your job to receive bids</h3>
-            <p className='font-inter text-gray-600'>Once your job is posted, contractors will be able to submit bids.</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>

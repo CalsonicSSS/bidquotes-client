@@ -16,7 +16,7 @@ type JobImagesGalleryProps = {
   images: JobImage[];
 };
 
-export function JobImagesGallery({ images }: JobImagesGalleryProps) {
+export function ImagesGallery({ images }: JobImagesGalleryProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const sortedImages = [...images].sort((a, b) => a.image_order - b.image_order);
