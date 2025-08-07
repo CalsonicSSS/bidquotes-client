@@ -9,7 +9,7 @@ import { BuyerSidebar } from '@/components/buyer-dashboard/Sidebar';
 import { BuyerMobileHeader } from '@/components/buyer-dashboard/MobileHeader';
 import { AllJobsSection } from '@/components/buyer-dashboard/menu-sections/AllJobsSection';
 import { getBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
-import { getBuyerJobs } from '@/lib/apis/jobs';
+import { getBuyerJobs } from '@/lib/apis/buyer-jobs';
 import { isContactInfoCompleteChecker } from '@/lib/utils/condition-checkers';
 import { ContactInfoSection } from '@/components/buyer-dashboard/menu-sections/ContactInfoSection';
 

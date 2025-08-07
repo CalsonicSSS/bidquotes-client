@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Briefcase, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
-import { JobCardResponse } from '@/lib/apis/jobs';
+import { JobCardResponse } from '@/lib/apis/buyer-jobs';
 
 type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
 

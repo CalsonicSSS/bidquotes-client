@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { JobCardResponse } from '@/lib/apis/jobs';
+import { JobCardResponse } from '@/lib/apis/buyer-jobs';
 import { Actions } from './Actions';
 import { StatsCards } from './StatsCards';
 import { JobsList } from './JobList';

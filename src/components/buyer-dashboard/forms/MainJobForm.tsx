@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createJob, saveJobDraft, getJobDetail, updateJob, deleteJob, type JobFormData } from '@/lib/apis/jobs';
+import { createJob, saveJobDraft, getJobDetail, updateJob, deleteJob, type JobFormData } from '@/lib/apis/buyer-jobs';
 import { SuccessModal } from '@/components/SuccessModal';
 import { LocationSection } from '@/components/buyer-dashboard/forms/LocationSection';
 import { JobBasicInfoSection } from '@/components/buyer-dashboard/forms/JobBasicInfoSection';
