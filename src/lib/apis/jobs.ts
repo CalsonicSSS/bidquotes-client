@@ -68,6 +68,9 @@ export type JobDetailResponse = {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export async function createJob(data: JobFormData, clerkJwt: string): Promise<JobResponse> {
+  // the backend fastapi api will capture the form data base on key / field names automatically from the FormData object
+  // you dont need to do the mapping manually
+
   const formData = new FormData();
 
   // use append to build the formData class object
@@ -80,6 +83,8 @@ export async function createJob(data: JobFormData, clerkJwt: string): Promise<Jo
   formData.append('other_requirements', data.other_requirements);
 
   // Add images if provided
+  // The FormData object allows multiple values under the same key. So the key images shows up multiple times.
+  // Later in the backend, for fields with multiple entries under the same key (images in this case), it will gather them into a list
   if (data.images) {
     data.images.forEach((image) => {
       formData.append('images', image);

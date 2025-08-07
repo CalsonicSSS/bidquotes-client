@@ -1,33 +1,50 @@
 'use client';
 
 import { useAuth, useUser } from '@clerk/nextjs';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
+import { ContractorProfileModal } from '@/components/contractor-dashboard/menu-sections/ProfileSection/ContractorProfileModal';
+import { ContractorSidebar } from '@/components/contractor-dashboard/Sidebar';
+import { ContractorMobileHeader } from '@/components/contractor-dashboard/MobileHeader';
+import { ProfileSection } from '@/components/contractor-dashboard/menu-sections/ProfileSection';
+import { AllJobsSection } from '@/components/contractor-dashboard/menu-sections/AllJobsSection';
+import { YourBidsSection } from '@/components/contractor-dashboard/menu-sections/YourBidsSection';
+import { YourPassesSection } from '@/components/contractor-dashboard/menu-sections/YourPassesSection';
+import { checkContractorProfileCompletion } from '@/lib/apis/contractor-profile';
+
+type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-passes';
 
 export default function ContractorDashboard() {
-  const { userId, isLoaded } = useAuth();
-  const { user, isLoaded: userLoaded } = useUser();
+  const { userId, getToken } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
+  const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Handle redirects with useEffect instead of redirect() function
+  // Auth redirections based on user type
   useEffect(() => {
-    if (!userId) {
-      router.push('/sign-in');
-      return;
-    }
-
-    if (userLoaded && user) {
+    if (user) {
       const userType = user.unsafeMetadata?.userType;
       if (userType === 'buyer') {
         router.push('/buyer-dashboard');
-        return;
       }
     }
-  }, [userId, userLoaded, user, router]);
+  }, [userId, user, router]);
 
-  // Show loading while auth is loading or during redirects
-  if (!isLoaded || !userLoaded || !userId) {
+  // Check contractor profile completion
+  const { data: isProfileComplete = false, isLoading: isProfileLoading } = useQuery({
+    queryKey: ['contractor-profile-completion'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('No token available');
+      return checkContractorProfileCompletion(token);
+    },
+    enabled: !!userId,
+  });
+
+  // Show loading state
+  if (!user || isProfileLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -40,33 +57,22 @@ export default function ContractorDashboard() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Main content */}
-      <main className='container mx-auto px-4 py-8'>
-        <div className='max-w-4xl mx-auto'>
-          <h2 className='font-inter text-3xl font-bold text-gray-900 mb-6'>Welcome to your Contractor Dashboard</h2>
+      <ContractorProfileModal isOpen={!isProfileComplete} />
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            {/* Placeholder cards */}
-            <div className='bg-white p-6 rounded-lg shadow'>
-              <h3 className='font-roboto font-semibold text-lg mb-2'>Browse Jobs</h3>
-              <p className='font-inter text-gray-600 mb-4'>Find jobs to bid on in your area</p>
-              <Button className='bg-green-600 text-white px-4 py-2 rounded font-roboto hover:bg-green-700'>Coming Soon</Button>
-            </div>
+      <div className='flex relative'>
+        <ContractorSidebar user={user} activeSection={activeSection} setActiveSection={setActiveSection} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-            <div className='bg-white p-6 rounded-lg shadow'>
-              <h3 className='font-roboto font-semibold text-lg mb-2'>My Bids</h3>
-              <p className='font-inter text-gray-600 mb-4'>Track your submitted bids and responses</p>
-              <Button variant='outline' className='px-4 py-2 rounded font-roboto'>
-                Coming Soon
-              </Button>
-            </div>
-          </div>
+        <div className='flex-1 min-h-screen'>
+          <ContractorMobileHeader activeSection={activeSection} setSidebarOpen={setSidebarOpen} />
 
-          <div className='mt-8 p-4 bg-green-50 rounded-lg'>
-            <p className='font-inter text-gray-700'>🚧 This dashboard is under development. Soon you&apos;ll be able to browse jobs, submit bids, and manage your projects!</p>
+          <div className='p-4 lg:p-8'>
+            {activeSection === 'all-jobs' && <AllJobsSection />}
+            {activeSection === 'your-bids' && <YourBidsSection />}
+            {activeSection === 'profile' && <ProfileSection />}
+            {activeSection === 'your-passes' && <YourPassesSection />}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
