@@ -45,6 +45,19 @@ export type BidDetailResponse = {
   job_city: string;
 };
 
+export type ContractorBidCardResponse = {
+  id: string;
+  job_id: string;
+  title: string;
+  status: 'draft' | 'pending' | 'selected' | 'confirmed' | 'declined';
+  created_at: string;
+  updated_at: string;
+  // Job context info
+  job_title: string;
+  job_type: string;
+  job_city: string;
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export async function createBid(data: BidFormData, clerkJwt: string): Promise<BidResponse> {
@@ -166,6 +179,29 @@ export async function getBidDetail(bidId: string, clerkJwt: string): Promise<Bid
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || 'Failed to get bid details');
+  }
+
+  return await response.json();
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------
+
+export async function getContractorBids(clerkJwt: string, status?: string): Promise<ContractorBidCardResponse[]> {
+  const url = new URL(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/contractor-bids`);
+  if (status) {
+    url.searchParams.append('status', status);
+  }
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to get contractor bids');
   }
 
   return await response.json();
