@@ -14,6 +14,8 @@ export function AllJobsSection() {
   const [showSavedOnly, setShowSavedOnly] = useState(false);
 
   // Fetch available jobs with filters
+  // we use state in the query key to refetch when filters change immediately, by pass the stale time and other triggers all
+  // recall that stale time is respected only on specific query key used
   const {
     data: availableJobs = [],
     isLoading: isJobsLoading,
