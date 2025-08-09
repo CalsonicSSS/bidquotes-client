@@ -38,7 +38,7 @@ export default function ContractorJobDetailPage() {
 
   const handleSubmitBid = () => {
     // TODO: Navigate to bid posting page
-    router.push(`/contractor-dashboard/bid-posting?jobId=${jobId}`);
+    router.push(`/contractor-dashboard/post-bid?jobId=${jobId}`);
   };
 
   // Show loading state
