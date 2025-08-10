@@ -1,4 +1,4 @@
-import MainBidForm from '@/components/contractor-dashboard/forms/MainBidForm';
+import MainBidForm from '@/components/contractor-dashboard/bid-forms/MainBidForm';
 import { Suspense } from 'react';
 
 export default function BidPostingPage() {

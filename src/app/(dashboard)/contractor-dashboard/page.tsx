@@ -9,9 +9,9 @@ import { ContractorSidebar } from '@/components/contractor-dashboard/Sidebar';
 import { ContractorMobileHeader } from '@/components/contractor-dashboard/MobileHeader';
 import { ProfileSection } from '@/components/contractor-dashboard/menu-sections/ProfileSection';
 import { AllJobsSection } from '@/components/contractor-dashboard/menu-sections/AllJobsSection';
-import { YourBidsSection } from '@/components/contractor-dashboard/menu-sections/YourBidsSection';
 import { YourPassesSection } from '@/components/contractor-dashboard/menu-sections/YourPassesSection';
 import { checkContractorProfileCompletion } from '@/lib/apis/contractor-profile';
+import { YourBidsSection } from '@/components/contractor-dashboard/menu-sections/YourBidsSection';
 
 type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-passes';
 
