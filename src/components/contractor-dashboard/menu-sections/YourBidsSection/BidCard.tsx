@@ -43,8 +43,8 @@ export function BidCard({ bid, onClick }: { bid: ContractorBidCardResponse; onCl
         <div className='space-y-3'>
           {/* Bid Title & Status */}
           <div className='flex items-start justify-between'>
-            <h3 className='font-roboto text-base lg:text-lg font-semibold text-gray-900 flex-1 pr-2'>{bid.title || 'Untitled Bid'}</h3>
-            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(bid.status)}`}>
+            <h3 className='font-roboto text-base lg:text-lg font-bold text-gray-900 flex-1 pr-2'>{bid.title || 'Untitled Bid'}</h3>
+            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(bid.status)}`}>
               {getStatusIcon(bid.status)}
               {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
             </span>
@@ -52,11 +52,10 @@ export function BidCard({ bid, onClick }: { bid: ContractorBidCardResponse; onCl
 
           {/* Job Info */}
           <div className='space-y-1'>
-            <p className='font-inter text-sm text-gray-600'>For Job: {bid.job_title}</p>
-            <div className='flex items-center gap-4 text-xs text-gray-500'>
-              <span>{bid.job_type}</span>
-              <span>•</span>
-              <span>{bid.job_city}</span>
+            <p className='font-inter text-sm text-gray-600 font-semibold'>For Job: {bid.job_title}</p>
+            <div className='flex flex-col  gap-2 text-xs text-gray-500'>
+              <span className='font-medium'>Job type: {bid.job_type}</span>
+              <span className='font-medium'>Job City: {bid.job_city}</span>
             </div>
           </div>
 

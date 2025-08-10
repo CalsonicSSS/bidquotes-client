@@ -67,7 +67,7 @@ export default function ContractorDashboard() {
 
           <div className='p-4 lg:p-8'>
             {activeSection === 'all-jobs' && <AllJobsSection />}
-            {activeSection === 'your-bids' && <YourBidsSection />}
+            {activeSection === 'your-bids' && <YourBidsSection setActiveSection={setActiveSection} />}
             {activeSection === 'profile' && <ProfileSection />}
             {activeSection === 'your-passes' && <YourPassesSection />}
           </div>
