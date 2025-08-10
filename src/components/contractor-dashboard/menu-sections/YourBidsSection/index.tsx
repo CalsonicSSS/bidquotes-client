@@ -86,11 +86,11 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
   // Handle bid card click
   const handleBidClick = (bid: ContractorBidCardResponse) => {
     if (bid.status === 'draft') {
-      // Draft bids go to bid posting page for editing
-      router.push(`/contractor-dashboard/bid-posting?job_id=${bid.job_id}&bid_id=${bid.id}`);
+      // Draft bids go to post-bid page for editing with draft param
+      router.push(`/contractor-dashboard/post-bid?draft=${bid.id}`);
     } else {
       // Other bids go to bid detail page
-      router.push(`/contractor-dashboard/bid-detail/${bid.id}`);
+      router.push(`/contractor-dashboard/bids/${bid.id}`);
     }
   };
 

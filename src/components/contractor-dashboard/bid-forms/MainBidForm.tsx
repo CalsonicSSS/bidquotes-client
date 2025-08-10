@@ -12,6 +12,7 @@ import { getContractorJobDetail } from '@/lib/apis/contractor-jobs';
 import { SuccessModal } from '@/components/SuccessModal';
 import { BidInfoSection } from './BidInfoSection';
 import { Actions } from './Actions';
+import { DeleteBidDraftModal } from './DeleteBidDraftModal';
 
 export default function MainBidForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof BidFormData, string>>>({});
@@ -20,6 +21,7 @@ export default function MainBidForm() {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteDraftModal, setShowDeleteDraftModal] = useState(false);
   const [successType, setSuccessType] = useState<'bid' | 'draft'>('bid');
 
   const hasPushed = useRef(false);
@@ -77,8 +79,8 @@ export default function MainBidForm() {
       setFormData({
         job_id: existingBidData.job_id,
         title: existingBidData.title || '',
-        price_min: existingBidData.price_min ? `$${existingBidData.price_min.toLocaleString()}` : '',
-        price_max: existingBidData.price_max ? `$${existingBidData.price_max.toLocaleString()}` : '',
+        price_min: existingBidData.price_min || '',
+        price_max: existingBidData.price_max || '',
         timeline_estimate: existingBidData.timeline_estimate || '',
         work_description: existingBidData.work_description || '',
         additional_notes: existingBidData.additional_notes || '',
@@ -104,15 +106,12 @@ export default function MainBidForm() {
     const handlePopState = (event: PopStateEvent) => {
       if (blockPop.current && hasUnsavedChanges) {
         const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
-        if (confirmed) {
-          blockPop.current = false;
-          router.back();
-        } else {
+        if (!confirmed) {
           window.history.pushState(null, '', window.location.href);
+          return;
         }
-      } else {
-        router.back();
       }
+      blockPop.current = true;
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -122,20 +121,19 @@ export default function MainBidForm() {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [hasUnsavedChanges, router]);
+  }, [hasUnsavedChanges]);
 
-  // Form input handlers
+  // Form change handler
   const handleFormInputChange = (field: keyof BidFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
-
-    // Clear field errors
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
-  const validateRequiredFields = (): boolean => {
+  // Form validation
+  const validateRequiredFields = () => {
     const newErrors: Partial<Record<keyof BidFormData, string>> = {};
 
     if (!formData.title.trim()) newErrors.title = 'Bid title is required';
@@ -144,20 +142,11 @@ export default function MainBidForm() {
     if (!formData.timeline_estimate.trim()) newErrors.timeline_estimate = 'Timeline estimate is required';
     if (!formData.work_description.trim()) newErrors.work_description = 'Work description is required';
 
-    // Validate price range
-    if (formData.price_min && formData.price_max) {
-      const minPrice = parseFloat(formData.price_min.replace(/[^\d]/g, ''));
-      const maxPrice = parseFloat(formData.price_max.replace(/[^\d]/g, ''));
-
-      if (minPrice > maxPrice) {
-        newErrors.price_max = 'Maximum price must be greater than minimum price';
-      }
-    }
-
     setErrors(newErrors);
     const isValid = Object.keys(newErrors).length === 0;
+
     if (!isValid) {
-      alert('Please fill in all required fields and fix any errors before submitting.');
+      alert('Please fill in all required fields before submitting.');
     }
 
     return isValid;
@@ -179,6 +168,7 @@ export default function MainBidForm() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
       setHasUnsavedChanges(false);
       setSuccessType('bid');
       setShowSuccessModal(true);
@@ -212,6 +202,24 @@ export default function MainBidForm() {
     },
   });
 
+  const deleteBidDraftMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token || !bidId) throw new Error('Unable to get authentication token or bid ID');
+      return deleteBid(bidId, token);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+      queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
+      setHasUnsavedChanges(false);
+      router.push('/contractor-dashboard');
+    },
+    onError: (error) => {
+      console.error('Error deleting bid draft:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete bid draft. Please try again.');
+    },
+  });
+
   // Action handlers
   const handleSaveDraft = () => {
     saveDraftMutation.mutate();
@@ -220,6 +228,15 @@ export default function MainBidForm() {
   const handleBidSubmit = () => {
     if (!validateRequiredFields()) return;
     createOrUpdateBidMutation.mutate();
+  };
+
+  const handleDeleteDraft = () => {
+    setShowDeleteDraftModal(true);
+  };
+
+  const handleConfirmDeleteDraft = () => {
+    deleteBidDraftMutation.mutate();
+    setShowDeleteDraftModal(false);
   };
 
   const handleBackNavigation = () => {
@@ -263,6 +280,15 @@ export default function MainBidForm() {
         onClose={handleSuccessModalClose}
       />
 
+      {/* Delete Draft Confirmation Modal */}
+      <DeleteBidDraftModal
+        isOpen={showDeleteDraftModal}
+        onClose={() => setShowDeleteDraftModal(false)}
+        onConfirm={handleConfirmDeleteDraft}
+        isDeleting={deleteBidDraftMutation.isPending}
+        draftTitle={formData.title}
+      />
+
       {/* Mobile Header */}
       <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10'>
         <button onClick={handleBackNavigation} className='p-2 rounded-md hover:bg-gray-100'>
@@ -277,7 +303,16 @@ export default function MainBidForm() {
         <div className='hidden lg:block mb-8'>
           <div className='flex justify-between items-center'>
             <h1 className='font-roboto text-3xl font-bold text-gray-900'>{isEditingDraft ? 'Edit Bid Draft' : isEditingBid ? 'Edit Your Bid' : 'Submit Your Bid'}</h1>
-            <Button onClick={handleBackNavigation}>Back to Dashboard</Button>
+            <div className='flex gap-3'>
+              {/* Delete Draft button - only show when editing a draft */}
+              {isEditingDraft && (
+                <Button onClick={handleDeleteDraft} variant='destructive' className='font-roboto flex items-center gap-2' disabled={deleteBidDraftMutation.isPending}>
+                  <Trash2 className='h-4 w-4' />
+                  {deleteBidDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
+                </Button>
+              )}
+              <Button onClick={handleBackNavigation}>Back to Dashboard</Button>
+            </div>
           </div>
           <p className='font-inter text-gray-600 mt-4'>
             {isEditingDraft
@@ -325,7 +360,8 @@ export default function MainBidForm() {
             onBidSubmit={handleBidSubmit}
             saveDraftPending={saveDraftMutation.isPending}
             createOrUpdateBidPending={createOrUpdateBidMutation.isPending}
-            deleteBidPending={false}
+            deleteBidPending={deleteBidDraftMutation.isPending}
+            onDeleteDraft={isEditingDraft ? handleDeleteDraft : undefined}
           />
         </div>
       </div>
