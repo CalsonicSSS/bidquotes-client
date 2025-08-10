@@ -40,7 +40,7 @@ export default function ContractorDashboard() {
       if (!token) throw new Error('No token available');
       return checkContractorProfileCompletion(token);
     },
-    enabled: !!userId,
+    enabled: !!userId && !!getToken() && !!user,
   });
 
   // Show loading state

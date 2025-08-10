@@ -186,7 +186,7 @@ export async function getBidDetail(bidId: string, clerkJwt: string): Promise<Bid
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getContractorBids(clerkJwt: string, status?: string): Promise<ContractorBidCardResponse[]> {
+export async function getContractorBidCards(clerkJwt: string, status?: string): Promise<ContractorBidCardResponse[]> {
   const url = new URL(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/contractor-bids`);
   if (status) {
     url.searchParams.append('status', status);

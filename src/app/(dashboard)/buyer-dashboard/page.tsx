@@ -51,7 +51,7 @@ export default function BuyerDashboard() {
       if (!token) throw new Error('No token available');
       return getBuyerContactInfo(token);
     },
-    enabled: !!userId,
+    enabled: !!userId && !!getToken() && !!user,
   });
 
   // Query to fetch buyer's jobs
@@ -62,7 +62,7 @@ export default function BuyerDashboard() {
       if (!token) throw new Error('No token available');
       return getBuyerJobs(token);
     },
-    enabled: !!userId,
+    enabled: !!userId && !!getToken() && !!user,
   });
 
   // Check if user can post jobs (based on contact info complete)
