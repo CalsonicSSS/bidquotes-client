@@ -2,7 +2,7 @@
 
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ContractorProfileModal } from '@/components/contractor-dashboard/menu-sections/ProfileSection/ContractorProfileModal';
 import { ContractorSidebar } from '@/components/contractor-dashboard/Sidebar';
@@ -12,14 +12,29 @@ import { AllJobsSection } from '@/components/contractor-dashboard/menu-sections/
 import { YourPassesSection } from '@/components/contractor-dashboard/menu-sections/YourPassesSection';
 import { checkContractorProfileCompletion } from '@/lib/apis/contractor-profile';
 import { YourBidsSection } from '@/components/contractor-dashboard/menu-sections/YourBidsSection';
+import { Suspense } from 'react';
+
+export default function ContractorDashboard() {
+  return (
+    <Suspense fallback={<div className='min-h-screen flex items-center justify-center text-gray-600'>Loading contractor dashboard...</div>}>
+      <MainContractorDashboard />
+    </Suspense>
+  );
+}
 
 type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-passes';
 
-export default function ContractorDashboard() {
+function MainContractorDashboard() {
   const { userId, getToken } = useAuth();
   const { user } = useUser();
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs');
+  const searchParams = useSearchParams();
+
+  // Check for section parameter in URL
+  const sectionParam = searchParams.get('section') as ActiveSection;
+  const [activeSection, setActiveSection] = useState<ActiveSection>(
+    sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-passes'].includes(sectionParam) ? sectionParam : 'all-jobs'
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Auth redirections based on user type
@@ -31,6 +46,13 @@ export default function ContractorDashboard() {
       }
     }
   }, [userId, user, router]);
+
+  // Update active section when URL changes
+  useEffect(() => {
+    if (sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-passes'].includes(sectionParam)) {
+      setActiveSection(sectionParam);
+    }
+  }, [sectionParam]);
 
   // Check contractor profile completion
   const { data: isProfileComplete = false, isLoading: isProfileLoading } = useQuery({

@@ -23,7 +23,7 @@ export default function DashboardRouter() {
         router.push('/contractor-dashboard');
       } else {
         // User exists but doesn't have userType set
-        router.push('/complete-profile');
+        router.push('/complete-user-type');
       }
     }
   }, [isLoaded, userId, userLoaded, user, router]);

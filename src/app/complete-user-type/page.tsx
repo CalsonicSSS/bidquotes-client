@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle } from 'lucide-react';
 
-export default function CompleteProfilePage() {
+export default function CompleteUserTypeSelectionPage() {
   const [userType, setUserType] = useState<'buyer' | 'contractor' | null>(null);
 
   const { user } = useUser();
@@ -40,7 +41,24 @@ export default function CompleteProfilePage() {
 
   return (
     <div className='flex justify-center items-center min-h-screen bg-gray-50'>
-      <div className='max-w-md w-full mx-4'>
+      <div className='max-w-md w-full mx-4 '>
+        {/* notifcation you are sign in a new acount without sign up first */}
+        <div className='mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3 mb-5'>
+          <AlertCircle className='h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0' />
+          <div className='text-sm'>
+            <p className='font-inter text-yellow-800'>You are signed in to a new account without signing up first. Please complete this user type selection.</p>
+          </div>
+        </div>
+        {/* Account Policy Notice */}
+        <div className='mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3 mb-5'>
+          <AlertCircle className='h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0' />
+          <div className='text-sm'>
+            <p className='font-inter text-blue-800'>
+              <span className='font-semibold'>Important:</span> This selection will set your permanent account type. You cannot change between buyer and contractor roles later on
+              this account.
+            </p>
+          </div>
+        </div>
         <Card>
           <CardHeader className='text-center'>
             <CardTitle className='font-roboto text-2xl'>Complete Your Profile</CardTitle>
@@ -74,12 +92,6 @@ export default function CompleteProfilePage() {
             </Button>
           </CardContent>
         </Card>
-
-        <div className='mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg'>
-          <p className='font-inter text-sm text-yellow-800'>
-            💡 <strong>Note:</strong> This step helps us customize your tailored experience.
-          </p>
-        </div>
       </div>
     </div>
   );

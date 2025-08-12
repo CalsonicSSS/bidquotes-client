@@ -26,30 +26,48 @@ async function SignedInButtons() {
 
   if (userType === 'buyer') {
     return (
-      <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-        <Link href='/buyer-dashboard'>
-          <Button className='font-roboto w-full sm:w-auto px-8 py-4 text-lg bg-blue-500 hover:bg-blue-600 text-white'>Go to Dashboard</Button>
-        </Link>
-        <Link href='/buyer-dashboard'>
-          <Button variant='outline' className='font-roboto w-full sm:w-auto px-8 py-4 text-lg border-white text-white hover:bg-white hover:text-blue-700 bg-transparent'>
-            Post New Job
-          </Button>
-        </Link>
+      <div className='flex flex-col items-center gap-4'>
+        {/* User Type Indicator for Home Page */}
+        <div className='flex items-center gap-2 mb-2'>
+          <span className='inline-flex px-3 py-1 rounded-full text-sm font-inter font-medium bg-blue-100 text-blue-800 border border-blue-200'>
+            🏠 Welcome back, {user?.firstName} (Buyer)
+          </span>
+        </div>
+
+        <div className='flex flex-col sm:flex-row gap-4 justify-center'>
+          <Link href='/buyer-dashboard'>
+            <Button className='font-roboto w-full px-14 lg:px-8 py-4 text-lg bg-blue-500 hover:bg-blue-600 text-white'>Go to Dashboard</Button>
+          </Link>
+          <Link href='/buyer-dashboard'>
+            <Button variant='outline' className='font-roboto w-full px-14 lg:px-8 py-4 text-lg border-white text-white hover:bg-white hover:text-blue-700 bg-transparent'>
+              Post New Job
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (userType === 'contractor') {
     return (
-      <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-        <Link href='/contractor-dashboard'>
-          <Button className='font-roboto w-full sm:w-auto px-8 py-4 text-lg bg-green-600 hover:bg-green-700 text-white'>Go to Dashboard</Button>
-        </Link>
-        <Link href='/contractor-dashboard'>
-          <Button variant='outline' className='font-roboto w-full sm:w-auto px-8 py-4 text-lg border-white text-white hover:bg-white hover:text-blue-700 bg-transparent'>
-            Browse Jobs
-          </Button>
-        </Link>
+      <div className='flex flex-col items-center gap-4'>
+        {/* User Type Indicator for Home Page */}
+        <div className='flex items-center gap-2 mb-2'>
+          <span className='inline-flex px-3 py-1 rounded-full text-sm font-inter font-medium bg-green-100 text-green-800 border border-green-200'>
+            🔧 Welcome back, {user?.firstName} (Contractor)
+          </span>
+        </div>
+
+        <div className='flex flex-col sm:flex-row gap-4 justify-center'>
+          <Link href='/contractor-dashboard'>
+            <Button className='font-roboto w-full lg:px-10 px-16 py-4 text-lg bg-green-600 hover:bg-green-700 text-white'>Go to Dashboard</Button>
+          </Link>
+          <Link href='/contractor-dashboard'>
+            <Button variant='outline' className='font-roboto w-full lg:px-14 px-16 py-4 text-lg border-white text-white hover:bg-white hover:text-blue-700 bg-transparent'>
+              Browse Jobs
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }

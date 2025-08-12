@@ -3,6 +3,7 @@
 import { SignIn, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 // this new implementation handles the case where a user might sign in through social auth directly without previous registered account
@@ -49,15 +50,25 @@ export default function SignInPage() {
     <div className='flex justify-center items-center min-h-screen'>
       <div className='w-full max-w-md'>
         <div className='text-center mb-6'>
-          <h2 className='font-roboto text-2xl font-bold'>Welcome back to Bidquote</h2>
-          <p className='font-inter text-gray-600 mt-2'>Sign in to your existing account</p>
+          <h2 className='font-roboto text-2xl font-bold'>Welcome back to Bidquotes</h2>
+        </div>
+
+        {/* Account Policy Notice */}
+        <div className='bg-blue-50 border-y border-blue-200  sm:border sm:border-blue-200 lg:rounded-lg p-4 mb-6 flex items-start gap-4'>
+          <AlertCircle className='h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0' />
+          <div className='text-sm'>
+            <p className='font-inter text-blue-800'>
+              <span className='font-semibold'>Remember:</span> Each account is tied to a specific user type (Buyer or Contractor). Make sure you're signing into the correct account
+              type for your needs.
+            </p>
+          </div>
         </div>
 
         <div className='flex justify-center'>
           <SignIn
             appearance={{
               elements: {
-                footerAction: 'hidden', // Hide default signup link
+                footerAction: 'hidden', // already hiding the footer action
               },
             }}
             signUpUrl='/sign-up'

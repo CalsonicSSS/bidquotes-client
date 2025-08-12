@@ -54,16 +54,23 @@ export function ContractorSidebar({ user, activeSection, setActiveSection, sideb
 
         {/* Sidebar Content */}
         <div className='p-4 lg:p-6'>
-          {/* User Info Header */}
-          <div className='flex justify-between items-center font-roboto text-lg lg:text-xl font-bold text-gray-900 mb-8'>
-            <h1>Hi, {user?.firstName}</h1>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: 'w-8 h-8',
-                },
-              }}
-            />
+          {/* Enhanced User Info Header with User Type Indicator */}
+          <div className='mb-8'>
+            <div className='flex justify-between items-center font-roboto text-lg lg:text-xl font-bold text-gray-900 mb-3'>
+              <h1>Hi, {user?.firstName}</h1>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: 'w-8 h-8',
+                  },
+                }}
+              />
+            </div>
+
+            {/* User Type Badge */}
+            <div className='flex items-center gap-2'>
+              <span className='inline-flex px-3 py-1 rounded-full text-xs font-inter font-medium bg-green-100 text-green-800 border border-green-200'>🔧 Contractor Account</span>
+            </div>
           </div>
 
           {/* Navigation Menu */}

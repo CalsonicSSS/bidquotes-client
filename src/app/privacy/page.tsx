@@ -1,3 +1,4 @@
+import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Shield, Eye, Lock, Users } from 'lucide-react';
 
@@ -277,46 +278,7 @@ export default function PrivacyPolicyPage() {
       </section>
 
       {/* Footer section */}
-      <footer className='bg-gray-800 text-white py-12'>
-        <div className='container mx-auto px-5'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            <div>
-              <div className='font-roboto text-2xl font-bold mb-4'>Bidquotes</div>
-              <p className='font-inter text-gray-400'>Connecting homeowners with quality contractors.</p>
-            </div>
-            <div>
-              <h4 className='font-roboto font-semibold mb-4'>Company</h4>
-              <ul className='font-inter space-y-2 text-gray-400'>
-                <li>
-                  <a href='/about' className='hover:text-white'>
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href='/terms' className='hover:text-white'>
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a href='/privacy' className='hover:text-white'>
-                    Privacy Policy
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className='font-roboto font-semibold mb-4'>Contact</h4>
-              <ul className='font-inter space-y-2 text-gray-400'>
-                <li>support@bidquotes.ca</li>
-                <li>1-800-BIDQUOTES</li>
-              </ul>
-            </div>
-          </div>
-          <div className='border-t border-gray-700 mt-8 pt-8 text-center'>
-            <p className='font-inter text-gray-400'>© 2025 Bidquotes Service. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

@@ -4,6 +4,7 @@ import { SignUp } from '@clerk/nextjs';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SignUpPage() {
@@ -36,6 +37,17 @@ export default function SignUpPage() {
                   <span className='text-sm font-inter opacity-80'>Bid on jobs and grow your business</span>
                 </div>
               </Button>
+
+              {/* Account Policy Notice */}
+              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3'>
+                <AlertCircle className='h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0' />
+                <div className='text-sm'>
+                  <p className='font-inter text-blue-800'>
+                    <span className='font-semibold'>Account Policy:</span> Only one account per type. Choose carefully — you can&apos;t switch between buyer and contractor later on
+                    this account.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
           <div className='text-center mt-6'>
@@ -63,8 +75,19 @@ export default function SignUpPage() {
         <div className='text-center mb-6'>
           <h2 className='font-roboto text-2xl font-bold'>Sign up as {userType === 'buyer' ? 'a Buyer' : 'a Contractor'}</h2>
           <button onClick={() => setUserType(null)} className='font-inter text-blue-600 hover:underline text-sm mt-2'>
-            ← Change selection
+            ← Change account type selection
           </button>
+        </div>
+
+        {/* Account Type Confirmation Notice */}
+        <div className='bg-yellow-50 border-y sm:border sm:border-yellow-200 border-yellow-200 lg:rounded-lg p-4 mb-6 flex items-start gap-3'>
+          <AlertCircle className='h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0' />
+          <div className='text-sm'>
+            <p className='font-inter text-yellow-800'>
+              <span className='font-semibold'>Creating {userType} account:</span> This will be your permanent account type on Bidquotes. You cannot change this later on this
+              account.
+            </p>
+          </div>
         </div>
 
         <div className='flex justify-center'>
