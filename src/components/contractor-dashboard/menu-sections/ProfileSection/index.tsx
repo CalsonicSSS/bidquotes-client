@@ -72,6 +72,14 @@ export function ProfileSection() {
                   <p className='font-inter text-gray-900 mt-1'>{contractorProfile.contractor_name}</p>
                 </div>
                 <div>
+                  <label className='font-roboto text-sm font-semibold text-gray-700'>Email</label>
+                  <p className='font-inter text-gray-900 mt-1'>{contractorProfile.email}</p>
+                </div>
+                <div>
+                  <label className='font-roboto text-sm font-semibold text-gray-700'>Phone</label>
+                  <p className='font-inter text-gray-900 mt-1'>{contractorProfile.phone}</p>
+                </div>
+                <div>
                   <label className='font-roboto text-sm font-semibold text-gray-700'>Main Service Areas</label>
                   <p className='font-inter text-gray-900 mt-1'>{contractorProfile.main_service_areas}</p>
                 </div>
@@ -86,39 +94,43 @@ export function ProfileSection() {
                 <div>
                   <label className='font-roboto text-sm font-semibold text-gray-700'>Team Size</label>
                   <p className='font-inter text-gray-900 mt-1'>
-                    {contractorProfile.team_size} {contractorProfile.team_size === 1 ? 'person' : 'people'}
+                    {contractorProfile.team_size} {parseInt(contractorProfile.team_size) === 1 ? 'person' : 'people'}
                   </p>
                 </div>
-                {contractorProfile.company_website && (
-                  <div>
-                    <label className='font-roboto text-sm font-semibold text-gray-700'>Company Website</label>
+
+                <div>
+                  <label className='font-roboto text-sm font-semibold text-gray-700'>Company Website</label>
+                  {contractorProfile.company_website ? (
                     <a
                       href={contractorProfile.company_website}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='font-inter text-blue-600 hover:text-blue-800 mt-1 block break-all'
                     >
-                      {contractorProfile.company_website}
+                      {contractorProfile.company_website || 'None'}
                     </a>
-                  </div>
-                )}
+                  ) : (
+                    <p className='font-inter text-gray-500 mt-1'>None</p>
+                  )}
+                </div>
               </div>
 
               {/* Additional Information */}
-              {contractorProfile.additional_information && (
-                <div>
-                  <label className='font-roboto text-sm font-semibold text-gray-700'>Additional Information</label>
-                  <p className='font-inter text-gray-900 mt-1 whitespace-pre-wrap'>{contractorProfile.additional_information}</p>
-                </div>
-              )}
+
+              <div>
+                <label className='font-roboto text-sm font-semibold text-gray-700'>Additional Information</label>
+                <p className='font-inter text-gray-900 mt-1 whitespace-pre-wrap'>{contractorProfile.additional_information || 'None'}</p>
+              </div>
 
               {/* Work Sample Images */}
-              {contractorProfile.images && contractorProfile.images.length > 0 && (
-                <div>
-                  <label className='font-roboto text-sm font-semibold text-gray-700 mb-3 block'>Work Sample Photos</label>
+              <div>
+                <label className='font-roboto text-sm font-semibold text-gray-700 mb-3 block'>Work Sample Photos</label>
+                {contractorProfile.images && contractorProfile.images.length > 0 ? (
                   <ImagesGallery images={contractorProfile.images} />
-                </div>
-              )}
+                ) : (
+                  <p className='font-inter text-gray-500 mt-1'>None</p>
+                )}
+              </div>
 
               <div className='pt-2'>
                 <p className='font-inter text-xs text-gray-500 mb-3'>Last updated: {new Date(contractorProfile.updated_at).toLocaleDateString()}</p>
@@ -139,55 +151,6 @@ export function ProfileSection() {
 
       {/* Update Profile Modal */}
       {contractorProfile && <UpdateContractorProfileModal isOpen={showUpdateModal} onClose={handleModalClose} currentProfile={contractorProfile} />}
-    </div>
-  );
-}
-
-// Other placeholder sections (unchanged)
-export function AllJobsSection() {
-  return (
-    <div className='space-y-6'>
-      <h2 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900 hidden lg:block'>All Jobs</h2>
-
-      <div className='text-center py-12'>
-        <div className='w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-          <span className='text-2xl'>🚧</span>
-        </div>
-        <h3 className='font-roboto font-semibold text-lg mb-2'>All Jobs Section</h3>
-        <p className='font-inter text-gray-600'>Browse available jobs posted by buyers. Coming soon!</p>
-      </div>
-    </div>
-  );
-}
-
-export function YourBidsSection() {
-  return (
-    <div className='space-y-6'>
-      <h2 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900 hidden lg:block'>Your Bids</h2>
-
-      <div className='text-center py-12'>
-        <div className='w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-          <span className='text-2xl'>📝</span>
-        </div>
-        <h3 className='font-roboto font-semibold text-lg mb-2'>Your Bids Section</h3>
-        <p className='font-inter text-gray-600'>Manage all your bid submissions and track their status. Coming soon!</p>
-      </div>
-    </div>
-  );
-}
-
-export function YourPassesSection() {
-  return (
-    <div className='space-y-6'>
-      <h2 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900 hidden lg:block'>Your Passes</h2>
-
-      <div className='text-center py-12'>
-        <div className='w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-          <span className='text-2xl'>🎫</span>
-        </div>
-        <h3 className='font-roboto font-semibold text-lg mb-2'>Your Passes Section</h3>
-        <p className='font-inter text-gray-600'>View your purchased passes and payment history. Coming soon!</p>
-      </div>
     </div>
   );
 }

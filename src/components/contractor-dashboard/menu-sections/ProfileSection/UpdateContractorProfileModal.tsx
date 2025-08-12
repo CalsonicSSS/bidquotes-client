@@ -11,6 +11,7 @@ import { updateContractorProfile } from '@/lib/apis/contractor-profile';
 import { ContractorProfileResponse, ContractorProfileData } from '@/lib/apis/contractor-profile';
 import { ImageUploadSection } from '@/components/ImageUploadSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
+import { formatPhoneInput } from '@/lib/utils/custom-format';
 
 type UpdateContractorProfileModalProps = {
   isOpen: boolean;
@@ -25,6 +26,8 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
     years_of_experience: currentProfile.years_of_experience,
     contractor_type: currentProfile.contractor_type,
     team_size: currentProfile.team_size,
+    email: currentProfile.email,
+    phone: currentProfile.phone,
     company_website: currentProfile.company_website || '',
     additional_information: currentProfile.additional_information || '',
     images: [], // Will be populated with existing images if any
@@ -45,6 +48,8 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
           years_of_experience: currentProfile.years_of_experience,
           contractor_type: currentProfile.contractor_type,
           team_size: currentProfile.team_size,
+          email: currentProfile.email,
+          phone: currentProfile.phone,
           company_website: currentProfile.company_website || '',
           additional_information: currentProfile.additional_information || '',
           images: [],
@@ -88,10 +93,29 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
 
   const handleFormInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormInputData((prev) => ({
-      ...prev,
-      [name]: name === 'years_of_experience' || name === 'team_size' ? parseInt(value) || 1 : value,
-    }));
+    if (name === 'phone') {
+      const formatted = formatPhoneInput(value);
+      setFormInputData((prev) => ({
+        ...prev,
+        [name]: formatted,
+      }));
+    } else if (name === 'years_of_experience') {
+      if (value === '') {
+        setFormInputData((prev) => ({ ...prev, years_of_experience: '' }));
+        return;
+      }
+      if (!/^\d+$/.test(value)) return;
+      setFormInputData((prev) => ({ ...prev, years_of_experience: value }));
+    } else if (name === 'team_size') {
+      if (value === '') {
+        setFormInputData((prev) => ({ ...prev, team_size: '' }));
+        return;
+      }
+      if (!/^\d+$/.test(value)) return;
+      setFormInputData((prev) => ({ ...prev, team_size: value }));
+    } else {
+      setFormInputData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleImagesChange = (images: File[]) => {
@@ -106,7 +130,8 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
     mutate();
   };
 
-  const isFormValid = formInputData.contractor_name.trim() && formInputData.main_service_areas.trim() && formInputData.years_of_experience > 0 && formInputData.team_size > 0;
+  const isFormValid =
+    formInputData.contractor_name.trim() && formInputData.main_service_areas.trim() && parseInt(formInputData.years_of_experience) > 0 && parseInt(formInputData.team_size) > 0;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -136,7 +161,7 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
             {/* Contractor Name */}
             <div className='space-y-2'>
               <Label htmlFor='contractor_name' className='font-roboto'>
-                Contractor Name <span className='text-red-500'>*</span>
+                Contractor Name <span className='text-red-500'>*Required</span>
               </Label>
               <Input
                 id='contractor_name'
@@ -149,10 +174,43 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
               />
             </div>
 
+            {/* contractor contact information */}
+            <div className='space-y-2'>
+              <Label htmlFor='email' className='font-roboto'>
+                Main Email <span className='text-red-500'>*Required</span>
+              </Label>
+              <Input
+                id='email'
+                name='email'
+                type='email'
+                value={formInputData.email}
+                onChange={handleFormInputChange}
+                placeholder='Your email address'
+                className='font-inter'
+                required
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='phone' className='font-roboto'>
+                Primary Phone <span className='text-red-500'>*Required</span>
+              </Label>
+              <Input
+                id='phone'
+                name='phone'
+                type='tel'
+                value={formInputData.phone}
+                onChange={handleFormInputChange}
+                placeholder='Your phone number'
+                className='font-inter'
+                required
+              />
+            </div>
+
             {/* Main Service Areas */}
             <div className='space-y-2'>
               <Label htmlFor='main_service_areas' className='font-roboto'>
-                Main Service Areas <span className='text-red-500'>*</span>
+                Main Service Areas <span className='text-red-500'>*Required</span>
               </Label>
               <textarea
                 id='main_service_areas'
@@ -175,10 +233,12 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
                 <Input
                   id='years_of_experience'
                   name='years_of_experience'
-                  type='number'
-                  min='1'
+                  type='text'
+                  inputMode='numeric'
+                  pattern='[0-9]*'
                   value={formInputData.years_of_experience}
                   onChange={handleFormInputChange}
+                  placeholder='e.g., 5'
                   className='font-inter'
                   required
                 />
@@ -187,14 +247,25 @@ export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }
                 <Label htmlFor='team_size' className='font-roboto'>
                   Team Size <span className='text-red-500'>*</span>
                 </Label>
-                <Input id='team_size' name='team_size' type='number' min='1' value={formInputData.team_size} onChange={handleFormInputChange} className='font-inter' required />
+                <Input
+                  id='team_size'
+                  name='team_size'
+                  type='text'
+                  inputMode='numeric'
+                  pattern='[0-9]*'
+                  value={formInputData.team_size}
+                  onChange={handleFormInputChange}
+                  placeholder='e.g., 3'
+                  className='font-inter'
+                  required
+                />
               </div>
             </div>
 
             {/* Contractor Type */}
             <div className='space-y-2'>
               <Label htmlFor='contractor_type' className='font-roboto'>
-                Contractor Type <span className='text-red-500'>*</span>
+                Contractor Type <span className='text-red-500'>*Required</span>
               </Label>
               <select
                 id='contractor_type'

@@ -1,9 +1,11 @@
 export type ContractorProfileData = {
   contractor_name: string;
   main_service_areas: string;
-  years_of_experience: number;
+  years_of_experience: string;
   contractor_type: 'individual' | 'business';
-  team_size: number;
+  email: string;
+  phone: string;
+  team_size: string;
   company_website: string;
   additional_information: string;
   images: File[];
@@ -23,14 +25,16 @@ export type ContractorProfileResponse = {
   user_id: string;
   contractor_name: string;
   main_service_areas: string;
-  years_of_experience: number;
+  years_of_experience: string;
   contractor_type: 'individual' | 'business';
-  team_size: number;
+  email: string;
+  phone: string;
+  team_size: string;
   company_website?: string;
   additional_information?: string;
+  images: ContractorProfileImageResponse[];
   created_at: string;
   updated_at: string;
-  images: ContractorProfileImageResponse[];
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,10 +45,12 @@ export async function saveContractorProfile(data: ContractorProfileData, clerkJw
   // Add all profile fields
   formData.append('contractor_name', data.contractor_name);
   formData.append('main_service_areas', data.main_service_areas);
-  formData.append('years_of_experience', data.years_of_experience.toString());
+  formData.append('years_of_experience', data.years_of_experience);
   formData.append('contractor_type', data.contractor_type);
-  formData.append('team_size', data.team_size.toString());
+  formData.append('team_size', data.team_size);
   formData.append('company_website', data.company_website);
+  formData.append('email', data.email);
+  formData.append('phone', data.phone);
   formData.append('additional_information', data.additional_information);
 
   // Add images if provided
@@ -79,11 +85,13 @@ export async function updateContractorProfile(data: Partial<ContractorProfileDat
   // Add only provided fields
   if (data.contractor_name !== undefined) formData.append('contractor_name', data.contractor_name);
   if (data.main_service_areas !== undefined) formData.append('main_service_areas', data.main_service_areas);
-  if (data.years_of_experience !== undefined) formData.append('years_of_experience', data.years_of_experience.toString());
+  if (data.years_of_experience !== undefined) formData.append('years_of_experience', data.years_of_experience);
   if (data.contractor_type !== undefined) formData.append('contractor_type', data.contractor_type);
-  if (data.team_size !== undefined) formData.append('team_size', data.team_size.toString());
+  if (data.team_size !== undefined) formData.append('team_size', data.team_size);
   if (data.company_website !== undefined) formData.append('company_website', data.company_website);
   if (data.additional_information !== undefined) formData.append('additional_information', data.additional_information);
+  if (data.email !== undefined) formData.append('email', data.email);
+  if (data.phone !== undefined) formData.append('phone', data.phone);
 
   // Add images if provided
   if (data.images) {

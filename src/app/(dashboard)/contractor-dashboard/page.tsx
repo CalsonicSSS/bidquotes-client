@@ -4,7 +4,7 @@ import { useAuth, useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ContractorProfileModal } from '@/components/contractor-dashboard/menu-sections/ProfileSection/ContractorProfileModal';
+import { ContractorProfileModal } from '@/components/contractor-dashboard/ContractorProfileModal';
 import { ContractorSidebar } from '@/components/contractor-dashboard/Sidebar';
 import { ContractorMobileHeader } from '@/components/contractor-dashboard/MobileHeader';
 import { ProfileSection } from '@/components/contractor-dashboard/menu-sections/ProfileSection';
@@ -37,6 +37,13 @@ function MainContractorDashboard() {
   );
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Update active section when URL changes
+  useEffect(() => {
+    if (sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-passes'].includes(sectionParam)) {
+      setActiveSection(sectionParam);
+    }
+  }, [sectionParam]);
+
   // Auth redirections based on user type
   useEffect(() => {
     if (user) {
@@ -46,13 +53,6 @@ function MainContractorDashboard() {
       }
     }
   }, [userId, user, router]);
-
-  // Update active section when URL changes
-  useEffect(() => {
-    if (sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-passes'].includes(sectionParam)) {
-      setActiveSection(sectionParam);
-    }
-  }, [sectionParam]);
 
   // Check contractor profile completion
   const { data: isProfileComplete = false, isLoading: isProfileLoading } = useQuery({

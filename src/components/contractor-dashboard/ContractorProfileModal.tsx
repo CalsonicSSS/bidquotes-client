@@ -11,6 +11,7 @@ import { AlertCircle } from 'lucide-react';
 import { saveContractorProfile } from '@/lib/apis/contractor-profile';
 import { ContractorProfileData } from '@/lib/apis/contractor-profile';
 import { ImageUploadSection } from '@/components/ImageUploadSection';
+import { formatPhoneInput } from '@/lib/utils/custom-format';
 
 type ContractorProfileModalProps = {
   isOpen: boolean;
@@ -20,11 +21,13 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
   const [formInputData, setFormInputData] = useState<ContractorProfileData>({
     contractor_name: '',
     main_service_areas: '',
-    years_of_experience: 1,
+    years_of_experience: '',
     contractor_type: 'individual',
-    team_size: 1,
+    team_size: '',
     company_website: '',
     additional_information: '',
+    email: '',
+    phone: '',
     images: [],
   });
 
@@ -41,17 +44,35 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
       return saveContractorProfile(formInputData, token);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contractor-profile'] });
       queryClient.invalidateQueries({ queryKey: ['contractor-profile-completion'] });
     },
   });
 
   const handleFormInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormInputData((prev) => ({
-      ...prev,
-      [name]: name === 'years_of_experience' || name === 'team_size' ? parseInt(value) || 1 : value,
-    }));
+    if (name === 'phone') {
+      const formatted = formatPhoneInput(value);
+      setFormInputData((prev) => ({
+        ...prev,
+        [name]: formatted,
+      }));
+    } else if (name === 'years_of_experience') {
+      if (value === '') {
+        setFormInputData((prev) => ({ ...prev, years_of_experience: '' }));
+        return;
+      }
+      if (!/^\d+$/.test(value)) return;
+      setFormInputData((prev) => ({ ...prev, years_of_experience: value }));
+    } else if (name === 'team_size') {
+      if (value === '') {
+        setFormInputData((prev) => ({ ...prev, team_size: '' }));
+        return;
+      }
+      if (!/^\d+$/.test(value)) return;
+      setFormInputData((prev) => ({ ...prev, team_size: value }));
+    } else {
+      setFormInputData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleImagesChange = (images: File[]) => {
@@ -66,7 +87,8 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
     mutate();
   };
 
-  const isFormValid = formInputData.contractor_name.trim() && formInputData.main_service_areas.trim() && formInputData.years_of_experience > 0 && formInputData.team_size > 0;
+  const isFormValid =
+    formInputData.contractor_name.trim() && formInputData.main_service_areas.trim() && parseInt(formInputData.years_of_experience) > 0 && parseInt(formInputData.team_size) > 0;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -96,7 +118,7 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
             {/* Contractor Name */}
             <div className='space-y-2'>
               <Label htmlFor='contractor_name' className='font-roboto'>
-                Contractor Name <span className='text-red-500'>*</span>
+                Contractor Name <span className='text-red-500'>*Required</span>
               </Label>
               <Input
                 id='contractor_name'
@@ -109,10 +131,43 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
               />
             </div>
 
+            {/* contractor contact information */}
+            <div className='space-y-2'>
+              <Label htmlFor='email' className='font-roboto'>
+                Main Email <span className='text-red-500'>*Required</span>
+              </Label>
+              <Input
+                id='email'
+                name='email'
+                type='email'
+                value={formInputData.email}
+                onChange={handleFormInputChange}
+                placeholder='Your email address'
+                className='font-inter'
+                required
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='phone' className='font-roboto'>
+                Primary Phone <span className='text-red-500'>*Required</span>
+              </Label>
+              <Input
+                id='phone'
+                name='phone'
+                type='tel'
+                value={formInputData.phone}
+                onChange={handleFormInputChange}
+                placeholder='Your phone number'
+                className='font-inter'
+                required
+              />
+            </div>
+
             {/* Main Service Areas */}
             <div className='space-y-2'>
               <Label htmlFor='main_service_areas' className='font-roboto'>
-                Main Service Areas <span className='text-red-500'>*</span>
+                Main Service Areas <span className='text-red-500'>*Required</span>
               </Label>
               <Input
                 id='main_service_areas'
@@ -129,15 +184,17 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
             {/* Years of Experience */}
             <div className='space-y-2'>
               <Label htmlFor='years_of_experience' className='font-roboto'>
-                Years of Experience <span className='text-red-500'>*</span>
+                Years of Experience <span className='text-red-500'>*Required</span>
               </Label>
               <Input
                 id='years_of_experience'
                 name='years_of_experience'
-                type='number'
-                min='1'
+                type='text'
+                inputMode='numeric'
+                pattern='[0-9]*'
                 value={formInputData.years_of_experience}
                 onChange={handleFormInputChange}
+                placeholder='e.g., 5'
                 className='font-inter'
                 required
               />
@@ -146,7 +203,7 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
             {/* Contractor Type */}
             <div className='space-y-2'>
               <Label htmlFor='contractor_type' className='font-roboto'>
-                Contractor Type <span className='text-red-500'>*</span>
+                Contractor Type <span className='text-red-500'>*Required</span>
               </Label>
               <select
                 id='contractor_type'
@@ -164,9 +221,20 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
             {/* Team Size */}
             <div className='space-y-2'>
               <Label htmlFor='team_size' className='font-roboto'>
-                Team Size <span className='text-red-500'>*</span>
+                Team Size <span className='text-red-500'>*Required</span>
               </Label>
-              <Input id='team_size' name='team_size' type='number' min='1' value={formInputData.team_size} onChange={handleFormInputChange} className='font-inter' required />
+              <Input
+                id='team_size'
+                name='team_size'
+                type='text'
+                inputMode='numeric'
+                pattern='[0-9]*'
+                value={formInputData.team_size}
+                onChange={handleFormInputChange}
+                placeholder='e.g., 3'
+                className='font-inter'
+                required
+              />
               <p className='text-sm text-gray-500 font-inter'>How many people work on your team?</p>
             </div>
           </div>
