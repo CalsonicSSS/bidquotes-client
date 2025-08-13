@@ -55,6 +55,8 @@ export default function BuyerBidDetailPage() {
     }
   };
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Show loading state
   if (isLoading) {
     return (
@@ -84,15 +86,25 @@ export default function BuyerBidDetailPage() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
+      {/* Mobile Header */}
+      <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10'>
+        <button onClick={handleBack} className='p-2 rounded-md hover:bg-gray-100'>
+          <ArrowLeft className='h-5 w-5' />
+        </button>
+        <h1 className='font-roboto font-semibold text-gray-900 text-center flex-1 mx-4 truncate'>Bid Details</h1>
+        <div className='w-9' />
+      </div>
+
       <div className='container mx-auto px-4 py-6 max-w-4xl'>
-        {/* Header */}
-        <div className='flex items-center gap-4 mb-6'>
-          <Button variant='ghost' size='sm' onClick={handleBack} className='font-roboto'>
-            <ArrowLeft className='h-4 w-4 mr-2' />
-            Back to Job
-          </Button>
-          <div className='hidden sm:block text-gray-400'>•</div>
-          <h1 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900'>Bid Details</h1>
+        {/* Desktop Header */}
+        <div className='hidden lg:block'>
+          <div className='flex items-center justify-between gap-4 mb-4'>
+            <Button onClick={handleBack} variant='ghost' className='font-roboto -ml-4'>
+              <ArrowLeft className='h-4 w-4 mr-2' />
+              Back to Job
+            </Button>
+            <h1 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900'>Bid Details</h1>
+          </div>
         </div>
 
         <div className='space-y-6'>
