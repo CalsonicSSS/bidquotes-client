@@ -1,5 +1,3 @@
-// src/lib/apis/buyer-bids.ts - Create this new file
-
 export type BuyerBidDetailResponse = {
   id: string;
   job_id: string;
@@ -34,6 +32,42 @@ export async function getBidDetailForBuyer(jobId: string, bidId: string, clerkJw
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || 'Failed to get bid details');
+  }
+
+  return await response.json();
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------
+
+export async function selectBid(jobId: string, bidId: string, clerkJwt: string): Promise<boolean> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/bids/${bidId}/select`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to select bid');
+  }
+
+  return await response.json();
+}
+
+// ------------------------------------------------------------------------------------------------------------------------------
+
+export async function cancelBidSelection(jobId: string, clerkJwt: string): Promise<boolean> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/selection`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to cancel bid selection');
   }
 
   return await response.json();

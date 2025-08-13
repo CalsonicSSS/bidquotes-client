@@ -87,7 +87,11 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
                       : 'bg-yellow-100 text-yellow-800'
                   }`}
                 >
-                  {job.status === 'full_bid' ? 'Full Bids' : job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                  {job.status === 'full_bid'
+                    ? 'Full Bids'
+                    : job.status === 'waiting_confirmation'
+                    ? 'Waiting Confirmation'
+                    : job.status.charAt(0).toUpperCase() + job.status.slice(1)}
                 </span>
               </div>
 

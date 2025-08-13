@@ -1,21 +1,19 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Clock, DollarSign, User, Briefcase, CheckCircle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getBidDetailForBuyer } from '@/lib/apis/buyer-bids';
+import { cancelBidSelection, getBidDetailForBuyer, selectBid } from '@/lib/apis/buyer-bids';
 import { formatDateTime, getStatusBadgeStyle } from '@/lib/utils/custom-format';
 
 export default function BuyerBidDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { getToken } = useAuth();
-
-  const [isSelecting, setIsSelecting] = useState(false);
+  const queryClient = useQueryClient();
 
   const jobId = params.jobId as string;
   const bidId = params.bidId as string;
@@ -36,26 +34,67 @@ export default function BuyerBidDetailPage() {
     staleTime: 0,
   });
 
+  // Bid selection mutation
+  const selectBidMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return selectBid(jobId, bidId, token);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch relevant queries
+      queryClient.invalidateQueries({ queryKey: ['buyer-bid-detail', bidId] });
+      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+
+      // Navigate back to job detail page to see updated status
+      router.push(`/buyer-dashboard/jobs/${jobId}`);
+    },
+    onError: (error) => {
+      console.error('Error selecting bid:', error);
+      alert(error instanceof Error ? error.message : 'Failed to select bid. Please try again.');
+    },
+  });
+
+  // Cancel bid selection mutation
+  const cancelSelectionMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return cancelBidSelection(jobId, token);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch relevant queries
+      queryClient.invalidateQueries({ queryKey: ['buyer-bid-detail', bidId] });
+      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+
+      // Navigate back to job detail page to see updated status
+      router.push(`/buyer-dashboard/jobs/${jobId}`);
+    },
+    onError: (error) => {
+      console.error('Error cancelling bid selection:', error);
+      alert(error instanceof Error ? error.message : 'Failed to cancel selection. Please try again.');
+    },
+  });
+
   const handleBack = () => {
     router.push(`/buyer-dashboard/jobs/${jobId}`);
   };
 
-  const handleSelectBid = async () => {
-    setIsSelecting(true);
-    try {
-      // TODO: Implement bid selection logic in next step
-      console.log('Selecting bid:', bidId);
-      // After successful selection, navigate back to job detail
-      router.push(`/buyer-dashboard/jobs/${jobId}`);
-    } catch (error) {
-      console.error('Error selecting bid:', error);
-      alert('Failed to select bid. Please try again.');
-    } finally {
-      setIsSelecting(false);
+  const handleSelectBid = () => {
+    if (window.confirm('Are you sure you want to select this bid? The contractor will be notified and you will wait for their confirmation.')) {
+      selectBidMutation.mutate();
     }
   };
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const handleCancelSelection = () => {
+    if (window.confirm('Are you sure you want to cancel this bid selection? The contractor will be notified and you can then select a new bid.')) {
+      cancelSelectionMutation.mutate();
+    }
+  };
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Show loading state
   if (isLoading) {
@@ -181,7 +220,8 @@ export default function BuyerBidDetailPage() {
           </Card>
 
           {/* Contractor Information Card (No Contact Details) */}
-          <Card>
+
+          {/* <Card>
             <CardHeader>
               <CardTitle className='font-roboto text-lg flex items-center gap-2'>
                 <User className='h-5 w-5' />
@@ -196,27 +236,30 @@ export default function BuyerBidDetailPage() {
                 </p>
               </div>
 
-              {/* TODO: Add contractor profile information in next step */}
               <div className='text-center py-8'>
                 <User className='h-12 w-12 text-gray-300 mx-auto mb-4' />
                 <p className='font-inter text-gray-600'>Contractor profile information will be displayed here</p>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Action Buttons */}
           <div className='flex flex-col sm:flex-row gap-4'>
-            <Button onClick={handleSelectBid} disabled={isSelecting || bidDetail.is_selected} className='flex-1 font-roboto'>
-              {isSelecting ? 'Selecting...' : bidDetail.is_selected ? 'Already Selected' : 'Select This Bid'}
-            </Button>
+            {!bidDetail.is_selected && bidDetail.status === 'pending' && (
+              <Button onClick={handleSelectBid} disabled={selectBidMutation.isPending} className='flex-1 font-roboto'>
+                {selectBidMutation.isPending ? 'Selecting...' : 'Select This Bid'}
+              </Button>
+            )}
 
-            {bidDetail.is_selected && (
-              <Button
-                variant='outline'
-                className='flex-1 font-roboto'
-                disabled={true} // TODO: Implement cancel selection in next step
-              >
-                Cancel Selection
+            {bidDetail.is_selected && bidDetail.status === 'selected' && (
+              <Button onClick={handleCancelSelection} disabled={cancelSelectionMutation.isPending} variant='outline' className='flex-1 font-roboto'>
+                {cancelSelectionMutation.isPending ? 'Cancelling...' : 'Cancel Selection'}
+              </Button>
+            )}
+
+            {!(!bidDetail.is_selected && bidDetail.status === 'pending') && !(bidDetail.is_selected && bidDetail.status === 'selected') && (
+              <Button disabled className='flex-1 font-roboto'>
+                {bidDetail.status === 'confirmed' ? 'Bid Confirmed' : 'Cannot Select This Bid'}
               </Button>
             )}
           </div>
