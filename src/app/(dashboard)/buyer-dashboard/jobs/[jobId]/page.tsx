@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Edit, Trash2, MapPin } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, MapPin, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getJobDetail, deleteJob } from '@/lib/apis/buyer-jobs';
@@ -22,7 +22,7 @@ export default function JobDetailPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const jobId = params.jobId as string;
 
-  // Fetch job details
+  // Fetch specific job details
   const {
     data: jobDetail,
     isLoading,
@@ -139,6 +139,21 @@ export default function JobDetailPage() {
           </div>
         </div>
 
+        {jobDetail.status === 'confirmed' && (
+          <Card className='bg-purple-50 border-purple-200 mb-5'>
+            <CardHeader>
+              <CardTitle className='font-roboto text-lg flex items-center gap-2 text-purple-900'>
+                <CheckCircle className='h-5 w-5' />
+                Job Confirmed 🎉
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-4'>
+              <p className='font-inter text-sm text-purple-700 mb-4'>Congratulations! Your job has been successfully confirmed by the contractor.</p>
+              <p className='font-inter text-sm text-purple-700 mb-4'>Contractor will soon contact you</p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className='space-y-6'>
           {/* Job Details Card */}
           <Card>
@@ -165,7 +180,11 @@ export default function JobDetailPage() {
                             : 'bg-yellow-100 text-yellow-800'
                         }`}
                       >
-                        {jobDetail.status === 'full_bid' ? 'Full Bids' : jobDetail.status.charAt(0).toUpperCase() + jobDetail.status.slice(1)}
+                        {jobDetail.status === 'full_bid'
+                          ? 'Full Bids'
+                          : jobDetail.status === 'waiting_confirmation'
+                          ? 'Waiting Confirmation'
+                          : jobDetail.status.charAt(0).toUpperCase() + jobDetail.status.slice(1)}
                       </span>
                     </div>
                   </div>

@@ -43,6 +43,9 @@ export type BidDetailResponse = {
   job_type: string;
   job_budget: string;
   job_city: string;
+  // Buyer contact info (only revealed when bid is confirmed)
+  buyer_contact_email?: string;
+  buyer_contact_phone?: string;
 };
 
 export type ContractorBidCardResponse = {
@@ -202,6 +205,42 @@ export async function getContractorBidCards(clerkJwt: string, status?: string): 
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || 'Failed to get contractor bids');
+  }
+
+  return await response.json();
+}
+
+// ------------------------------------------------------------------------------------------------------------------------------------
+
+export async function declineSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/decline`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to decline bid selection');
+  }
+
+  return await response.json();
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------
+
+export async function confirmSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/confirm`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to confirm bid selection');
   }
 
   return await response.json();

@@ -252,7 +252,7 @@ export default function BuyerBidDetailPage() {
             )}
 
             {bidDetail.is_selected && bidDetail.status === 'selected' && (
-              <Button onClick={handleCancelSelection} disabled={cancelSelectionMutation.isPending} variant='outline' className='flex-1 font-roboto'>
+              <Button onClick={handleCancelSelection} disabled={cancelSelectionMutation.isPending} variant='outline' className='flex-1 font-roboto bg-yellow-500'>
                 {cancelSelectionMutation.isPending ? 'Cancelling...' : 'Cancel Selection'}
               </Button>
             )}

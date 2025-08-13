@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Trash2, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import { getBidDetail, deleteBid } from '@/lib/apis/contractor-bids';
+import { declineSelectedBid } from '@/lib/apis/contractor-bids';
+import { confirmSelectedBid } from '@/lib/apis/contractor-bids';
+import { Phone, Mail } from 'lucide-react';
 
 type BidDetailPageProps = {
   bidId: string;
@@ -50,6 +53,47 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
     },
   });
 
+  // Decline bid selection mutation
+  const declineBidMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return declineSelectedBid(bidId, token);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch relevant queries
+      queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
+      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+
+      // Navigate back to dashboard with success message
+      router.push('/contractor-dashboard?section=your-bids');
+    },
+    onError: (error) => {
+      console.error('Error declining bid:', error);
+      alert(error instanceof Error ? error.message : 'Failed to decline bid. Please try again.');
+    },
+  });
+
+  // Confirm bid selection mutation
+  const confirmBidMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return confirmSelectedBid(bidId, token);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch relevant queries to get updated bid details (with buyer contact)
+      queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
+      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+
+      // Don't navigate away - let user see the confirmed status and buyer contact info
+    },
+    onError: (error) => {
+      console.error('Error confirming bid:', error);
+      alert(error instanceof Error ? error.message : 'Failed to confirm bid. Please try again.');
+    },
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -76,6 +120,18 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
     }
   };
 
+  const handleDeclineBid = () => {
+    if (window.confirm('Are you sure you want to decline this bid selection? This action cannot be undone and the buyer will be notified.')) {
+      declineBidMutation.mutate();
+    }
+  };
+
+  const handleConfirmBid = () => {
+    if (window.confirm('Are you sure you want to confirm this bid selection? This will finalize the job and reveal buyer contact information.')) {
+      confirmBidMutation.mutate();
+    }
+  };
+
   const handleViewJob = () => {
     if (bid) {
       router.push(`/contractor-dashboard/jobs/${bid.job_id}`);
@@ -85,6 +141,8 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
   const handleBackToDashboard = () => {
     router.push('/contractor-dashboard?section=your-bids');
   };
+
+  // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Loading state
   if (isLoading) {
@@ -136,6 +194,74 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
             </Button>
           </div>
         </div>
+
+        {/* Show when bid is selected */}
+        {bid.status === 'selected' && (
+          <Card className='bg-green-50 border-green-200 mb-5'>
+            <CardContent className='pt-6'>
+              <div className='flex items-center gap-3 mb-4'>
+                <CheckCircle className='h-6 w-6 text-green-600' />
+                <div>
+                  <h3 className='font-roboto font-semibold text-green-900'>🎉 Your Bid Has Been Selected!</h3>
+                  <p className='font-inter text-sm text-green-700'>The buyer has chosen your bid for this job.</p>
+                </div>
+              </div>
+
+              <div className='bg-green-100 border border-green-200 rounded-lg p-4'>
+                <h4 className='font-roboto font-semibold text-green-900 mb-2'>Next Steps:</h4>
+                <ul className='font-inter text-sm text-green-800 space-y-1'>
+                  <li>
+                    • <strong>Confirm:</strong> Pay the confirmation fee to secure this job and get buyer contact details
+                  </li>
+                  <li>
+                    • <strong>Decline:</strong> If you're no longer available, decline so the buyer can select another contractor
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Show when bid is fully confirmed */}
+        {bid.status === 'confirmed' && (
+          <Card className='bg-purple-50 border-purple-200 mb-5'>
+            <CardHeader>
+              <CardTitle className='font-roboto text-lg flex items-center gap-2 text-purple-900'>
+                <CheckCircle className='h-5 w-5' />
+                Job Confirmed 🎉
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-4'>
+              <p className='font-inter text-sm text-purple-700 mb-4'>Congratulations! You have successfully confirmed this job. The buyer contact information is now available.</p>
+
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <div className='flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200'>
+                  <Mail className='h-5 w-5 text-purple-600' />
+                  <div>
+                    <p className='font-roboto font-semibold text-gray-900'>Email</p>
+                    <p className='font-inter text-sm text-gray-700'>{bid.buyer_contact_email}</p>
+                  </div>
+                </div>
+
+                {bid.buyer_contact_phone && (
+                  <div className='flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200'>
+                    <Phone className='h-5 w-5 text-purple-600' />
+                    <div>
+                      <p className='font-roboto font-semibold text-gray-900'>Phone</p>
+                      <p className='font-inter text-sm text-gray-700'>{bid.buyer_contact_phone}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className='bg-purple-100 border border-purple-200 rounded-lg p-4'>
+                <p className='font-inter text-sm text-purple-800'>
+                  <strong>Next Steps:</strong> Reach out to the buyer to discuss project details, timeline, and coordinate the work.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className='space-y-6'>
           {/* Bid Overview Card */}
@@ -240,13 +366,13 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
 
                 {bid.status === 'selected' && (
                   <>
-                    <Button className='font-roboto bg-blue-600 hover:bg-blue-700'>
+                    <Button onClick={handleConfirmBid} disabled={confirmBidMutation.isPending} className='font-roboto bg-blue-600 hover:bg-blue-700'>
                       <CheckCircle className='h-4 w-4 mr-2' />
-                      Confirm Selection
+                      {confirmBidMutation.isPending ? 'Confirming...' : 'Confirm Selection'}
                     </Button>
-                    <Button variant='outline' className='font-roboto'>
+                    <Button onClick={handleDeclineBid} disabled={declineBidMutation.isPending || confirmBidMutation.isPending} variant='outline' className='font-roboto'>
                       <XCircle className='h-4 w-4 mr-2' />
-                      Decline Selection
+                      {declineBidMutation.isPending ? 'Declining...' : 'Decline Selection'}
                     </Button>
                   </>
                 )}
@@ -258,14 +384,12 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
                   </Button>
                 )}
 
+                {/* no action needed for confirmed bid */}
                 {bid.status === 'confirmed' && (
-                  <div className='text-center w-full'>
-                    <div className='flex items-center justify-center gap-2 text-green-600 mb-4'>
-                      <CheckCircle className='h-5 w-5' />
-                      <span className='font-roboto font-semibold'>Job Confirmed</span>
-                    </div>
-                    <p className='font-inter text-gray-600 text-sm'>Congratulations! This job has been confirmed. You can now access the buyer's contact information.</p>
-                  </div>
+                  <Button onClick={handleBackToDashboard} className='font-roboto bg-gray-600 hover:bg-gray-700'>
+                    <ArrowLeft className='h-4 w-4 mr-2' />
+                    Back to Dashboard
+                  </Button>
                 )}
               </div>
             </CardContent>

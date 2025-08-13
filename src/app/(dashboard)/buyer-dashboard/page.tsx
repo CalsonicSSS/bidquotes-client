@@ -63,6 +63,7 @@ export default function BuyerDashboard() {
       return getBuyerJobs(token);
     },
     enabled: !!userId && !!getToken() && !!user,
+    staleTime: 0,
   });
 
   // Check if user can post jobs (based on contact info complete)
