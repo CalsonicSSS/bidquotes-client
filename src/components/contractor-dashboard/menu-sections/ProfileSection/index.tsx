@@ -14,7 +14,8 @@ export function ProfileSection() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const { getToken } = useAuth();
 
-  // Fetch contractor profile
+  // Fetch complete contractor full profile data
+  // and then populate all the views with profile data
   const { data: contractorProfile, isLoading } = useQuery({
     queryKey: ['contractor-profile'],
     queryFn: async () => {

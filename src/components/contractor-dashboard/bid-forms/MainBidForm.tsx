@@ -41,12 +41,12 @@ export default function MainBidForm() {
   });
 
   // Identify the mode and IDs
-  const jobId = searchParams.get('jobId');
-  const bidId = searchParams.get('draft') || searchParams.get('edit');
+  const jobId = searchParams.get('jobId'); // jobID will be getting for new bid posting on this job (nav from the job detail page)
+  const bidId = searchParams.get('draft') || searchParams.get('edit'); // this is nav from the bids list page or bid detail page
   const isEditingDraft = !!searchParams.get('draft');
   const isEditingBid = !!searchParams.get('edit');
 
-  // Fetch job details for context (when creating new bid)
+  // Fetch job details based on job id (when creating new bid)
   const { data: jobDetail } = useQuery({
     queryKey: ['contractor-job-detail', jobId],
     queryFn: async () => {
@@ -57,7 +57,8 @@ export default function MainBidForm() {
     enabled: !!jobId && !!getToken,
   });
 
-  // Fetch existing bid data if editing
+  // Fetch existing bid data if its either editing or drafting
+  // this will fetch if bidId is available
   const { data: existingBidData, isLoading: isBidLoading } = useQuery({
     queryKey: ['bid-detail', bidId],
     queryFn: async () => {
@@ -75,7 +76,7 @@ export default function MainBidForm() {
       // New bid for specific job
       setFormData((prev) => ({ ...prev, job_id: jobId }));
     } else if (existingBidData) {
-      // Editing existing bid/draft
+      // Editing existing bid/draft by pre-populating form fields
       setFormData({
         job_id: existingBidData.job_id,
         title: existingBidData.title || '',
@@ -212,7 +213,7 @@ export default function MainBidForm() {
       queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
       queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
       setHasUnsavedChanges(false);
-      router.push('/contractor-dashboard');
+      router.push('/contractor-dashboard?section=your-bids');
     },
     onError: (error) => {
       console.error('Error deleting bid draft:', error);
@@ -244,12 +245,12 @@ export default function MainBidForm() {
       const confirm = window.confirm('You have unsaved changes. Are you sure you want to leave?');
       if (!confirm) return;
     }
-    router.push('/contractor-dashboard');
+    router.push('/contractor-dashboard?section=your-bids');
   };
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    router.push('/contractor-dashboard');
+    router.push('/contractor-dashboard?section=your-bids');
   };
 
   // Show loading while fetching bid data

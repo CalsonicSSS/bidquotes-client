@@ -30,7 +30,7 @@ function MainContractorDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Check for section parameter in URL
+  // Check for "section" parameter in URL
   const sectionParam = searchParams.get('section') as ActiveSection;
   const [activeSection, setActiveSection] = useState<ActiveSection>(
     sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-passes'].includes(sectionParam) ? sectionParam : 'all-jobs'
@@ -54,7 +54,7 @@ function MainContractorDashboard() {
     }
   }, [userId, user, router]);
 
-  // Check contractor profile completion
+  // Upon this page, we will first fetch contractor profile completion query
   const { data: isProfileComplete = false, isLoading: isProfileLoading } = useQuery({
     queryKey: ['contractor-profile-completion'],
     queryFn: async () => {
@@ -87,6 +87,7 @@ function MainContractorDashboard() {
         <div className='flex-1 min-h-screen'>
           <ContractorMobileHeader activeSection={activeSection} setSidebarOpen={setSidebarOpen} />
 
+          {/* main section area and content */}
           <div className='p-4 lg:p-8'>
             {activeSection === 'all-jobs' && <AllJobsSection />}
             {activeSection === 'your-bids' && <YourBidsSection setActiveSection={setActiveSection} />}

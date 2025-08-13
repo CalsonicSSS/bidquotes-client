@@ -11,7 +11,7 @@ interface JobFiltersProps {
   setJobTypeFilter: (value: string) => void;
   showSavedOnly: boolean;
   setShowSavedOnly: (value: boolean) => void;
-  cityFilters: string[];
+  cityFilterOptions: string[];
   handleClearAllFilters: () => void;
   jobsCount: number;
   isJobsLoading: boolean;
@@ -24,7 +24,7 @@ export function JobFilters({
   setJobTypeFilter,
   showSavedOnly,
   setShowSavedOnly,
-  cityFilters,
+  cityFilterOptions,
   handleClearAllFilters,
   jobsCount,
   isJobsLoading,
@@ -47,7 +47,7 @@ export function JobFilters({
                 <SelectItem value='all' className='font-inter'>
                   All Cities
                 </SelectItem>
-                {cityFilters.map((city) => (
+                {cityFilterOptions.map((city) => (
                   <SelectItem key={city} value={city} className='font-inter'>
                     {city}
                   </SelectItem>

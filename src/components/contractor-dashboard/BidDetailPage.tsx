@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Trash2, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
-import { getBidDetail, deleteBid, type BidDetailResponse } from '@/lib/apis/contractor-bids';
+import { getBidDetail, deleteBid } from '@/lib/apis/contractor-bids';
 
 type BidDetailPageProps = {
   bidId: string;
@@ -254,7 +254,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
                 {bid.status === 'declined' && (
                   <Button onClick={handleDeleteBid} variant='destructive' disabled={deleteBidMutation.isPending} className='font-roboto'>
                     <Trash2 className='h-4 w-4 mr-2' />
-                    {deleteBidMutation.isPending ? 'Deleting...' : 'Remove Bid'}
+                    {deleteBidMutation.isPending ? 'Deleting...' : 'Delete Bid'}
                   </Button>
                 )}
 

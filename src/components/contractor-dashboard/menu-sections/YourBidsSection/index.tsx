@@ -24,7 +24,7 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
 
   // Fetch contractor bids (always fetch all, filter on client side like buyer)
   const {
-    data: bids = [],
+    data: contractorBids = [],
     isLoading,
     error,
   } = useQuery({
@@ -41,24 +41,24 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
 
   // Calculate status counts
   const statusCounts = {
-    total: bids.length,
-    draft: bids.filter((bid) => bid.status === 'draft').length,
-    pending: bids.filter((bid) => bid.status === 'pending').length,
-    confirmed: bids.filter((bid) => bid.status === 'confirmed').length,
+    total: contractorBids.length,
+    draft: contractorBids.filter((bid) => bid.status === 'draft').length,
+    pending: contractorBids.filter((bid) => bid.status === 'pending').length,
+    confirmed: contractorBids.filter((bid) => bid.status === 'confirmed').length,
   };
 
   // Filter options with counts (like buyer side)
   const filterOptions = [
-    { value: 'all', label: 'All Bids', count: bids.length },
-    { value: 'draft', label: 'Drafts', count: bids.filter((b) => b.status === 'draft').length },
-    { value: 'pending', label: 'Pending', count: bids.filter((b) => b.status === 'pending').length },
-    { value: 'selected', label: 'Selected', count: bids.filter((b) => b.status === 'selected').length },
-    { value: 'confirmed', label: 'Confirmed', count: bids.filter((b) => b.status === 'confirmed').length },
-    { value: 'declined', label: 'Declined', count: bids.filter((b) => b.status === 'declined').length },
+    { value: 'all', label: 'All Bids', count: contractorBids.length },
+    { value: 'draft', label: 'Drafts', count: contractorBids.filter((b) => b.status === 'draft').length },
+    { value: 'pending', label: 'Pending', count: contractorBids.filter((b) => b.status === 'pending').length },
+    { value: 'selected', label: 'Selected', count: contractorBids.filter((b) => b.status === 'selected').length },
+    { value: 'confirmed', label: 'Confirmed', count: contractorBids.filter((b) => b.status === 'confirmed').length },
+    { value: 'declined', label: 'Declined', count: contractorBids.filter((b) => b.status === 'declined').length },
   ];
 
   // Filter bids based on active filter (client-side filtering like buyer side)
-  const filteredBids = bids.filter((bid) => {
+  const filteredBids = contractorBids.filter((bid) => {
     if (activeFilter === 'all') return true;
     return bid.status === activeFilter;
   });

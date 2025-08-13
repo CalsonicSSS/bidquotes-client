@@ -13,8 +13,8 @@ export function AllJobsSection() {
   const [jobTypeFilter, setJobTypeFilter] = useState<string>('all');
   const [showSavedOnly, setShowSavedOnly] = useState(false);
 
-  // Fetch available jobs with filters
-  // we use state in the query key to refetch when filters change immediately, by pass the stale time and other triggers all
+  // Fetch available jobs based on filter values
+  // we use 2 states in the query key to trigger the refetch immediately whenever filters change, by pass the stale time and other triggers all
   // recall that stale time is respected only on specific query key used
   const {
     data: availableJobs = [],
@@ -31,8 +31,8 @@ export function AllJobsSection() {
     enabled: !!getToken,
   });
 
-  // Fetch available cities for filter
-  const { data: cityFilters = [] } = useQuery({
+  // Fetch available cities as filter options in real time
+  const { data: cityFilterOptions = [] } = useQuery({
     queryKey: ['job-cities'],
     queryFn: async () => {
       const token = await getToken();
@@ -74,7 +74,7 @@ export function AllJobsSection() {
         setJobTypeFilter={setJobTypeFilter}
         showSavedOnly={showSavedOnly}
         setShowSavedOnly={setShowSavedOnly}
-        cityFilters={cityFilters}
+        cityFilterOptions={cityFilterOptions}
         handleClearAllFilters={handleClearAllFilters}
         jobsCount={availableJobs.length}
         isJobsLoading={isJobsLoading}
