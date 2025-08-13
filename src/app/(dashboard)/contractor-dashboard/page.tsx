@@ -79,7 +79,7 @@ function MainContractorDashboard() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <ContractorProfileModal isOpen={!isProfileComplete} />
+      <ContractorProfileModal isOpen={!isProfileComplete} userEmail={user?.emailAddresses[0]?.emailAddress || ''} />
 
       <div className='flex relative'>
         <ContractorSidebar user={user} activeSection={activeSection} setActiveSection={setActiveSection} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />

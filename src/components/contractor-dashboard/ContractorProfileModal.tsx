@@ -15,9 +15,10 @@ import { formatPhoneInput } from '@/lib/utils/custom-format';
 
 type ContractorProfileModalProps = {
   isOpen: boolean;
+  userEmail: string;
 };
 
-export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) {
+export function ContractorProfileModal({ isOpen, userEmail }: ContractorProfileModalProps) {
   const [formInputData, setFormInputData] = useState<ContractorProfileData>({
     contractor_name: '',
     main_service_areas: '',
@@ -26,7 +27,7 @@ export function ContractorProfileModal({ isOpen }: ContractorProfileModalProps) 
     team_size: '',
     company_website: '',
     additional_information: '',
-    email: '',
+    email: userEmail,
     phone: '',
     images: [],
   });

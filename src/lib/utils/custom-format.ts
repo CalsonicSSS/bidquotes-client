@@ -32,3 +32,31 @@ export const formatCurrency = (value: string) => {
   const number = parseInt(numericValue, 10);
   return `$${number.toLocaleString()}`;
 };
+
+// Helper function to format date
+export const formatDateTime = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-CA', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+// Helper function to get status badge styling
+export const getStatusBadgeStyle = (status: string, isSelected: boolean) => {
+  if (isSelected) {
+    return 'bg-blue-100 text-blue-800 border border-blue-200';
+  }
+
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'confirmed':
+      return 'bg-green-100 text-green-800';
+    case 'declined':
+      return 'bg-gray-100 text-gray-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};

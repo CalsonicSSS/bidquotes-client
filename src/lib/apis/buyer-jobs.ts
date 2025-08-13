@@ -46,6 +46,20 @@ export type JobImageResponse = {
   created_at: string;
 };
 
+// ------------------------------------------------------
+
+export type BidCardInfo = {
+  id: string;
+  contractor_id: string;
+  title: string;
+  price_min: string;
+  price_max: string;
+  timeline_estimate: string;
+  status: string;
+  is_selected: boolean;
+  created_at: string;
+};
+
 export type JobDetailResponse = {
   id: string;
   buyer_id: string;
@@ -63,6 +77,7 @@ export type JobDetailResponse = {
   updated_at: string;
   images: JobImageResponse[];
   bid_count: number;
+  bids?: BidCardInfo[];
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

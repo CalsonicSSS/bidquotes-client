@@ -226,7 +226,12 @@ export default function JobDetailPage() {
           </Card>
 
           {/* Bids Section */}
-          <JobBidsSection jobId={jobId} jobStatus={jobDetail.status} bidCount={jobDetail.bid_count} />
+          <JobBidsSection
+            jobId={jobId}
+            jobStatus={jobDetail.status}
+            bidCount={jobDetail.bid_count}
+            bids={jobDetail.bids} // Add this new prop
+          />
         </div>
       </div>
     </div>
