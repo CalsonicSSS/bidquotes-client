@@ -13,6 +13,7 @@ import { SuccessModal } from '@/components/SuccessModal';
 import { BidInfoSection } from './BidInfoSection';
 import { Actions } from './Actions';
 import { DeleteBidDraftModal } from './DeleteBidDraftModal';
+import { getContractorProfileName } from '@/lib/apis/contractor-profile';
 
 export default function MainBidForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof BidFormData, string>>>({});
@@ -36,8 +37,8 @@ export default function MainBidForm() {
     price_min: '',
     price_max: '',
     timeline_estimate: '',
-    work_description: '',
-    additional_notes: '',
+    work_description: 'hidden placeholder',
+    additional_notes: 'hidden placeholder',
   });
 
   // Identify the mode and IDs
@@ -45,6 +46,17 @@ export default function MainBidForm() {
   const bidId = searchParams.get('draft') || searchParams.get('edit'); // this is nav from the bids list page or bid detail page
   const isEditingDraft = !!searchParams.get('draft');
   const isEditingBid = !!searchParams.get('edit');
+
+  // Fetch contractor name based on user token, the name will be used as value for bid title
+  const { data: contractorName } = useQuery({
+    queryKey: ['contractor-name'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('No token available');
+      return getContractorProfileName(token);
+    },
+    enabled: !!getToken,
+  });
 
   // Fetch job details based on job id (when creating new bid)
   const { data: jobDetail } = useQuery({
@@ -69,6 +81,13 @@ export default function MainBidForm() {
     staleTime: 0,
     enabled: !!bidId && !!getToken,
   });
+
+  // Pre-populate contractor name
+  useEffect(() => {
+    if (contractorName) {
+      setFormData((prev) => ({ ...prev, title: contractorName || '' }));
+    }
+  }, [contractorName]);
 
   // Pre-populate form data
   useEffect(() => {
@@ -137,11 +156,11 @@ export default function MainBidForm() {
   const validateRequiredFields = () => {
     const newErrors: Partial<Record<keyof BidFormData, string>> = {};
 
-    if (!formData.title.trim()) newErrors.title = 'Bid title is required';
+    // if (!formData.title.trim()) newErrors.title = 'Bid title is required';
     if (!formData.price_min.trim()) newErrors.price_min = 'Minimum price is required';
     if (!formData.price_max.trim()) newErrors.price_max = 'Maximum price is required';
     if (!formData.timeline_estimate.trim()) newErrors.timeline_estimate = 'Timeline estimate is required';
-    if (!formData.work_description.trim()) newErrors.work_description = 'Work description is required';
+    // if (!formData.work_description.trim()) newErrors.work_description = 'Work description is required';
 
     setErrors(newErrors);
     const isValid = Object.keys(newErrors).length === 0;

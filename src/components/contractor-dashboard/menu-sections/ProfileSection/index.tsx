@@ -69,7 +69,7 @@ export function ProfileSection() {
               {/* Basic Information */}
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div>
-                  <label className='font-roboto text-sm font-semibold text-gray-700'>Contractor Name</label>
+                  <label className='font-roboto text-sm font-semibold text-gray-700'>Contractor (or Company) Name</label>
                   <p className='font-inter text-gray-900 mt-1'>{contractorProfile.contractor_name}</p>
                 </div>
                 <div>

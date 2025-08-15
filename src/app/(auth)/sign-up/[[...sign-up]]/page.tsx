@@ -23,7 +23,7 @@ export default function SignUpPage() {
             <CardContent className='space-y-6'>
               <Button onClick={() => setUserType('buyer')} className='w-full h-20 font-roboto text-lg bg-blue-600 hover:bg-blue-700 flex flex-col'>
                 <div className='py-5 flex flex-col'>
-                  <span>I need services (as Buyer)</span>
+                  <span>I need services (as Home Owner)</span>
                   <span className='text-sm font-inter opacity-80'>Post jobs and get bids</span>
                 </div>
               </Button>
@@ -43,8 +43,8 @@ export default function SignUpPage() {
                 <AlertCircle className='h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0' />
                 <div className='text-sm'>
                   <p className='font-inter text-blue-800'>
-                    <span className='font-semibold'>Account Policy:</span> Only one account per type. Choose carefully — you can&apos;t switch between buyer and contractor later on
-                    this account.
+                    <span className='font-semibold'>Account Policy:</span> Only one account per type. Choose carefully — you can&apos;t switch between home owner and contractor
+                    later on this account.
                   </p>
                 </div>
               </div>

@@ -33,7 +33,7 @@ export function BuyerMobileHeader({ activeSection, setSidebarOpen }: BuyerMobile
 
       {/* User Type Indicator for Mobile */}
       <div className='flex justify-center'>
-        <span className='inline-flex px-2 py-1 rounded-full text-xs font-inter font-medium bg-blue-100 text-blue-800 border border-blue-200'>🏠 Buyer Account</span>
+        <span className='inline-flex px-2 py-1 rounded-full text-xs font-inter font-medium bg-blue-100 text-blue-800 border border-blue-200'>🏠 Home Owner Account</span>
       </div>
     </div>
   );

@@ -3,16 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { BidFormData } from '@/lib/apis/contractor-bids';
 import { formatCurrency } from '@/lib/utils/custom-format';
-
-type BidFormData = {
-  title: string;
-  price_min: string;
-  price_max: string;
-  timeline_estimate: string;
-  work_description: string;
-  additional_notes: string;
-};
 
 type BidInfoSectionProps = {
   formData: BidFormData;
@@ -32,8 +24,8 @@ export function BidInfoSection({ formData, onFormInputChange, errors }: BidInfoS
         <CardTitle className='font-roboto'>Your Bid Details</CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
-        {/* Bid Title */}
-        <div className='space-y-2'>
+        {/* Bid Title (hidden) */}
+        <div className='space-y-2 hidden'>
           <Label htmlFor='title' className='font-roboto'>
             Bid Title <span className='text-red-500'>*</span>
           </Label>
@@ -98,8 +90,8 @@ export function BidInfoSection({ formData, onFormInputChange, errors }: BidInfoS
           <p className='font-inter text-xs text-gray-500'>How long will this job take to complete?</p>
         </div>
 
-        {/* Work Description */}
-        <div className='space-y-2'>
+        {/* Work Description (hidden) */}
+        <div className='space-y-2 hidden'>
           <Label htmlFor='work_description' className='font-roboto'>
             Detailed Work Description <span className='text-red-500'>*</span>
           </Label>
@@ -113,8 +105,8 @@ export function BidInfoSection({ formData, onFormInputChange, errors }: BidInfoS
           {errors.work_description && <p className='font-inter text-sm text-red-600'>{errors.work_description}</p>}
         </div>
 
-        {/* Additional Notes */}
-        <div className='space-y-2'>
+        {/* Additional Notes (hidden) */}
+        <div className='space-y-2 hidden'>
           <Label htmlFor='additional_notes' className='font-roboto'>
             Additional Notes <span className='font-inter text-sm text-gray-500'>(Optional)</span>
           </Label>

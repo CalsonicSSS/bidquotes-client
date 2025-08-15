@@ -118,8 +118,26 @@ export async function updateContractorProfile(data: Partial<ContractorProfileDat
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getContractorProfile(clerkJwt: string): Promise<ContractorProfileResponse | null> {
+export async function getContractorProfile(clerkJwt: string): Promise<ContractorProfileResponse> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/profile`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to get contractor profile');
+  }
+
+  return await response.json();
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------
+
+export async function getContractorProfileName(clerkJwt: string): Promise<string> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/profile/name`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${clerkJwt}`,

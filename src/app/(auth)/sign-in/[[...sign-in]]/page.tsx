@@ -58,8 +58,8 @@ export default function SignInPage() {
           <AlertCircle className='h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0' />
           <div className='text-sm'>
             <p className='font-inter text-blue-800'>
-              <span className='font-semibold'>Remember:</span> Each account is tied to a specific user type (Buyer or Contractor). Make sure you're signing into the correct account
-              type for your needs.
+              <span className='font-semibold'>Remember:</span> Each account is tied to a specific user type (Home Owner or Contractor). Make sure you're signing into the correct
+              account type for your needs.
             </p>
           </div>
         </div>

@@ -13,10 +13,10 @@ export function Footer() {
             <p className='font-inter text-gray-400 mb-4'>Connecting homeowners with quality contractors.</p>
             <ul className='font-inter space-y-2 text-gray-400'>
               <li>
-                Email: <span className='hover:text-white cursor-pointer'>info@bidquotes.com</span>
+                Email: <span className='hover:text-white cursor-pointer'>info@bidquotecanada.com</span>
               </li>
               <li>
-                Phone: <span className='hover:text-white cursor-pointer'>(123) 456-7890</span>
+                Phone: <span className='hover:text-white cursor-pointer'>+1 (437) 688-8669</span>
               </li>
             </ul>
           </div>

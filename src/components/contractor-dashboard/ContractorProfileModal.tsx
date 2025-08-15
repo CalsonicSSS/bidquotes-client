@@ -119,7 +119,7 @@ export function ContractorProfileModal({ isOpen, userEmail }: ContractorProfileM
             {/* Contractor Name */}
             <div className='space-y-2'>
               <Label htmlFor='contractor_name' className='font-roboto'>
-                Contractor Name <span className='text-red-500'>*Required</span>
+                Contractor / Company Name <span className='text-red-500'>*Required</span>
               </Label>
               <Input
                 id='contractor_name'

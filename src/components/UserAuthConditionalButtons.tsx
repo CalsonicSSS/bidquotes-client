@@ -30,7 +30,7 @@ async function SignedInButtons() {
         {/* User Type Indicator for Home Page */}
         <div className='flex items-center gap-2 mb-2'>
           <span className='inline-flex px-3 py-1 rounded-full text-sm font-inter font-medium bg-blue-100 text-blue-800 border border-blue-200'>
-            🏠 Welcome back, {user?.firstName} (Buyer)
+            🏠 Welcome back, {user?.firstName} (Home owner)
           </span>
         </div>
 

@@ -18,7 +18,7 @@ async function UserTypeIndicator() {
           userType === 'buyer' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-green-100 text-green-800 border-green-200'
         }`}
       >
-        {userType === 'buyer' ? 'Buyer Account' : 'Contractor Account'}
+        {userType === 'buyer' ? 'Home Owner Account' : 'Contractor Account'}
       </span>
 
       {/* Mobile version - shorter text */}
@@ -27,7 +27,7 @@ async function UserTypeIndicator() {
           userType === 'buyer' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-green-100 text-green-800 border-green-200'
         }`}
       >
-        {userType === 'buyer' ? 'Buyer' : 'Contractor'}
+        {userType === 'buyer' ? 'Home Owner' : 'Contractor'}
       </span>
     </div>
   );
