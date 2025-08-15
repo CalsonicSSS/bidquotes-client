@@ -91,9 +91,9 @@ export default function ContractorJobDetailPage() {
           {/* Job Details Card */}
           <Card>
             <CardHeader className='pb-4 mb-5'>
-              <div className='flex justify-between items-start'>
+              <div className='flex justify-between items-center'>
                 <CardTitle className='font-roboto text-lg lg:text-xl'>{jobDetail.title}</CardTitle>
-                <span className='text-sm font-inter'>Posted on {new Date(jobDetail.created_at).toLocaleDateString()}</span>
+                <span className='text-sm font-inter'>Posted {new Date(jobDetail.created_at).toLocaleDateString()}</span>
               </div>
             </CardHeader>
 
@@ -129,10 +129,10 @@ export default function ContractorJobDetailPage() {
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
                   <MapPin className='h-4 w-4' />
-                  Location
+                  Location (City / Area)
                 </h3>
-                <p className='font-inter text-gray-700'>{jobDetail.location_address}</p>
-                <p className='font-inter text-sm text-gray-500 mt-1'>{jobDetail.city}</p>
+                {/* <p className='font-inter text-gray-700'>{jobDetail.location_address}</p> */}
+                <p className='font-inter text-gray-700'>{jobDetail.city}</p>
               </div>
 
               {/* contact */}

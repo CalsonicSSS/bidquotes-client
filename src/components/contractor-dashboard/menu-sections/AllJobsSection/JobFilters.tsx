@@ -38,7 +38,7 @@ export function JobFilters({
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'>
           {/* City Filter */}
           <div className='space-y-2'>
-            <label className='font-roboto text-sm font-medium'>City</label>
+            <label className='font-roboto text-sm font-medium'>City / Area</label>
             <Select value={cityFilter} onValueChange={setCityFilter}>
               <SelectTrigger className='font-inter'>
                 <SelectValue placeholder='All Cities' />
