@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title: 'Bidquotes Service',
   description: 'Home services marketplace connecting buyers with contractors',
   verification: {
-    google: 'rCkYbfnUXb9n0D2pELNUixiwp4T7Neu7Y2h_SXhSUBU',
+    google: 'NKbHHIjFv8cWImJmmUv9jl1_91oLXK9aviqGdXOsDMg',
   },
 };
 
