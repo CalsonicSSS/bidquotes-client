@@ -21,6 +21,9 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: 'Bidquotes Service',
   description: 'Home services marketplace connecting buyers with contractors',
+  verification: {
+    google: 'rCkYbfnUXb9n0D2pELNUixiwp4T7Neu7Y2h_SXhSUBU',
+  },
 };
 
 // The root layout will only be rendered once, and its child is the current navigated route page rendered (all other are not rendered / executed -> very efficient).
