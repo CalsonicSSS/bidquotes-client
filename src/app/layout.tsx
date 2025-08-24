@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   verification: {
     google: 'NKbHHIjFv8cWImJmmUv9jl1_91oLXK9aviqGdXOsDMg',
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 // The root layout will only be rendered once, and its child is the current navigated route page rendered (all other are not rendered / executed -> very efficient).
