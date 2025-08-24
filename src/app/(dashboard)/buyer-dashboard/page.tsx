@@ -24,11 +24,6 @@ export default function BuyerDashboard() {
 
   // real time redirection based on user type / auth status
   useEffect(() => {
-    // Nav to sign-in if user is not signed in already
-    if (!user) {
-      router.push('/sign-in');
-    }
-
     if (user) {
       const userType = user.unsafeMetadata?.userType;
       if (userType === 'contractor') {
