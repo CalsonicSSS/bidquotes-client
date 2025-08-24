@@ -19,8 +19,9 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: 'Bidquotes Service',
-  description: 'Home services marketplace connecting buyers with contractors',
+  title: 'Find Home Contractors in Canada | Get Multiple Bids | Bidquotes',
+  description:
+    'Connect with verified contractors for home maintenance, renovations, and repairs. Post your job, get competitive bids from our contractor, choose the best contractor. Serving all of Canada.',
   verification: {
     google: 'NKbHHIjFv8cWImJmmUv9jl1_91oLXK9aviqGdXOsDMg',
   },

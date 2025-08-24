@@ -2,7 +2,6 @@ import Image from 'next/image';
 import { UserAuthConditionalButtons } from '@/components/UserAuthConditionalButtons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Clock, CheckCircle, Facebook, Instagram } from 'lucide-react';
-import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 
@@ -18,12 +17,13 @@ export default function Home() {
         <div className='absolute inset-0 bg-black opacity-40'></div>
         <div className='container mx-auto px-5 relative z-10 text-center'>
           <div className='font-inter text-3xl md:text-5xl md:px-96 font-bold text-white mb-14 leading-tight'>
-            <h1 className='mb-3'>Home Maintenance</h1>
-            <h1 className='mb-3'>With</h1>
-            <h1>Competitive Bidding</h1>
+            <h1 className='mb-3'>Find Canadian Home Contractors</h1>
+            <h1 className='mb-3'>Get Multiple</h1>
+            <h1>Competitive Bids</h1>
           </div>
-          <p className='font-inter text-xl text-gray-100 mb-8 font-medium'>Post your jobs and get multiple bids from qualified contractors with us.</p>
-
+          <p className='font-inter text-xl text-gray-180 mb-8 font-medium'>
+            Connect with verified contractors for various home maintenance works. Post your job, receive bids fast!
+          </p>
           {/* Conditional buttons based on auth status */}
           <UserAuthConditionalButtons />
         </div>
@@ -224,6 +224,32 @@ export default function Home() {
 
       {/* Footer section - Optimized with Static Icons */}
       <Footer />
+
+      {/* ✅ Add structured data here */}
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'LocalBusiness',
+            name: 'Bidquotes',
+            description: 'Home services marketplace connecting Canadian homeowners with verified contractors through competitive bidding',
+            url: 'https://bidquotes.ca',
+            telephone: '+1(437)688-8669',
+            email: 'support@bidquotes.ca',
+            address: {
+              '@type': 'PostalAddress',
+              addressCountry: 'CA',
+            },
+            serviceArea: {
+              '@type': 'Country',
+              name: 'Canada',
+            },
+            knowsAbout: ['Home Contractors', 'Home Renovation', 'Home Maintenance', 'Contractor Bidding'],
+            areaServed: 'Canada',
+          }),
+        }}
+      />
     </main>
   );
 }

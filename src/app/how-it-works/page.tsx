@@ -3,6 +3,12 @@ import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, User, FileText, MessageSquare, CreditCard, Handshake } from 'lucide-react';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'How It Works | Home Contractor Bidding Process | Bidquotes',
+  description: 'Learn how Bidquotes connects homeowners with contractors through competitive bidding. Simple 3-step process to get multiple bids for your home project.',
+};
 
 export default function HowItWorksPage() {
   return (

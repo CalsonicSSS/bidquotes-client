@@ -2,6 +2,12 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Users, Shield, Zap } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Bidquotes | Canadian Home Services Marketplace',
+  description: 'Founded in 2025, Bidquotes transforms how Canadian homeowners find reliable contractors. Competitive bidding ensures fair pricing and quality service.',
+};
 
 export default function AboutUsPage() {
   return (
