@@ -57,7 +57,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // this afterSignOutUrl is to configured for auto redirect to home page after user signs out through the UserButton component
-    <ClerkProvider afterSignOutUrl='/'>
+    <ClerkProvider afterSignOutUrl='/' signInUrl='/sign-in' signUpUrl='/sign-up'>
       <html lang='en'>
         <body className={`${roboto.variable} ${inter.variable} antialiased`} cz-shortcut-listen='true'>
           <QueryProvider>{children}</QueryProvider>
