@@ -17,13 +17,12 @@ export default function Home() {
         <div className='absolute inset-0 bg-black opacity-40'></div>
         <div className='container mx-auto px-5 relative z-10 text-center'>
           <div className='font-inter text-3xl md:text-5xl md:px-96 font-bold text-white mb-14 leading-tight'>
-            <h1 className='mb-3'>Find Canadian Home Contractors</h1>
-            <h1 className='mb-3'>Get Multiple</h1>
-            <h1>Competitive Bids</h1>
+            <h1 className='mb-3'>Home Maintenance</h1>
+            <h1 className='mb-3'>With</h1>
+            <h1>Competitive Bidding</h1>
           </div>
-          <p className='font-inter text-xl text-gray-180 mb-8 font-medium'>
-            Connect with verified contractors for various home maintenance works. Post your job, receive bids fast!
-          </p>
+          <p className='font-inter text-xl text-gray-100 mb-8 font-medium'>Post your jobs and get multiple bids from qualified contractors with us.</p>
+
           {/* Conditional buttons based on auth status */}
           <UserAuthConditionalButtons />
         </div>
