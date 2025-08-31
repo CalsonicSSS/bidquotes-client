@@ -57,9 +57,9 @@ export default function Home() {
         <div className='container mx-auto px-5'>
           <div className='max-w-4xl mx-auto text-center'>
             <div className='bg-white rounded-lg shadow-lg p-8 border-2 border-blue-200'>
-              <p className='font-inter text-xl font-semibold text-gray-700 leading-relaxed md:px-20'>Your job shouldn't break the bank or leave you helpless.</p>
+              <p className='font-inter text-xl font-semibold text-gray-700 leading-relaxed md:px-20'>Your job shouldn't break the bank or leave you WAITING!</p>
               <br />
-              <p className='font-normal text-md font-inter'> We connect you with qualified contractors who bid for your job, ensuring the best deal!</p>
+              <p className='font-normal text-md font-inter'> We connect you FAST with qualified contractors who bid for your job, ensuring the best deal!</p>
             </div>
           </div>
         </div>
@@ -169,7 +169,13 @@ export default function Home() {
             {/* Right side - Image - Mobile Responsive */}
             <div className='relative h-64 sm:h-80 lg:h-96 flex justify-center lg:justify-end order-1 lg:order-2'>
               <div className='w-64 h-48 sm:w-80 sm:h-64 lg:h-72 bg-gray-200 rounded-lg flex items-center justify-center relative overflow-hidden'>
-                <Image src='/images/contractor-profile.jpg' alt='Professional contractor at work' fill className='object-cover rounded-lg shadow-xl' />
+                <Image
+                  src='/images/contractor-profile.jpg'
+                  fill
+                  alt='Contractor Profile'
+                  sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                  style={{ objectFit: 'cover' }}
+                />
               </div>
             </div>
           </div>
@@ -209,7 +215,7 @@ export default function Home() {
             ].map((service, index) => (
               <Card key={index} className='hover:shadow-lg transition-shadow overflow-hidden'>
                 <div className='relative h-48 bg-gray-200'>
-                  <Image src={service.image} alt={service.alt} fill className='object-cover' />
+                  <Image src={service.image} alt={service.alt} fill className='object-cover' sizes='(max-width: 640px) 100vw, (min-width: 641px) 50vw, 33vw' />
                 </div>
                 <CardContent className='p-6'>
                   <h3 className='font-roboto font-semibold text-lg mb-2'>{service.title}</h3>

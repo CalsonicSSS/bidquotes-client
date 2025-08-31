@@ -54,8 +54,8 @@ export default function CompleteUserTypeSelectionPage() {
           <AlertCircle className='h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0' />
           <div className='text-sm'>
             <p className='font-inter text-blue-800'>
-              <span className='font-semibold'>Important:</span> This selection will set your permanent account type. You cannot change between buyer and contractor roles later on
-              this account.
+              <span className='font-semibold'>Important:</span> This selection will set your permanent account type. You cannot change between Home Owner and Contractor roles later
+              on this account.
             </p>
           </div>
         </div>
@@ -72,7 +72,7 @@ export default function CompleteUserTypeSelectionPage() {
                 userType === 'buyer' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'border-blue-600 text-blue-600 hover:bg-blue-50'
               }`}
             >
-              <span>I need services (Buyer)</span>
+              <span>I need services (Home Owner)</span>
               <span className='text-sm font-inter opacity-80'>Post jobs and get bids</span>
             </Button>
 

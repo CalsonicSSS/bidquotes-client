@@ -10,7 +10,7 @@ import Link from 'next/link';
 export default function SignUpPage() {
   const [userType, setUserType] = useState<'buyer' | 'contractor' | null>(null);
 
-  // first stage: user type selection when user first nav here (userType is null)
+  // first stage: user type is not selected yet -> show selection (userType is null)
   if (!userType) {
     return (
       <div className='flex justify-center items-center min-h-screen bg-gray-50'>
@@ -50,33 +50,29 @@ export default function SignUpPage() {
               </div>
             </CardContent>
           </Card>
-          <div className='text-center mt-6'>
-            <p className='font-inter text-gray-600 mb-3'>
+          <div className='flex flex-col items-center gap-3 w-full max-w-xs mx-auto mt-6'>
+            <p className='font-inter text-gray-600 mb-3 text-center'>
               Already have an account?{' '}
               <Link href='/sign-in' className='text-blue-600 font-roboto font-semibold'>
                 Sign in here
               </Link>
             </p>
-            <p className='font-inter text-gray-600'>
-              <Link href='/' className='text-blue-600 font-roboto font-semibold'>
-                Back to Home
-              </Link>
-            </p>
+
+            <Link href='/' className='w-full'>
+              <Button className='w-full font-roboto font-semibold bg-gray-800 hover:bg-gray-900 text-white'>Back to Home</Button>
+            </Link>
           </div>
         </div>
       </div>
     );
   }
 
-  // second stage: actual clerk sign up form when userType is set
+  // second stage: user type is selected -> show sign up form
   return (
     <div className='flex justify-center items-center min-h-screen'>
       <div className='w-full max-w-md'>
         <div className='text-center mb-6'>
-          <h2 className='font-roboto text-2xl font-bold'>Sign up as {userType === 'buyer' ? 'a Buyer' : 'a Contractor'}</h2>
-          <button onClick={() => setUserType(null)} className='font-inter text-blue-600 hover:underline text-sm mt-2'>
-            ← Change account type selection
-          </button>
+          <h2 className='font-roboto text-2xl font-bold'>Sign up as {userType === 'buyer' ? 'Home Owner' : 'Contractor'}</h2>
         </div>
 
         {/* Account Type Confirmation Notice */}
@@ -84,8 +80,8 @@ export default function SignUpPage() {
           <AlertCircle className='h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0' />
           <div className='text-sm'>
             <p className='font-inter text-yellow-800'>
-              <span className='font-semibold'>Creating {userType} account:</span> This will be your permanent account type on Bidquotes. You cannot change this later on this
-              account.
+              <span className='font-semibold'>Creating {userType === 'buyer' ? 'Home Owner' : 'Contractor'} account:</span> This will be your permanent account type once sign-up
+              with email you provide. You can not change this later.
             </p>
           </div>
         </div>
@@ -117,13 +113,21 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          {/* back to home link */}
-          <div className='text-center mt-6'>
-            <p className='font-inter text-gray-600'>
-              <Link href='/' className='text-blue-600 font-roboto font-semibold'>
-                Back to Home
-              </Link>
-            </p>
+          {/* back to account type selection */}
+          {/* creating better button for me here */}
+
+          <div className='mt-6 flex flex-col items-center gap-3 w-full max-w-xs mx-auto'>
+            <Button
+              onClick={() => {
+                setUserType(null);
+              }}
+              className='w-full font-roboto font-semibold bg-blue-600 hover:bg-blue-700 text-white'
+            >
+              Back to Account Type Selection
+            </Button>
+            <Link href='/' className='w-full'>
+              <Button className='w-full font-roboto font-semibold bg-gray-800 hover:bg-gray-900 text-white'>Back to Home</Button>
+            </Link>
           </div>
         </div>
       </div>

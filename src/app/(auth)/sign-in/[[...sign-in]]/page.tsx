@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 // this new implementation handles the case where a user might sign in through social auth directly without previous registered account
 // When a user clicks "Sign in with Google" but doesn't have an existing account, this happens:
@@ -77,25 +78,17 @@ export default function SignInPage() {
           />
         </div>
 
-        <div className='text-center mt-8'>
-          {/* Sign-up link */}
-          <div className='text-center mt-3'>
-            <p className='font-inter text-gray-600'>
-              Don't have an account yet?{' '}
-              <Link href='/sign-up' className='text-blue-600 font-roboto font-semibold'>
-                Sign up here
-              </Link>
-            </p>
-          </div>
+        <div className='flex flex-col items-center gap-3 w-full max-w-xs mx-auto mt-6'>
+          <p className='font-inter text-gray-600 mb-3 text-center'>
+            Don&apos;t have an account yet?{' '}
+            <Link href='/sign-up' className='text-blue-600 font-roboto font-semibold'>
+              Sign up here
+            </Link>
+          </p>
 
-          {/* back to home link */}
-          <div className='text-center mt-6'>
-            <p className='font-inter text-gray-600'>
-              <Link href='/' className='text-blue-600 font-roboto font-semibold'>
-                Back to Home
-              </Link>
-            </p>
-          </div>
+          <Link href='/' className='w-full'>
+            <Button className='w-full font-roboto font-semibold bg-gray-800 hover:bg-gray-900 text-white'>Back to Home</Button>
+          </Link>
         </div>
       </div>
     </div>
