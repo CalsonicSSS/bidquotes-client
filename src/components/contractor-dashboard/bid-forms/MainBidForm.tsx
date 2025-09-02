@@ -303,10 +303,10 @@ export default function MainBidForm() {
         title={successType === 'bid' ? 'Bid Submitted Successfully!' : 'Draft Saved Successfully!'}
         message={
           successType === 'bid'
-            ? 'Your bid has been submitted to the buyer. You will be notified if your bid is selected.'
+            ? 'Your bid has been submitted to this job. Navigate to "Your Bids" section to view revealed details.'
             : 'Your bid draft has been saved. You can continue editing it anytime from your dashboard.'
         }
-        buttonText={successType === 'bid' ? 'View Dashboard' : 'Back to Dashboard'}
+        buttonText={successType === 'bid' ? "Let's Go" : 'Back to Dashboard'}
         onClose={handleSuccessModalClose}
       />
 

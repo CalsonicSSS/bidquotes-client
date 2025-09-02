@@ -13,8 +13,7 @@ import { Phone, Briefcase, Calendar, Hammer, MapPin } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils/custom-format';
 import { getContractorJobDetail } from '@/lib/apis/contractor-jobs';
 import { ImagesGallery } from '../ImagesGallery';
-import { getBuyerContactInfo, getBuyerContactInfoByBuyerId } from '@/lib/apis/buyer-contact-info';
-import { format } from 'path';
+import { getBuyerContactInfoByBuyerId } from '@/lib/apis/buyer-contact-info';
 
 type BidDetailPageProps = {
   bidId: string;
@@ -349,7 +348,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
                       <h4 className='font-roboto font-semibold text-gray-900 text-xl'>{jobDetail.title}</h4>
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${
-                          jobDetail.status === 'open' ? 'border-green-600 bg-green-400' : 'border-red-500 text-red-400'
+                          jobDetail.status === 'open' ? 'border-green-600 bg-green-400' : 'border-red-500 bg-red-400'
                         }`}
                       >
                         {jobDetail.status.charAt(0).toUpperCase() + jobDetail.status.slice(1)}
