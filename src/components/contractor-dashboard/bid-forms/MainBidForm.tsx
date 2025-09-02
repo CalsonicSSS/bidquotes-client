@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Trash2 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { SuccessModal } from '@/components/SuccessModal';
 import { BidInfoSection } from './BidInfoSection';
 import { Actions } from './Actions';
 import { DeleteBidDraftModal } from './DeleteBidDraftModal';
-import { getContractorProfileName } from '@/lib/apis/contractor-profile';
+// import { getContractorProfileName } from '@/lib/apis/contractor-profile';
 
 export default function MainBidForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof BidFormData, string>>>({});
@@ -29,7 +29,8 @@ export default function MainBidForm() {
   const blockPop = useRef(true);
 
   const queryClient = useQueryClient();
-  const { getToken } = useAuth();
+  const { userId, getToken } = useAuth();
+  const { user } = useUser();
 
   const [formData, setFormData] = useState<BidFormData>({
     job_id: '',
@@ -37,28 +38,32 @@ export default function MainBidForm() {
     price_min: '',
     price_max: '',
     timeline_estimate: '',
-    work_description: 'hidden placeholder',
-    additional_notes: 'hidden placeholder',
+    work_description: 'placeholder',
+    additional_notes: 'placeholder',
   });
 
   // Identify the mode and IDs
-  const jobId = searchParams.get('jobId'); // jobID will be getting for new bid posting on this job (nav from the job detail page)
-  const bidId = searchParams.get('draft') || searchParams.get('edit'); // this is nav from the bids list page or bid detail page
+  // there 3 ways to navigate to this post bid form page:
+  // 1. From the job detail page (new bid posting) -> comes with jobId in query params
+  // 2. From the bids list page (draft) -> comes with draft id in query params
+  // 3. From the bid detail page (edit) -> comes with bid id in query params
+  const jobId = searchParams.get('jobId');
+  const bidId = searchParams.get('draft') || searchParams.get('edit');
   const isEditingDraft = !!searchParams.get('draft');
   const isEditingBid = !!searchParams.get('edit');
 
-  // Fetch contractor name based on user token, the name will be used as value for bid title
-  const { data: contractorName } = useQuery({
-    queryKey: ['contractor-name'],
-    queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error('No token available');
-      return getContractorProfileName(token);
-    },
-    enabled: !!getToken,
-  });
+  // Fetch contractor name based on user token, the name will be used as value for bid title (now we need to input the title)
+  // const { data: contractorName } = useQuery({
+  //   queryKey: ['contractor-name'],
+  //   queryFn: async () => {
+  //     const token = await getToken();
+  //     if (!token) throw new Error('No token available');
+  //     return getContractorProfileName(token);
+  //   },
+  //   enabled: !!getToken,
+  // });
 
-  // Fetch job details based on job id (when creating new bid)
+  // Fetch job details based on job id (to display some basic top level job information)
   const { data: jobDetail } = useQuery({
     queryKey: ['contractor-job-detail', jobId],
     queryFn: async () => {
@@ -82,20 +87,13 @@ export default function MainBidForm() {
     enabled: !!bidId && !!getToken,
   });
 
-  // Pre-populate contractor name
-  useEffect(() => {
-    if (contractorName) {
-      setFormData((prev) => ({ ...prev, title: contractorName || '' }));
-    }
-  }, [contractorName]);
-
   // Pre-populate form data
   useEffect(() => {
     if (jobId && !bidId) {
       // New bid for specific job
       setFormData((prev) => ({ ...prev, job_id: jobId }));
     } else if (existingBidData) {
-      // Editing existing bid/draft by pre-populating form fields
+      // Only do this if there is existing bid/draft, then do the pre-populate form fields
       setFormData({
         job_id: existingBidData.job_id,
         title: existingBidData.title || '',
@@ -178,12 +176,15 @@ export default function MainBidForm() {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
 
-      if (isEditingDraft && bidId) {
-        return updateBid(bidId, formData, token, true);
-      } else if (isEditingBid && bidId) {
-        return updateBid(bidId, formData, token, false);
-      } else {
-        return createBid(formData, token);
+      if (user && userId) {
+        // User is authenticated
+        if (isEditingDraft && bidId) {
+          return updateBid(bidId, formData, token, true);
+        } else if (isEditingBid && bidId) {
+          return updateBid(bidId, formData, token, false);
+        } else {
+          return createBid(formData, token);
+        }
       }
     },
     onSuccess: () => {
@@ -204,10 +205,12 @@ export default function MainBidForm() {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
 
-      if (isEditingDraft && bidId) {
-        return updateBid(bidId, formData, token, false);
-      } else {
-        return saveBidDraft(formData, token);
+      if (user && userId) {
+        if (isEditingDraft && bidId) {
+          return updateBid(bidId, formData, token, false);
+        } else {
+          return saveBidDraft(formData, token);
+        }
       }
     },
     onSuccess: () => {
@@ -225,8 +228,10 @@ export default function MainBidForm() {
   const deleteBidDraftMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
-      if (!token || !bidId) throw new Error('Unable to get authentication token or bid ID');
-      return deleteBid(bidId, token);
+      if (userId && user) {
+        if (!token || !bidId) throw new Error('Unable to get authentication token or bid ID');
+        return deleteBid(bidId, token);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
@@ -264,7 +269,11 @@ export default function MainBidForm() {
       const confirm = window.confirm('You have unsaved changes. Are you sure you want to leave?');
       if (!confirm) return;
     }
-    router.push('/contractor-dashboard?section=your-bids');
+    if (jobId) {
+      router.push(`/contractor-dashboard/jobs/${jobId}`);
+    } else {
+      router.push('/contractor-dashboard?section=your-bids');
+    }
   };
 
   const handleSuccessModalClose = () => {
@@ -272,6 +281,7 @@ export default function MainBidForm() {
     router.push('/contractor-dashboard?section=your-bids');
   };
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading while fetching bid data
   if ((isEditingDraft || isEditingBid) && isBidLoading) {
     return (
@@ -331,7 +341,7 @@ export default function MainBidForm() {
                   {deleteBidDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
                 </Button>
               )}
-              <Button onClick={handleBackNavigation}>Back to Dashboard</Button>
+              <Button onClick={handleBackNavigation}>{jobId ? 'Back to Job' : 'Back to Dashboard'}</Button>
             </div>
           </div>
           <p className='font-inter text-gray-600 mt-4'>
@@ -348,7 +358,7 @@ export default function MainBidForm() {
           {contextJob && (
             <Card className='bg-blue-50 border-blue-200'>
               <CardHeader>
-                <CardTitle className='font-roboto text-lg'>Job: {jobDetail?.title || existingBidData?.job_title}</CardTitle>
+                <CardTitle className='font-roboto text-lg'>Job Title: {jobDetail?.title || existingBidData?.job_title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4 text-sm'>

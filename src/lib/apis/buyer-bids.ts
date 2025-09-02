@@ -21,7 +21,7 @@ export type BuyerBidDetailResponse = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export async function getBidDetailForBuyer(jobId: string, bidId: string, clerkJwt: string): Promise<BuyerBidDetailResponse> {
+export async function getBidDetailForSpecificJob(jobId: string, bidId: string, clerkJwt: string): Promise<BuyerBidDetailResponse> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/bids/${bidId}`, {
     method: 'GET',
     headers: {
@@ -37,38 +37,38 @@ export async function getBidDetailForBuyer(jobId: string, bidId: string, clerkJw
   return await response.json();
 }
 
-// -----------------------------------------------------------------------------------------------------------------------------
+// // -----------------------------------------------------------------------------------------------------------------------------
 
-export async function selectBid(jobId: string, bidId: string, clerkJwt: string): Promise<boolean> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/bids/${bidId}/select`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${clerkJwt}`,
-    },
-  });
+// export async function selectBid(jobId: string, bidId: string, clerkJwt: string): Promise<boolean> {
+//   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/bids/${bidId}/select`, {
+//     method: 'POST',
+//     headers: {
+//       Authorization: `Bearer ${clerkJwt}`,
+//     },
+//   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to select bid');
-  }
+//   if (!response.ok) {
+//     const errorData = await response.json();
+//     throw new Error(errorData.detail || 'Failed to select bid');
+//   }
 
-  return await response.json();
-}
+//   return await response.json();
+// }
 
-// ------------------------------------------------------------------------------------------------------------------------------
+// // ------------------------------------------------------------------------------------------------------------------------------
 
-export async function cancelBidSelection(jobId: string, clerkJwt: string): Promise<boolean> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/selection`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${clerkJwt}`,
-    },
-  });
+// export async function cancelBidSelection(jobId: string, clerkJwt: string): Promise<boolean> {
+//   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/selection`, {
+//     method: 'DELETE',
+//     headers: {
+//       Authorization: `Bearer ${clerkJwt}`,
+//     },
+//   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to cancel bid selection');
-  }
+//   if (!response.ok) {
+//     const errorData = await response.json();
+//     throw new Error(errorData.detail || 'Failed to cancel bid selection');
+//   }
 
-  return await response.json();
-}
+//   return await response.json();
+// }

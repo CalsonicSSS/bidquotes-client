@@ -2,18 +2,20 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Clock, DollarSign, User, Briefcase, CheckCircle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cancelBidSelection, getBidDetailForBuyer, selectBid } from '@/lib/apis/buyer-bids';
-import { formatDateTime, getStatusBadgeStyle } from '@/lib/utils/custom-format';
+import { getBidDetailForSpecificJob } from '@/lib/apis/buyer-bids';
+import { formatDateTime } from '@/lib/utils/custom-format';
+import { getContractorProfileById } from '@/lib/apis/contractor-profile';
+import ContractorProfileSection from '@/components/buyer-dashboard/job-detail/ContractorProfile';
 
 export default function BuyerBidDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { getToken } = useAuth();
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   const jobId = params.jobId as string;
   const bidId = params.bidId as string;
@@ -28,71 +30,84 @@ export default function BuyerBidDetailPage() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-      return getBidDetailForBuyer(jobId, bidId, token);
+      return getBidDetailForSpecificJob(jobId, bidId, token);
     },
     enabled: !!jobId && !!bidId && !!getToken,
     staleTime: 0,
   });
 
-  // Bid selection mutation
-  const selectBidMutation = useMutation({
-    mutationFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error('Unable to get authentication token');
-      return selectBid(jobId, bidId, token);
+  const {
+    data: contractorProfile,
+    isLoading: isLoadingContractorProfile,
+    error: errorContractorProfile,
+  } = useQuery({
+    queryKey: ['bid-contractor-profile', bidDetail?.contractor_id],
+    queryFn: async () => {
+      return getContractorProfileById(bidDetail?.contractor_id as string);
     },
-    onSuccess: () => {
-      // Invalidate and refetch relevant queries
-      queryClient.invalidateQueries({ queryKey: ['buyer-bid-detail', bidId] });
-      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
-      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
-
-      // Navigate back to job detail page to see updated status
-      router.push(`/buyer-dashboard/jobs/${jobId}`);
-    },
-    onError: (error) => {
-      console.error('Error selecting bid:', error);
-      alert(error instanceof Error ? error.message : 'Failed to select bid. Please try again.');
-    },
-  });
-
-  // Cancel bid selection mutation
-  const cancelSelectionMutation = useMutation({
-    mutationFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error('Unable to get authentication token');
-      return cancelBidSelection(jobId, token);
-    },
-    onSuccess: () => {
-      // Invalidate and refetch relevant queries
-      queryClient.invalidateQueries({ queryKey: ['buyer-bid-detail', bidId] });
-      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
-      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
-
-      // Navigate back to job detail page to see updated status
-      router.push(`/buyer-dashboard/jobs/${jobId}`);
-    },
-    onError: (error) => {
-      console.error('Error cancelling bid selection:', error);
-      alert(error instanceof Error ? error.message : 'Failed to cancel selection. Please try again.');
-    },
+    enabled: !!bidDetail?.contractor_id,
+    staleTime: 0,
   });
 
   const handleBack = () => {
     router.push(`/buyer-dashboard/jobs/${jobId}`);
   };
 
-  const handleSelectBid = () => {
-    if (window.confirm('Are you sure you want to select this bid? The contractor will be notified and you will wait for their confirmation.')) {
-      selectBidMutation.mutate();
-    }
-  };
+  // Bid selection mutation
+  // const selectBidMutation = useMutation({
+  //   mutationFn: async () => {
+  //     const token = await getToken();
+  //     if (!token) throw new Error('Unable to get authentication token');
+  //     return selectBid(jobId, bidId, token);
+  //   },
+  //   onSuccess: () => {
+  //     // Invalidate and refetch relevant queries
+  //     queryClient.invalidateQueries({ queryKey: ['buyer-bid-detail', bidId] });
+  //     queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
+  //     queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
 
-  const handleCancelSelection = () => {
-    if (window.confirm('Are you sure you want to cancel this bid selection? The contractor will be notified and you can then select a new bid.')) {
-      cancelSelectionMutation.mutate();
-    }
-  };
+  //     // Navigate back to job detail page to see updated status
+  //     router.push(`/buyer-dashboard/jobs/${jobId}`);
+  //   },
+  //   onError: (error) => {
+  //     console.error('Error selecting bid:', error);
+  //     alert(error instanceof Error ? error.message : 'Failed to select bid. Please try again.');
+  //   },
+  // });
+
+  // Cancel bid selection mutation
+  // const cancelSelectionMutation = useMutation({
+  //   mutationFn: async () => {
+  //     const token = await getToken();
+  //     if (!token) throw new Error('Unable to get authentication token');
+  //     return cancelBidSelection(jobId, token);
+  //   },
+  //   onSuccess: () => {
+  //     // Invalidate and refetch relevant queries
+  //     queryClient.invalidateQueries({ queryKey: ['buyer-bid-detail', bidId] });
+  //     queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
+  //     queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+
+  //     // Navigate back to job detail page to see updated status
+  //     router.push(`/buyer-dashboard/jobs/${jobId}`);
+  //   },
+  //   onError: (error) => {
+  //     console.error('Error cancelling bid selection:', error);
+  //     alert(error instanceof Error ? error.message : 'Failed to cancel selection. Please try again.');
+  //   },
+  // });
+
+  // const handleSelectBid = () => {
+  //   if (window.confirm('Are you sure you want to select this bid? The contractor will be notified and you will wait for their confirmation.')) {
+  //     selectBidMutation.mutate();
+  //   }
+  // };
+
+  // const handleCancelSelection = () => {
+  //   if (window.confirm('Are you sure you want to cancel this bid selection? The contractor will be notified and you can then select a new bid.')) {
+  //     cancelSelectionMutation.mutate();
+  //   }
+  // };
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -138,11 +153,10 @@ export default function BuyerBidDetailPage() {
         {/* Desktop Header */}
         <div className='hidden lg:block'>
           <div className='flex items-center justify-between gap-4 mb-4'>
-            <Button onClick={handleBack} variant='ghost' className='font-roboto -ml-4'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
-              Back to Job
-            </Button>
             <h1 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900'>Bid Details</h1>
+            <Button onClick={handleBack} className='font-roboto -ml-4'>
+              Back to Job Detail
+            </Button>
           </div>
         </div>
 
@@ -165,12 +179,21 @@ export default function BuyerBidDetailPage() {
             <CardHeader>
               <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
                 <CardTitle className='font-roboto text-lg'>{bidDetail.title}</CardTitle>
-                <div className='flex items-center gap-2'>
+                {/* animated glowing indicator on the text saying contractor will contact you soon!*/}
+                <div className='flex items-center gap-2 animate-bounce'>
+                  <span className='relative flex h-3 w-3 '>
+                    <span className='absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping'></span>
+                    <span className='relative inline-flex rounded-full h-3 w-3 bg-blue-500'></span>
+                  </span>
+                  <p className='font-inter text-sm text-gray-600 '>This contractor will contact you soon!</p>{' '}
+                </div>
+
+                {/* <div className='flex items-center gap-2'>
                   {bidDetail.is_selected && <CheckCircle className='h-5 w-5 text-blue-600' />}
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeStyle(bidDetail.status, bidDetail.is_selected)}`}>
                     {bidDetail.is_selected ? 'Selected' : bidDetail.status.charAt(0).toUpperCase() + bidDetail.status.slice(1)}
                   </span>
-                </div>
+                </div> */}
               </div>
             </CardHeader>
             <CardContent className='space-y-6'>
@@ -204,47 +227,37 @@ export default function BuyerBidDetailPage() {
               </div>
 
               {/* Work Description */}
-              <div>
+              {/* <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-3'>Work Description</h3>
                 <p className='font-inter text-gray-700 leading-relaxed whitespace-pre-wrap'>{bidDetail.work_description}</p>
-              </div>
+              </div> */}
 
               {/* Additional Notes */}
-              {bidDetail.additional_notes && (
+              {/* {bidDetail.additional_notes && (
                 <div>
                   <h3 className='font-roboto font-semibold text-gray-900 mb-3'>Additional Notes</h3>
                   <p className='font-inter text-gray-700 leading-relaxed whitespace-pre-wrap'>{bidDetail.additional_notes}</p>
                 </div>
-              )}
+              )} */}
             </CardContent>
           </Card>
 
-          {/* Contractor Information Card (No Contact Details) */}
-
-          {/* <Card>
-            <CardHeader>
-              <CardTitle className='font-roboto text-lg flex items-center gap-2'>
-                <User className='h-5 w-5' />
-                Contractor Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4'>
-                <p className='font-inter text-sm text-blue-800'>
-                  <Briefcase className='h-4 w-4 inline mr-2' />
-                  Contact details will be revealed after bid confirmation is completed.
-                </p>
-              </div>
-
-              <div className='text-center py-8'>
-                <User className='h-12 w-12 text-gray-300 mx-auto mb-4' />
-                <p className='font-inter text-gray-600'>Contractor profile information will be displayed here</p>
-              </div>
-            </CardContent>
-          </Card> */}
+          {/* another well design card to show fetched contractor profile */}
+          {isLoadingContractorProfile ? (
+            <div className='text-center'>
+              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
+              <p className='font-inter text-gray-600'>Loading bid details...</p>
+            </div>
+          ) : errorContractorProfile ? (
+            <div className='text-center'>
+              <p className='font-inter text-red-600'>Error loading contractor profile</p>
+            </div>
+          ) : (
+            contractorProfile && <ContractorProfileSection contractorProfile={contractorProfile} />
+          )}
 
           {/* Action Buttons */}
-          <div className='flex flex-col sm:flex-row gap-4'>
+          {/* <div className='flex flex-col sm:flex-row gap-4'>
             {!bidDetail.is_selected && bidDetail.status === 'pending' && (
               <Button onClick={handleSelectBid} disabled={selectBidMutation.isPending} className='flex-1 font-roboto'>
                 {selectBidMutation.isPending ? 'Selecting...' : 'Select This Bid'}
@@ -262,7 +275,7 @@ export default function BuyerBidDetailPage() {
                 {bidDetail.status === 'confirmed' ? 'Bid Confirmed' : 'Cannot Select This Bid'}
               </Button>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

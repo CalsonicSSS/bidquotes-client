@@ -11,7 +11,7 @@ export function AllJobsSection() {
   const { getToken } = useAuth();
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [jobTypeFilter, setJobTypeFilter] = useState<string>('all');
-  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  // const [showSavedOnly, setShowSavedOnly] = useState(false);
 
   // Fetch available jobs based on filter values
   // we use 2 states in the query key to trigger the refetch immediately whenever filters change, by pass the stale time and other triggers all
@@ -45,8 +45,10 @@ export function AllJobsSection() {
   const handleClearAllFilters = () => {
     setCityFilter('all');
     setJobTypeFilter('all');
-    setShowSavedOnly(false);
+    // setShowSavedOnly(false);
   };
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   if (jobsError) {
     return (
@@ -72,8 +74,8 @@ export function AllJobsSection() {
         setCityFilter={setCityFilter}
         jobTypeFilter={jobTypeFilter}
         setJobTypeFilter={setJobTypeFilter}
-        showSavedOnly={showSavedOnly}
-        setShowSavedOnly={setShowSavedOnly}
+        // showSavedOnly={showSavedOnly}
+        // setShowSavedOnly={setShowSavedOnly}
         cityFilterOptions={cityFilterOptions}
         handleClearAllFilters={handleClearAllFilters}
         jobsCount={availableJobs.length}

@@ -93,36 +93,6 @@ export async function createBid(data: BidFormData, clerkJwt: string): Promise<Bi
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function saveBidDraft(data: BidFormData, clerkJwt: string): Promise<BidResponse> {
-  const formData = new FormData();
-
-  // Add all bid fields (all optional for drafts)
-  formData.append('job_id', data.job_id);
-  formData.append('title', data.title);
-  formData.append('price_min', data.price_min);
-  formData.append('price_max', data.price_max);
-  formData.append('timeline_estimate', data.timeline_estimate);
-  formData.append('work_description', data.work_description);
-  formData.append('additional_notes', data.additional_notes);
-
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/drafts`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${clerkJwt}`,
-    },
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to save bid draft');
-  }
-
-  return await response.json();
-}
-
-// -------------------------------------------------------------------------------------------------------------------------------------
-
 export async function updateBid(bidId: string, data: Partial<BidFormData>, clerkJwt: string, isDraftSubmit: boolean): Promise<BidResponse> {
   const formData = new FormData();
 
@@ -148,6 +118,36 @@ export async function updateBid(bidId: string, data: Partial<BidFormData>, clerk
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.detail || 'Failed to update bid');
+  }
+
+  return await response.json();
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------
+
+export async function saveBidDraft(data: BidFormData, clerkJwt: string): Promise<BidResponse> {
+  const formData = new FormData();
+
+  // Add all bid fields (all optional for drafts)
+  formData.append('job_id', data.job_id);
+  formData.append('title', data.title);
+  formData.append('price_min', data.price_min);
+  formData.append('price_max', data.price_max);
+  formData.append('timeline_estimate', data.timeline_estimate);
+  formData.append('work_description', data.work_description);
+  formData.append('additional_notes', data.additional_notes);
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/drafts`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to save bid draft');
   }
 
   return await response.json();
@@ -212,36 +212,36 @@ export async function getContractorBidCards(clerkJwt: string, status?: string): 
 
 // ------------------------------------------------------------------------------------------------------------------------------------
 
-export async function declineSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/decline`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${clerkJwt}`,
-    },
-  });
+// export async function declineSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
+//   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/decline`, {
+//     method: 'POST',
+//     headers: {
+//       Authorization: `Bearer ${clerkJwt}`,
+//     },
+//   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to decline bid selection');
-  }
+//   if (!response.ok) {
+//     const errorData = await response.json();
+//     throw new Error(errorData.detail || 'Failed to decline bid selection');
+//   }
 
-  return await response.json();
-}
+//   return await response.json();
+// }
 
-// -------------------------------------------------------------------------------------------------------------------------------------
+// // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function confirmSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/confirm`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${clerkJwt}`,
-    },
-  });
+// export async function confirmSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
+//   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/confirm`, {
+//     method: 'POST',
+//     headers: {
+//       Authorization: `Bearer ${clerkJwt}`,
+//     },
+//   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to confirm bid selection');
-  }
+//   if (!response.ok) {
+//     const errorData = await response.json();
+//     throw new Error(errorData.detail || 'Failed to confirm bid selection');
+//   }
 
-  return await response.json();
-}
+//   return await response.json();
+// }

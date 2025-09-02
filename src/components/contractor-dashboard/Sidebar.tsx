@@ -4,7 +4,7 @@ import { UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Briefcase, MessageSquare, User, CreditCard, Home, X } from 'lucide-react';
 
-type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-passes';
+type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-credits';
 
 type MenuItem = {
   id: ActiveSection;
@@ -24,7 +24,7 @@ const menuItems: MenuItem[] = [
   { id: 'all-jobs', label: 'All Jobs', icon: Briefcase },
   { id: 'your-bids', label: 'Your Bids', icon: MessageSquare },
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'your-passes', label: 'Your Passes', icon: CreditCard },
+  { id: 'your-credits', label: 'Your Credits', icon: CreditCard },
 ];
 
 export function ContractorSidebar({ user, activeSection, setActiveSection, sidebarOpen, setSidebarOpen }: ContractorSidebarProps) {

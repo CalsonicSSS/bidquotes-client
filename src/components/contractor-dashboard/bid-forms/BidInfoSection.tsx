@@ -24,8 +24,8 @@ export function BidInfoSection({ formData, onFormInputChange, errors }: BidInfoS
         <CardTitle className='font-roboto'>Your Bid Details</CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
-        {/* Bid Title (hidden) */}
-        <div className='space-y-2 hidden'>
+        {/* Bid Title */}
+        <div className='space-y-2'>
           <Label htmlFor='title' className='font-roboto'>
             Bid Title <span className='text-red-500'>*</span>
           </Label>

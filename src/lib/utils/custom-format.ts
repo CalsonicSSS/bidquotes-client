@@ -36,7 +36,8 @@ export const formatCurrency = (value: string) => {
 // Helper function to format date
 export const formatDateTime = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-CA', {
-    month: 'short',
+    year: 'numeric',
+    month: 'numeric',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',

@@ -1,15 +1,20 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Trash2, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
-import { getBidDetail, deleteBid } from '@/lib/apis/contractor-bids';
-import { declineSelectedBid } from '@/lib/apis/contractor-bids';
-import { confirmSelectedBid } from '@/lib/apis/contractor-bids';
-import { Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Edit, Wallet, XCircle, ClipboardCheck, FileText, Users, Camera, Badge } from 'lucide-react';
+import { getBidDetail } from '@/lib/apis/contractor-bids';
+// import { declineSelectedBid } from '@/lib/apis/contractor-bids';
+// import { confirmSelectedBid } from '@/lib/apis/contractor-bids';
+import { Phone, Briefcase, Calendar, Hammer, MapPin } from 'lucide-react';
+import { formatDateTime } from '@/lib/utils/custom-format';
+import { getContractorJobDetail } from '@/lib/apis/contractor-jobs';
+import { ImagesGallery } from '../ImagesGallery';
+import { getBuyerContactInfo, getBuyerContactInfoByBuyerId } from '@/lib/apis/buyer-contact-info';
+import { format } from 'path';
 
 type BidDetailPageProps = {
   bidId: string;
@@ -18,7 +23,7 @@ type BidDetailPageProps = {
 export default function BidDetailPage({ bidId }: BidDetailPageProps) {
   const { getToken } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   // Fetch bid details
   const {
@@ -36,107 +41,129 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
     staleTime: 0,
   });
 
-  // Delete bid mutation
-  const deleteBidMutation = useMutation({
-    mutationFn: async () => {
+  // after fully fetched bid, we will use job_id from bid to the full job details
+  const { data: jobDetail } = useQuery({
+    queryKey: ['job-detail', bid?.job_id],
+    queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-      return deleteBid(bidId, token);
+      return getContractorJobDetail(bid?.job_id as string, token);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
-      router.push('/contractor-dashboard?section=your-bids');
-    },
-    onError: (error) => {
-      console.error('Error deleting bid:', error);
-      alert(error instanceof Error ? error.message : 'Failed to delete bid');
-    },
+    enabled: !!bid?.job_id && !!getToken(),
   });
 
-  // Decline bid selection mutation
-  const declineBidMutation = useMutation({
-    mutationFn: async () => {
+  // after fully fetched job detail, we will use buyer_id to fetch buyer contact information
+  const { data: buyerContactInfo } = useQuery({
+    queryKey: ['buyer-contact', jobDetail?.buyer_id],
+    queryFn: async () => {
       const token = await getToken();
-      if (!token) throw new Error('Unable to get authentication token');
-      return declineSelectedBid(bidId, token);
+      if (!token) throw new Error('No token available');
+      return getBuyerContactInfoByBuyerId(jobDetail?.buyer_id as string);
     },
-    onSuccess: () => {
-      // Invalidate and refetch relevant queries
-      queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
-      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
-
-      // Navigate back to dashboard with success message
-      router.push('/contractor-dashboard?section=your-bids');
-    },
-    onError: (error) => {
-      console.error('Error declining bid:', error);
-      alert(error instanceof Error ? error.message : 'Failed to decline bid. Please try again.');
-    },
+    enabled: !!jobDetail?.buyer_id && !!getToken(),
   });
 
-  // Confirm bid selection mutation
-  const confirmBidMutation = useMutation({
-    mutationFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error('Unable to get authentication token');
-      return confirmSelectedBid(bidId, token);
-    },
-    onSuccess: () => {
-      // Invalidate and refetch relevant queries to get updated bid details (with buyer contact)
-      queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
-      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+  // Delete bid mutation (we will now need to always keep the bid for full database track record)
+  // const deleteBidMutation = useMutation({
+  //   mutationFn: async () => {
+  //     const token = await getToken();
+  //     if (!token) throw new Error('No token available');
+  //     return deleteBid(bidId, token);
+  //   },
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+  //     router.push('/contractor-dashboard?section=your-bids');
+  //   },
+  //   onError: (error) => {
+  //     console.error('Error deleting bid:', error);
+  //     alert(error instanceof Error ? error.message : 'Failed to delete bid');
+  //   },
+  // });
 
-      // Don't navigate away - let user see the confirmed status and buyer contact info
-    },
-    onError: (error) => {
-      console.error('Error confirming bid:', error);
-      alert(error instanceof Error ? error.message : 'Failed to confirm bid. Please try again.');
-    },
-  });
+  // Decline bid selection mutation (No longer need decline mutation anymore)
+  // const declineBidMutation = useMutation({
+  //   mutationFn: async () => {
+  //     const token = await getToken();
+  //     if (!token) throw new Error('Unable to get authentication token');
+  //     return declineSelectedBid(bidId, token);
+  //   },
+  //   onSuccess: () => {
+  //     // Invalidate and refetch relevant queries
+  //     queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
+  //     queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'selected':
-        return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'confirmed':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'declined':
-        return 'bg-red-100 text-red-700 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
-  };
+  //     // Navigate back to dashboard with success message
+  //     router.push('/contractor-dashboard?section=your-bids');
+  //   },
+  //   onError: (error) => {
+  //     console.error('Error declining bid:', error);
+  //     alert(error instanceof Error ? error.message : 'Failed to decline bid. Please try again.');
+  //   },
+  // });
+
+  // Confirm bid selection mutation (No longer need confirm mutation anymore)
+  // const confirmBidMutation = useMutation({
+  //   mutationFn: async () => {
+  //     const token = await getToken();
+  //     if (!token) throw new Error('Unable to get authentication token');
+  //     return confirmSelectedBid(bidId, token);
+  //   },
+  //   onSuccess: () => {
+  //     // Invalidate and refetch relevant queries to get updated bid details (with buyer contact)
+  //     queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
+  //     queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+
+  //     // Don't navigate away - let user see the confirmed status and buyer contact info
+  //   },
+  //   onError: (error) => {
+  //     console.error('Error confirming bid:', error);
+  //     alert(error instanceof Error ? error.message : 'Failed to confirm bid. Please try again.');
+  //   },
+  // });
+
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case 'pending':
+  //       return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+  //     case 'selected':
+  //       return 'bg-blue-100 text-blue-700 border-blue-200';
+  //     case 'confirmed':
+  //       return 'bg-green-100 text-green-700 border-green-200';
+  //     case 'declined':
+  //       return 'bg-red-100 text-red-700 border-red-200';
+  //     default:
+  //       return 'bg-gray-100 text-gray-700 border-gray-200';
+  //   }
+  // };
 
   const handleEditBid = () => {
     router.push(`/contractor-dashboard/post-bid?edit=${bidId}`);
   };
 
-  const handleDeleteBid = () => {
-    const confirmed = window.confirm('Are you sure you want to delete this bid? This action cannot be undone.');
-    if (confirmed) {
-      deleteBidMutation.mutate();
-    }
-  };
+  // const handleDeleteBid = () => {
+  //   const confirmed = window.confirm('Are you sure you want to delete this bid? This action cannot be undone.');
+  //   if (confirmed) {
+  //     deleteBidMutation.mutate();
+  //   }
+  // };
 
-  const handleDeclineBid = () => {
-    if (window.confirm('Are you sure you want to decline this bid selection? This action cannot be undone and the buyer will be notified.')) {
-      declineBidMutation.mutate();
-    }
-  };
+  // const handleDeclineBid = () => {
+  //   if (window.confirm('Are you sure you want to decline this bid selection? This action cannot be undone and the buyer will be notified.')) {
+  //     declineBidMutation.mutate();
+  //   }
+  // };
 
-  const handleConfirmBid = () => {
-    if (window.confirm('Are you sure you want to confirm this bid selection? This will finalize the job and reveal buyer contact information.')) {
-      confirmBidMutation.mutate();
-    }
-  };
+  // const handleConfirmBid = () => {
+  //   if (window.confirm('Are you sure you want to confirm this bid selection? This will finalize the job and reveal buyer contact information.')) {
+  //     confirmBidMutation.mutate();
+  //   }
+  // };
 
-  const handleViewJob = () => {
-    if (bid) {
-      router.push(`/contractor-dashboard/jobs/${bid.job_id}`);
-    }
-  };
+  // const handleViewJob = () => {
+  //   if (bid) {
+  //     router.push(`/contractor-dashboard/jobs/${bid.job_id}`);
+  //   }
+  // };
 
   const handleBackToDashboard = () => {
     router.push('/contractor-dashboard?section=your-bids');
@@ -188,15 +215,12 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
         <div className='hidden lg:block mb-8'>
           <div className='flex justify-between items-center'>
             <h1 className='font-roboto text-3xl font-bold text-gray-900'>Bid Details</h1>
-            <Button onClick={handleBackToDashboard} variant='outline'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
-              Back to Dashboard
-            </Button>
+            <Button onClick={handleBackToDashboard}>Back to Dashboard</Button>
           </div>
         </div>
 
-        {/* Show when bid is selected */}
-        {bid.status === 'selected' && (
+        {/* Show when bid is selected (NO LONG NEEDED UNDER NEW WORKFLOW) */}
+        {/* {bid.status === 'selected' && (
           <Card className='bg-green-50 border-green-200 mb-5'>
             <CardContent className='pt-6'>
               <div className='flex items-center gap-3 mb-4'>
@@ -220,10 +244,10 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
               </div>
             </CardContent>
           </Card>
-        )}
+        )} */}
 
-        {/* Show when bid is fully confirmed */}
-        {bid.status === 'confirmed' && (
+        {/* Show when bid is fully confirmed (NO LONG NEEDED UNDER NEW WORKFLOW) */}
+        {/* {bid.status === 'confirmed' && (
           <Card className='bg-purple-50 border-purple-200 mb-5'>
             <CardHeader>
               <CardTitle className='font-roboto text-lg flex items-center gap-2 text-purple-900'>
@@ -261,7 +285,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
               </div>
             </CardContent>
           </Card>
-        )}
+        )} */}
 
         <div className='space-y-6'>
           {/* Bid Overview Card */}
@@ -270,18 +294,11 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
               <div className='flex justify-between items-start'>
                 <div className='flex-1'>
                   <CardTitle className='font-roboto text-xl lg:text-2xl'>{bid.title}</CardTitle>
-                  <p className='font-inter text-gray-600 mt-2'>
-                    Submitted on{' '}
-                    {new Date(bid.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </p>
+                  <p className='font-inter text-gray-600 mt-2'>Submitted on {formatDateTime(bid.created_at)}</p>
                 </div>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(bid.status)}`}>
+                {/* <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(bid.status)}`}>
                   {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
-                </span>
+                </span> */}
               </div>
             </CardHeader>
             <CardContent className='space-y-6'>
@@ -299,53 +316,187 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
                 <p className='font-inter'>{bid.timeline_estimate}</p>
               </div>
 
-              {/* Work Description */}
-              <div>
+              {/* Work Description (NO LONGER NEEDED UNDER NEW WORKFLOW) */}
+              {/* <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Work Description</h3>
                 <p className='font-inter whitespace-pre-wrap'>{bid.work_description}</p>
-              </div>
+              </div> */}
 
-              {/* Additional Notes */}
-              {bid.additional_notes && (
+              {/* Additional Notes (NO LONGER NEEDED UNDER NEW WORKFLOW) */}
+              {/* {bid.additional_notes && (
                 <div>
                   <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Additional Notes</h3>
                   <p className='font-inter whitespace-pre-wrap'>{bid.additional_notes}</p>
                 </div>
-              )}
+              )} */}
             </CardContent>
           </Card>
 
-          {/* Job Context Card */}
-          <Card className='bg-blue-50 border-blue-200'>
-            <CardHeader>
-              <CardTitle className='font-roboto text-lg'>Job Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='space-y-4'>
-                <div>
-                  <h4 className='font-roboto font-semibold text-gray-900'>{bid.job_title}</h4>
-                  <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 text-sm'>
-                    <div>
-                      <span className='font-roboto font-medium'>Type:</span>
-                      <span className='font-inter ml-2'>{bid.job_type}</span>
+          {/* full Job detail Card (NEW) */}
+          {jobDetail && (
+            <Card className='bg-blue-50 border-blue-200'>
+              <CardHeader>
+                <CardTitle className='font-roboto text-lg flex items-center gap-2'>
+                  <Briefcase className='h-5 w-5' />
+                  Job Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='space-y-6'>
+                  {/* Job Title */}
+                  <div>
+                    <div className='flex justify-between items-center mb-5'>
+                      <h4 className='font-roboto font-semibold text-gray-900 text-xl'>{jobDetail.title}</h4>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${
+                          jobDetail.status === 'open' ? 'border-green-600 bg-green-400' : 'border-red-500 text-red-400'
+                        }`}
+                      >
+                        {jobDetail.status.charAt(0).toUpperCase() + jobDetail.status.slice(1)}
+                      </span>
                     </div>
-                    <div>
-                      <span className='font-roboto font-medium'>Budget:</span>
-                      <span className='font-inter ml-2'>{bid.job_budget}</span>
+                    <div className='flex items-center gap-2 text-sm text-gray-600'>
+                      <Calendar className='h-4 w-4' />
+                      <span className='font-inter'>Posted on {formatDateTime(jobDetail.created_at)}</span>
                     </div>
-                    <div>
-                      <span className='font-roboto font-medium'>Location:</span>
-                      <span className='font-inter ml-2'>{bid.job_city}</span>
+                  </div>
+
+                  {/* Key Job Info Grid */}
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    <div className='bg-white/70 p-3 rounded-lg border border-blue-200'>
+                      <h5 className='font-roboto font-semibold text-gray-900 mb-1 flex items-center gap-2'>
+                        <Hammer className='h-4 w-4' />
+                        Job Type
+                      </h5>
+                      <p className='font-inter text-gray-700'>{jobDetail.job_type}</p>
+                    </div>
+
+                    <div className='bg-white/70 p-3 rounded-lg border border-blue-200'>
+                      <h5 className='font-roboto font-semibold text-gray-900 mb-1 flex items-center gap-2'>
+                        <Wallet className='h-4 w-4' />
+                        Budget
+                      </h5>
+                      <p className='font-inter text-gray-700'>{jobDetail.job_budget}</p>
+                    </div>
+
+                    <div className='bg-white/70 p-3 rounded-lg border border-blue-200'>
+                      <h5 className='font-roboto font-semibold text-gray-900 mb-1 flex items-center gap-2'>
+                        <MapPin className='h-4 w-4' />
+                        Location
+                      </h5>
+                      <p className='font-inter text-gray-700'>{jobDetail.city}</p>
+                    </div>
+                  </div>
+
+                  {/* Job Description */}
+                  <div className='bg-white/70 p-4 rounded-lg border border-blue-200'>
+                    <h5 className='font-roboto font-semibold text-gray-900 mb-3 flex items-center gap-2'>
+                      <ClipboardCheck className='h-4 w-4' />
+                      Job Description
+                    </h5>
+                    <p className='font-inter text-gray-700 whitespace-pre-wrap leading-relaxed'>{jobDetail.description}</p>
+                  </div>
+
+                  {/* Additional Requirements */}
+                  {jobDetail.other_requirements && (
+                    <div className='bg-white/70 p-4 rounded-lg border border-blue-200'>
+                      <h5 className='font-roboto font-semibold text-gray-900 mb-3 flex items-center gap-2'>
+                        <FileText className='h-4 w-4' />
+                        Additional Requirements
+                      </h5>
+                      <p className='font-inter text-gray-700 whitespace-pre-wrap leading-relaxed'>{jobDetail.other_requirements}</p>
+                    </div>
+                  )}
+
+                  {/* Job Photos */}
+                  {jobDetail.images && jobDetail.images.length > 0 && (
+                    <div className='bg-white/70 p-4 rounded-lg border border-blue-200'>
+                      <h5 className='font-roboto font-semibold text-gray-900 mb-3 flex items-center gap-2'>
+                        <Camera className='h-4 w-4' />
+                        Job Photos ({jobDetail.images.length})
+                      </h5>
+                      <ImagesGallery images={jobDetail.images} />
+                    </div>
+                  )}
+
+                  {/* Contact Information Note */}
+                  <div className='bg-amber-50 border border-amber-200 p-4 rounded-lg'>
+                    <div className='flex items-start gap-3'>
+                      <Phone className='h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5' />
+                      <div>
+                        <h5 className='font-roboto font-semibold text-amber-900 mb-1'>Contact Information</h5>
+                        {/* both email and phone */}
+                        <p className='font-inter text-sm text-amber-800'>Email: {buyerContactInfo?.contact_email}</p>
+                        <p className='font-inter text-sm text-amber-800'>Phone: {buyerContactInfo?.phone_number}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Full Address (if different from city) */}
+                  {jobDetail.location_address && jobDetail.location_address !== jobDetail.city && (
+                    <div className='bg-amber-50 border border-amber-200 p-4 rounded-lg '>
+                      <h5 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
+                        <MapPin className='h-4 w-4' />
+                        Full Address
+                      </h5>
+                      <p className='font-inter text-gray-700'>{jobDetail.location_address}</p>
+                    </div>
+                  )}
+
+                  {/* Bidding Status */}
+                  <div className='bg-white/70 p-4 rounded-lg border border-blue-200'>
+                    <div className='flex items-center justify-between mb-3'>
+                      <h5 className='font-roboto font-semibold text-gray-900 flex items-center gap-2'>
+                        <Users className='h-4 w-4' />
+                        Bidding Status
+                      </h5>
+                      <Badge
+                        className={`font-inter ${
+                          jobDetail.status === 'open'
+                            ? 'bg-green-100 text-green-800 border-green-200'
+                            : jobDetail.status === 'full_bid'
+                            ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                            : jobDetail.status === 'waiting_confirmation'
+                            ? 'bg-blue-100 text-blue-800 border-blue-200'
+                            : 'bg-gray-100 text-gray-800 border-gray-200'
+                        }`}
+                      >
+                        {jobDetail.status === 'open'
+                          ? 'Open for Bids'
+                          : jobDetail.status === 'full_bid'
+                          ? 'Full (5 Bids)'
+                          : jobDetail.status === 'waiting_confirmation'
+                          ? 'Pending Confirmation'
+                          : jobDetail.status}
+                      </Badge>
+                    </div>
+
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm'>
+                      <div>
+                        <span className='font-roboto font-medium text-gray-600'>Current Bids:</span>
+                        <span className='font-inter ml-2 text-gray-900'>{jobDetail.bid_count || 0}/5</span>
+                      </div>
+                      <div>
+                        <span className='font-roboto font-medium text-gray-600'>Status:</span>
+                        <span className='font-inter ml-2 text-gray-900 capitalize'>{jobDetail.status?.replace('_', ' ')}</span>
+                      </div>
+                    </div>
+
+                    {/* bid Progress Bar */}
+                    <div className='mt-3'>
+                      <div className='flex justify-between items-center mb-1'>
+                        <span className='font-inter text-xs text-gray-600'>Bid Progress</span>
+                        <span className='font-inter text-xs text-gray-600'>{jobDetail.bid_count || 0}/5</span>
+                      </div>
+                      <div className='w-full bg-gray-200 rounded-full h-2'>
+                        <div className='bg-blue-600 h-2 rounded-full transition-all duration-300' style={{ width: `${((jobDetail.bid_count || 0) / 5) * 100}%` }}></div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <Button onClick={handleViewJob} variant='outline' size='sm' className='font-roboto'>
-                  <ExternalLink className='h-4 w-4 mr-2' />
-                  View Full Job Details
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Action Buttons Based on Status */}
           <Card>
@@ -354,17 +505,17 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
                 {bid.status === 'pending' && (
                   <>
                     <Button onClick={handleEditBid} className='font-roboto bg-green-600 hover:bg-green-700'>
-                      <Edit className='h-4 w-4 mr-2' />
+                      <Edit className='h-4 w-4 mr-1' />
                       Edit Bid
                     </Button>
-                    <Button onClick={handleDeleteBid} variant='destructive' disabled={deleteBidMutation.isPending} className='font-roboto'>
+                    {/* <Button onClick={handleDeleteBid} variant='destructive' disabled={deleteBidMutation.isPending} className='font-roboto'>
                       <Trash2 className='h-4 w-4 mr-2' />
                       {deleteBidMutation.isPending ? 'Deleting...' : 'Delete Bid'}
-                    </Button>
+                    </Button> */}
                   </>
                 )}
 
-                {bid.status === 'selected' && (
+                {/* {bid.status === 'selected' && (
                   <>
                     <Button onClick={handleConfirmBid} disabled={confirmBidMutation.isPending} className='font-roboto bg-blue-600 hover:bg-blue-700'>
                       <CheckCircle className='h-4 w-4 mr-2' />
@@ -375,22 +526,22 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
                       {declineBidMutation.isPending ? 'Declining...' : 'Decline Selection'}
                     </Button>
                   </>
-                )}
+                )} */}
 
-                {bid.status === 'declined' && (
+                {/* {bid.status === 'declined' && (
                   <Button onClick={handleDeleteBid} variant='destructive' disabled={deleteBidMutation.isPending} className='font-roboto'>
                     <Trash2 className='h-4 w-4 mr-2' />
                     {deleteBidMutation.isPending ? 'Deleting...' : 'Delete Bid'}
                   </Button>
-                )}
+                )} */}
 
                 {/* no action needed for confirmed bid */}
-                {bid.status === 'confirmed' && (
+                {/* {bid.status === 'confirmed' && (
                   <Button onClick={handleBackToDashboard} className='font-roboto bg-gray-600 hover:bg-gray-700'>
                     <ArrowLeft className='h-4 w-4 mr-2' />
                     Back to Dashboard
                   </Button>
-                )}
+                )} */}
               </div>
             </CardContent>
           </Card>

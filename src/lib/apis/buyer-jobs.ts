@@ -201,6 +201,7 @@ export async function updateJob(jobId: string, data: Partial<JobFormData>, clerk
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
+// THIS IS ONLY ENABLE FOR DRAFT JOB
 export async function deleteJob(jobId: string, clerkJwt: string): Promise<void> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}`, {
     method: 'DELETE',
@@ -215,9 +216,23 @@ export async function deleteJob(jobId: string, clerkJwt: string): Promise<void> 
   }
 }
 
+export async function closeJob(jobId: string, clerkJwt: string): Promise<void> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}/close`, {
+    method: 'put',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to delete job');
+  }
+}
+
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getBuyerJobs(clerkJwt: string, status?: string): Promise<JobCardResponse[]> {
+export async function getBuyerJobCards(clerkJwt: string, status?: string): Promise<JobCardResponse[]> {
   const url = new URL(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs`);
   if (status) {
     url.searchParams.append('status', status);
@@ -240,13 +255,13 @@ export async function getBuyerJobs(clerkJwt: string, status?: string): Promise<J
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getJobDrafts(clerkJwt: string): Promise<JobCardResponse[]> {
-  return await getBuyerJobs(clerkJwt, 'draft');
-}
+// export async function getJobDrafts(clerkJwt: string): Promise<JobCardResponse[]> {
+//   return await getBuyerJobCards(clerkJwt, 'draft');
+// }
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getJobDetail(jobId: string, clerkJwt: string): Promise<JobDetailResponse> {
+export async function getSpecificJob(jobId: string, clerkJwt: string): Promise<JobDetailResponse> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}`, {
     method: 'GET',
     headers: {

@@ -9,8 +9,8 @@ interface JobFiltersProps {
   setCityFilter: (value: string) => void;
   jobTypeFilter: string;
   setJobTypeFilter: (value: string) => void;
-  showSavedOnly: boolean;
-  setShowSavedOnly: (value: boolean) => void;
+  // showSavedOnly: boolean;
+  // setShowSavedOnly: (value: boolean) => void;
   cityFilterOptions: string[];
   handleClearAllFilters: () => void;
   jobsCount: number;
@@ -22,8 +22,8 @@ export function JobFilters({
   setCityFilter,
   jobTypeFilter,
   setJobTypeFilter,
-  showSavedOnly,
-  setShowSavedOnly,
+  // showSavedOnly,
+  // setShowSavedOnly,
   cityFilterOptions,
   handleClearAllFilters,
   jobsCount,
@@ -80,16 +80,16 @@ export function JobFilters({
           <div className='space-y-2'>
             <label className='font-roboto text-sm font-medium'>Actions</label>
             <div className='flex gap-2'>
-              <Button
+              {/* <Button
                 variant={showSavedOnly ? 'default' : 'outline'}
                 onClick={() => setShowSavedOnly(!showSavedOnly)}
                 className='font-roboto'
                 disabled // TODO: Implement saved jobs functionality
               >
                 Saved Jobs
-              </Button>
-              <Button variant='ghost' onClick={handleClearAllFilters} className='font-roboto text-gray-600'>
-                Clear
+              </Button> */}
+              <Button onClick={handleClearAllFilters} className='font-roboto hover:opacity-80'>
+                Clear All Filters
               </Button>
             </div>
           </div>

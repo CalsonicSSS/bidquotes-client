@@ -2,7 +2,7 @@
 
 import { Menu } from 'lucide-react';
 
-type ContractorActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-passes';
+type ContractorActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-credits';
 
 type ContractorMobileHeaderProps = {
   activeSection: ContractorActiveSection;
@@ -18,8 +18,8 @@ export function ContractorMobileHeader({ activeSection, setSidebarOpen }: Contra
         return 'Your Bids';
       case 'profile':
         return 'Profile';
-      case 'your-passes':
-        return 'Your Passes';
+      case 'your-credits':
+        return 'Your Credits';
       default:
         return '';
     }

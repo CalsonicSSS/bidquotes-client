@@ -4,14 +4,16 @@ import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Edit, Trash2, MapPin, CheckCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getJobDetail, deleteJob } from '@/lib/apis/buyer-jobs';
+import { getSpecificJob, closeJob } from '@/lib/apis/buyer-jobs';
 import { JobBidsSection } from '@/components/buyer-dashboard/job-detail/JobBidsSection';
-import { DeleteJobModal } from '@/components/buyer-dashboard/job-detail/DeleteJobModal';
+import { CloseJobModal } from '@/components/buyer-dashboard/job-detail/CloseJobModal';
 import { Actions } from '@/components/buyer-dashboard/job-detail/Actions';
 import { ImagesGallery } from '@/components/ImagesGallery';
+import { formatDateTime } from '@/lib/utils/custom-format';
+import JobStatusBadge from '@/components/buyer-dashboard/JobStatusBadge';
 
 export default function JobDetailPage() {
   const router = useRouter();
@@ -19,7 +21,8 @@ export default function JobDetailPage() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
   const jobId = params.jobId as string;
 
   // Fetch specific job details
@@ -32,26 +35,43 @@ export default function JobDetailPage() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-      return getJobDetail(jobId, token);
+      return getSpecificJob(jobId, token);
     },
     enabled: !!jobId && !!getToken,
     staleTime: 0,
   });
 
   // Delete mutation
-  const deleteMutation = useMutation({
+  // const deleteMutation = useMutation({
+  //   mutationFn: async () => {
+  //     const token = await getToken();
+  //     if (!token) throw new Error('Unable to get authentication token');
+  //     return deleteJob(jobId, token);
+  //   },
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+  //     router.push('/buyer-dashboard');
+  //   },
+  //   onError: (error) => {
+  //     console.error('Error deleting job:', error);
+  //     alert(error instanceof Error ? error.message : 'Failed to delete job. Please try again.');
+  //   },
+  // });
+
+  // close job mutation
+  const closeMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
-      return deleteJob(jobId, token);
+      return closeJob(jobId, token);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
       router.push('/buyer-dashboard');
     },
     onError: (error) => {
-      console.error('Error deleting job:', error);
-      alert(error instanceof Error ? error.message : 'Failed to delete job. Please try again.');
+      console.error('Error closing job:', error);
+      alert(error instanceof Error ? error.message : 'Failed to close job. Please try again.');
     },
   });
 
@@ -60,19 +80,29 @@ export default function JobDetailPage() {
     router.push(`/buyer-dashboard/post-job?edit=${jobId}`);
   };
 
-  const handleDelete = () => {
-    setShowDeleteModal(true);
+  // const handleDelete = () => {
+  //   setShowDeleteModal(true);
+  // };
+
+  // const handleConfirmDelete = () => {
+  //   deleteMutation.mutate();
+  //   setShowDeleteModal(false);
+  // };
+
+  const openCloseJob = () => {
+    setShowCloseModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    deleteMutation.mutate();
-    setShowDeleteModal(false);
+  const handleConfirmClose = () => {
+    closeMutation.mutate();
+    setShowCloseModal(false);
   };
 
-  const handleBack = () => {
+  const handleBackDashboard = () => {
     router.push('/buyer-dashboard');
   };
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading state
   if (isLoading) {
     return (
@@ -92,7 +122,7 @@ export default function JobDetailPage() {
         <div className='text-center'>
           <h2 className='font-roboto text-xl font-semibold text-gray-900 mb-2'>Job Not Found</h2>
           <p className='font-inter text-gray-600 mb-4'>The job you're looking for may not exist or having error.</p>
-          <Button onClick={handleBack} className='font-roboto'>
+          <Button onClick={handleBackDashboard} className='font-roboto'>
             Back to Dashboard
           </Button>
         </div>
@@ -101,22 +131,23 @@ export default function JobDetailPage() {
   }
 
   // Check if job can be edited/deleted
-  const canModify = ['draft', 'open', 'full_bid'].includes(jobDetail.status);
+  // directly calculate based on job status upon component onMount
+  const canModify = ['open'].includes(jobDetail.status);
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Delete Confirmation Modal */}
-      <DeleteJobModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
-        isDeleting={deleteMutation.isPending}
+      {/* Close Confirmation Modal component*/}
+      <CloseJobModal
+        isOpen={showCloseModal}
+        onClose={() => setShowCloseModal(false)}
+        onConfirm={handleConfirmClose}
+        isClosing={closeMutation.isPending}
         jobTitle={jobDetail.title}
       />
 
       {/* Mobile Header */}
       <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10'>
-        <button onClick={handleBack} className='p-2 rounded-md hover:bg-gray-100'>
+        <button onClick={handleBackDashboard} className='p-2 rounded-md hover:bg-gray-100'>
           <ArrowLeft className='h-5 w-5' />
         </button>
         <h1 className='font-roboto font-semibold text-gray-900 text-center flex-1 mx-4 truncate'>{jobDetail.title}</h1>
@@ -126,20 +157,21 @@ export default function JobDetailPage() {
       <div className='container mx-auto px-4 py-6 max-w-4xl'>
         {/* Desktop Header */}
         <div className='hidden lg:block mb-6'>
-          <Button onClick={handleBack} variant='ghost' className='font-roboto mb-4 -ml-4'>
-            <ArrowLeft className='h-4 w-4 mr-2' />
-            Back to Dashboard
-          </Button>
           <div className='flex justify-between items-start'>
-            <div>
-              <h1 className='font-roboto text-2xl lg:text-3xl font-bold text-gray-900 mb-2'>{jobDetail.title}</h1>
+            <div className='flex items-center'>
+              <h1 className='font-roboto text-2xl lg:text-3xl font-bold text-gray-900 mr-3'>{jobDetail.title}</h1>
+              <JobStatusBadge status={jobDetail.status} />
             </div>
 
-            {canModify && <Actions onEdit={handleEdit} onDelete={handleDelete} isDeleting={deleteMutation.isPending} />}
+            {/* desktop actions */}
+            <div className='flex gap-3'>
+              {canModify && <Actions isMobile={false} onEdit={handleEdit} onClose={openCloseJob} isClosing={closeMutation.isPending} />}
+              <Button onClick={handleBackDashboard}>Back to Dashboard</Button>
+            </div>
           </div>
         </div>
 
-        {jobDetail.status === 'confirmed' && (
+        {/* {jobDetail.status === 'confirmed' && (
           <Card className='bg-purple-50 border-purple-200 mb-5'>
             <CardHeader>
               <CardTitle className='font-roboto text-lg flex items-center gap-2 text-purple-900'>
@@ -152,58 +184,41 @@ export default function JobDetailPage() {
               <p className='font-inter text-sm text-purple-700 mb-4'>Contractor will soon contact you</p>
             </CardContent>
           </Card>
-        )}
+        )} */}
 
         <div className='space-y-6'>
           {/* Job Details Card */}
           <Card>
-            <CardHeader className='pb-4'>
-              <div className='flex justify-between items-start'>
-                <div className='flex-1'>
-                  <CardTitle className='font-roboto text-lg lg:text-xl lg:hidden'>{jobDetail.title}</CardTitle>
-                  <div className='flex flex-wrap items-center gap-2 lg:gap-4 text-sm text-gray-600 font-inter mt-2 lg:mt-0'>
-                    <span className='capitalize'>{jobDetail.job_type}</span>
-                    <span className='hidden lg:inline'>•</span>
-                    <span className='lg:hidden'>Posted</span>
-                    <span>{new Date(jobDetail.created_at).toLocaleDateString()}</span>
-                    <div className='w-full lg:w-auto lg:inline'>
-                      <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                          jobDetail.status === 'open'
-                            ? 'bg-green-100 text-green-800'
-                            : jobDetail.status === 'draft'
-                            ? 'bg-gray-100 text-gray-800'
-                            : jobDetail.status === 'full_bid'
-                            ? 'bg-blue-100 text-blue-800'
-                            : jobDetail.status === 'confirmed'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {jobDetail.status === 'full_bid'
-                          ? 'Full Bids'
-                          : jobDetail.status === 'waiting_confirmation'
-                          ? 'Waiting Confirmation'
-                          : jobDetail.status.charAt(0).toUpperCase() + jobDetail.status.slice(1)}
-                      </span>
-                    </div>
+            {/* mobile card title + badge + mobile actions (all components are hidden in <lg:hidden>) */}
+            <CardHeader className='sm:pb-4 lg:pb-0'>
+              <div className='flex justify-between items-center'>
+                <div className='flex items-center'>
+                  <CardTitle className='font-roboto text-lg lg:text-xl lg:hidden mr-3'>{jobDetail.title}</CardTitle>
+                  <div className='lg:hidden'>
+                    <JobStatusBadge status={jobDetail.status} />
                   </div>
                 </div>
-
                 {canModify && (
-                  <div className='lg:hidden flex gap-2 ml-4'>
-                    <Button size='sm' onClick={handleEdit} className='font-roboto'>
-                      <Edit className='h-4 w-4' />
-                    </Button>
-                    <Button size='sm' variant='destructive' onClick={handleDelete} disabled={deleteMutation.isPending}>
-                      <Trash2 className='h-4 w-4' />
-                    </Button>
+                  <div className='lg:hidden'>
+                    <Actions isMobile={true} onEdit={handleEdit} onClose={openCloseJob} isClosing={closeMutation.isPending} />{' '}
                   </div>
                 )}
               </div>
             </CardHeader>
 
             <CardContent className='space-y-6'>
+              {/* post date */}
+              <div>
+                <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Posted On</h3>
+                <p className='font-inter text-gray-700'>{formatDateTime(jobDetail.created_at)}</p>
+              </div>
+
+              {/* job type */}
+              <div>
+                <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Job Type</h3>
+                <p className='font-inter text-gray-700'>{jobDetail.job_type}</p>
+              </div>
+
               {/* Job Description */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Description</h3>
@@ -245,12 +260,7 @@ export default function JobDetailPage() {
           </Card>
 
           {/* Bids Section */}
-          <JobBidsSection
-            jobId={jobId}
-            jobStatus={jobDetail.status}
-            bidCount={jobDetail.bid_count}
-            bids={jobDetail.bids} // Add this new prop
-          />
+          <JobBidsSection jobId={jobId} bidCount={jobDetail.bid_count} bids={jobDetail.bids} />
         </div>
       </div>
     </div>

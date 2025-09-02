@@ -3,11 +3,12 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, MessageSquare, MapPin, Send, Hammer, ClipboardCheck, Wallet, Phone } from 'lucide-react';
+import { ArrowLeft, MessageSquare, MapPin, Send, Hammer, Info, Wallet, Phone, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getContractorJobDetail } from '@/lib/apis/contractor-jobs';
 import { ImagesGallery } from '@/components/ImagesGallery';
+import { formatDateTime } from '@/lib/utils/custom-format';
 
 export default function ContractorJobDetailPage() {
   const router = useRouter();
@@ -80,9 +81,10 @@ export default function ContractorJobDetailPage() {
 
       <div className='container mx-auto px-4 py-6 max-w-4xl'>
         {/* Desktop Header */}
-        <div className='hidden lg:block mb-6'>
-          <Button onClick={handleBack} variant='ghost' className='font-roboto mb-4 -ml-4'>
-            <ArrowLeft className='h-4 w-4 mr-2' />
+        <div className='hidden lg:flex justify-between items-center mb-6'>
+          <h1 className='font-semibold text-xl font-roboto'>{jobDetail.title}</h1>
+
+          <Button onClick={handleBack} className='font-roboto mb-4 -ml-4'>
             Back to All Jobs
           </Button>
         </div>
@@ -90,14 +92,18 @@ export default function ContractorJobDetailPage() {
         <div className='space-y-6'>
           {/* Job Details Card */}
           <Card>
-            <CardHeader className='pb-4 mb-5'>
-              <div className='flex justify-between items-center'>
-                <CardTitle className='font-roboto text-lg lg:text-xl'>{jobDetail.title}</CardTitle>
-                <span className='text-sm font-inter'>Posted {new Date(jobDetail.created_at).toLocaleDateString()}</span>
-              </div>
-            </CardHeader>
+            <CardHeader className='pb-0' />
 
             <CardContent className='space-y-6'>
+              {/* Posted on */}
+              <div>
+                <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
+                  <Calendar className='h-4 w-4' />
+                  Posted On
+                </h3>
+                <span className='text-sm font-inter'>Posted {formatDateTime(jobDetail.created_at)}</span>
+              </div>
+
               {/* job type */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
@@ -116,16 +122,16 @@ export default function ContractorJobDetailPage() {
                 <p className='font-inter text-gray-700'>{jobDetail.job_budget}</p>
               </div>
 
-              {/* Job Description */}
-              <div>
+              {/* Job Description (not to reveal at this page, only show after contractor full paid and submit the bid) */}
+              {/* <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
                   <ClipboardCheck className='h-4 w-4' />
                   Description
                 </h3>
                 <p className='font-inter text-gray-700 whitespace-pre-wrap leading-relaxed'>{jobDetail.description}</p>
-              </div>
+              </div> */}
 
-              {/* Location */}
+              {/* Location (showing only general city) */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
                   <MapPin className='h-4 w-4' />
@@ -135,23 +141,23 @@ export default function ContractorJobDetailPage() {
                 <p className='font-inter text-gray-700'>{jobDetail.city}</p>
               </div>
 
-              {/* contact */}
+              {/* contact information, job description, and other information (not to reveal at this page, only show after contractor full paid and submit the bid) */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
-                  <Phone className='h-4 w-4' />
-                  Contact Information
+                  <Info className='h-4 w-4' />
+                  Job Contact & detail information
                 </h3>
                 {/* will be shared with selected contractor only */}
-                <p className='font-inter text-xs text-blue-600 mt-2'>* Buyer contact information will be shared with selected contractor only</p>
+                <p className='font-inter text-xs text-blue-600 mt-2'>* All job detail information will be revealed once bid and payment are completed for this job</p>
               </div>
 
               {/* Other Requirements */}
-              {jobDetail.other_requirements && (
+              {/* {jobDetail.other_requirements && (
                 <div>
                   <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Additional Requirements</h3>
                   <p className='font-inter text-gray-700 whitespace-pre-wrap leading-relaxed'>{jobDetail.other_requirements}</p>
                 </div>
-              )}
+              )} */}
 
               {/* Images */}
               {jobDetail.images && jobDetail.images.length > 0 && (
@@ -191,8 +197,8 @@ export default function ContractorJobDetailPage() {
                 </p>
                 <ul className='space-y-1 list-disc list-inside'>
                   <li>Submit your competitive bid for this job</li>
-                  <li>If selected, you'll be notified and you can confirm the job</li>
-                  <li>Full buyer contact details will be shared after confirmation</li>
+                  <li>Full job detail will be revealed once bid payment is completed</li>
+                  <li>Contact home owner!</li>
                 </ul>
               </div>
             </CardContent>

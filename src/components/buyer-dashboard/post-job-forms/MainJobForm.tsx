@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createJob, saveJobDraft, getJobDetail, updateJob, deleteJob, type JobFormData } from '@/lib/apis/buyer-jobs';
+import { createJob, saveJobDraft, getSpecificJob, updateJob, deleteJob, type JobFormData } from '@/lib/apis/buyer-jobs';
 import { SuccessModal } from '@/components/SuccessModal';
-import { LocationSection } from '@/components/buyer-dashboard/job-forms/LocationSection';
-import { JobBasicInfoSection } from '@/components/buyer-dashboard/job-forms/JobBasicInfoSection';
-import { FormActions } from '@/components/buyer-dashboard/job-forms/FormActions';
+import { LocationSection } from '@/components/buyer-dashboard/post-job-forms/LocationSection';
+import { JobBasicInfoSection } from '@/components/buyer-dashboard/post-job-forms/JobBasicInfoSection';
+import { Actions } from '@/components/buyer-dashboard/post-job-forms/Actions';
 import { ImageUploadSection } from '@/components/ImageUploadSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
 import { DeleteDraftModal } from '../DeleteDraftModal';
@@ -58,7 +58,7 @@ export default function MainJobForm() {
     queryFn: async () => {
       const token = await getToken();
       if (!token || !jobId) throw new Error('No token or job ID available');
-      return getJobDetail(jobId, token);
+      return getSpecificJob(jobId, token);
     },
     staleTime: 0,
     enabled: !!jobId && !!getToken, // if jobId is falsy, the query will not run
@@ -201,7 +201,7 @@ export default function MainJobForm() {
       if (!token) throw new Error('Unable to get authentication token');
 
       if (isEditingDraft && jobId) {
-        // If editing a draft, update it with isDraftPost set to true for posting
+        // If editing a draft, update it with isDraftPost set to true for posting the existing draft job
         return updateJob(jobId, formData, token, true);
       } else if (isEditingJob && jobId) {
         // If its editing an existing job, update it
@@ -223,6 +223,7 @@ export default function MainJobForm() {
     },
   });
 
+  // purely for saving drafts,if its first time save / create or update existing draft WITHOUT POSTING
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
@@ -337,6 +338,8 @@ export default function MainJobForm() {
         draftTitle={formData.title}
       />
 
+      {/* ------------------------------------------------------------------------------------------------------------------------------ */}
+
       {/* Mobile Header */}
       <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10'>
         <button onClick={handleBackNavigation} className='p-2 rounded-md hover:bg-gray-100'>
@@ -428,7 +431,7 @@ export default function MainJobForm() {
           )}
 
           {/* Form Actions */}
-          <FormActions
+          <Actions
             isEditingDraft={isEditingDraft}
             isEditingJob={isEditingJob}
             onSaveDraft={handleSaveDraft}

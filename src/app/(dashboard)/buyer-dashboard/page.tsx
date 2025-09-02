@@ -9,17 +9,16 @@ import { BuyerSidebar } from '@/components/buyer-dashboard/Sidebar';
 import { BuyerMobileHeader } from '@/components/buyer-dashboard/MobileHeader';
 import { AllJobsSection } from '@/components/buyer-dashboard/menu-sections/AllJobsSection';
 import { getBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
-import { getBuyerJobs } from '@/lib/apis/buyer-jobs';
 import { isContactInfoCompleteChecker } from '@/lib/utils/condition-checkers';
 import { ContactInfoSection } from '@/components/buyer-dashboard/menu-sections/ContactInfoSection';
 
 type ActiveSection = 'all-jobs' | 'contact-info';
 
 export default function BuyerDashboard() {
-  const { userId, getToken } = useAuth();
+  const { userId, getToken } = useAuth(); // the getToken here is the function to retrieve the user's JWT from Clerk
   const { user } = useUser();
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs'); // initial active section is 'all-jobs'
+  const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs'); // initial active section is 'all-jobs' in this dashboard
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // real time redirection based on user type / auth status
@@ -49,21 +48,9 @@ export default function BuyerDashboard() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-      return getBuyerContactInfo(token);
+      return getBuyerContactInfo(token); // since this getBuyerContactInfo is already promise, JS will not double-wrap promise. It just passes single promise through.
     },
-    enabled: !!userId && !!getToken() && !!user,
-  });
-
-  // Query to fetch buyer's jobs
-  const { data: allJobs = [], isLoading: isJobsLoading } = useQuery({
-    queryKey: ['buyer-jobs'],
-    queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error('No token available');
-      return getBuyerJobs(token);
-    },
-    enabled: !!userId && !!getToken() && !!user,
-    staleTime: 0,
+    enabled: !!userId && !!getToken() && !!user, // On mount: if userId, getToken(), or user are falsy → query does not run. | As soon as all three are truthy → TanStack Query triggers the fetch for you.
   });
 
   // Check if user can post jobs (based on contact info complete)
@@ -75,7 +62,7 @@ export default function BuyerDashboard() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Show loading state
-  if (!user || isJobsLoading || isContactInfoLoading) {
+  if (!user || isContactInfoLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -102,7 +89,7 @@ export default function BuyerDashboard() {
 
           {/* Page Content */}
           <div className='p-4 lg:p-8'>
-            {activeSection === 'all-jobs' && <AllJobsSection allJobs={allJobs} canPostJob={canPostJob} />}
+            {activeSection === 'all-jobs' && <AllJobsSection canPostJob={canPostJob} />}
 
             {activeSection === 'contact-info' && <ContactInfoSection contactInfo={buyerContactInfo} />}
           </div>

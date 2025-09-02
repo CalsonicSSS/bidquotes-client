@@ -1,4 +1,4 @@
-import MainJobForm from '@/components/buyer-dashboard/job-forms/MainJobForm';
+import MainJobForm from '@/components/buyer-dashboard/post-job-forms/MainJobForm';
 import { Suspense } from 'react';
 
 export default function Page() {

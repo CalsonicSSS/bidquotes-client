@@ -49,3 +49,16 @@ export async function getBuyerContactInfo(clerkJwt: string): Promise<BuyerContac
 
   return await response.json();
 }
+
+export async function getBuyerContactInfoByBuyerId(buyerId: string): Promise<BuyerContactInfoResponse> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/buyer-contact-info/${buyerId}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to get contact information');
+  }
+
+  return await response.json();
+}

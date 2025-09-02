@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Briefcase, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { JobCardResponse } from '@/lib/apis/buyer-jobs';
+import { formatDateTime } from '@/lib/utils/custom-format';
 
-type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
+// type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
+type ActiveFilter = 'all' | 'draft' | 'open' | 'closed';
 
 type JobsListProps = {
   filteredJobs: JobCardResponse[];
@@ -15,6 +17,8 @@ type JobsListProps = {
 
 export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListProps) {
   const router = useRouter();
+
+  // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   if (filteredJobs.length === 0) {
     if (activeFilter === 'all') {
@@ -50,7 +54,7 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
           key={job.id}
           className='bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer overflow-hidden h-32'
           onClick={() => {
-            // important differentiation between draft and non-draft job type
+            // important differentiation between "draft" and "non-draft" job type navigation
             if (job.status === 'draft') {
               router.push(`/buyer-dashboard/post-job?draft=${job.id}`);
             } else {
@@ -105,12 +109,16 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
 
               {/* Bottom row - Date and bids */}
               <div className='flex items-center justify-between text-xs lg:text-sm font-medium text-gray-500 font-inter'>
-                <span>
-                  {job.status === 'draft' ? 'Saved' : 'Posted'} {new Date(job.created_at).toLocaleDateString()}
+                <span className='hidden lg:inline'>
+                  {job.status === 'draft' ? 'Saved' : 'Posted'}: {formatDateTime(job.created_at)}
                 </span>
+                <div className='lg:hidden'>
+                  <p>{job.status === 'draft' ? 'Saved' : 'Posted'}:</p>
+                  <span>{formatDateTime(job.created_at)}</span>
+                </div>
 
                 {job.status !== 'draft' && (
-                  <span>
+                  <span className='text-blue-600 font-bold'>
                     {job.bid_count} {job.bid_count === 1 ? 'bid' : 'bids'}
                   </span>
                 )}

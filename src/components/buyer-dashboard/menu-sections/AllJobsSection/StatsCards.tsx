@@ -4,8 +4,9 @@ type StatsCardsProps = {
   stats: {
     activeJobs: number;
     totalBids: number;
-    confirmedJobs: number;
+    // confirmedJobs: number;
     savedDrafts: number;
+    closedJobs: number;
   };
 };
 
@@ -32,10 +33,10 @@ export function StatsCards({ stats }: StatsCardsProps) {
 
       <Card>
         <CardHeader className='pb-2 lg:pb-3'>
-          <CardTitle className='text-xs lg:text-sm font-roboto text-gray-600 uppercase tracking-wide'>Confirmed</CardTitle>
+          <CardTitle className='text-xs lg:text-sm font-roboto text-gray-600 uppercase tracking-wide'>Closed</CardTitle>
         </CardHeader>
         <CardContent className='pt-0'>
-          <div className='text-xl lg:text-3xl font-inter font-bold text-purple-600'>{stats.confirmedJobs}</div>
+          <div className='text-xl lg:text-3xl font-inter font-bold text-purple-600'>{stats.closedJobs}</div>
         </CardContent>
       </Card>
 

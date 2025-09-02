@@ -9,7 +9,7 @@ import { ContractorSidebar } from '@/components/contractor-dashboard/Sidebar';
 import { ContractorMobileHeader } from '@/components/contractor-dashboard/MobileHeader';
 import { ProfileSection } from '@/components/contractor-dashboard/menu-sections/ProfileSection';
 import { AllJobsSection } from '@/components/contractor-dashboard/menu-sections/AllJobsSection';
-import { YourPassesSection } from '@/components/contractor-dashboard/menu-sections/YourPassesSection';
+import { YourCreditsSection } from '@/components/contractor-dashboard/menu-sections/YourPassesSection';
 import { checkContractorProfileCompletion } from '@/lib/apis/contractor-profile';
 import { YourBidsSection } from '@/components/contractor-dashboard/menu-sections/YourBidsSection';
 import { Suspense } from 'react';
@@ -22,7 +22,7 @@ export default function ContractorDashboard() {
   );
 }
 
-type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-passes';
+type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-credits';
 
 function MainContractorDashboard() {
   const { userId, getToken } = useAuth();
@@ -32,14 +32,23 @@ function MainContractorDashboard() {
 
   // Check for "section" parameter in URL
   const sectionParam = searchParams.get('section') as ActiveSection;
-  const [activeSection, setActiveSection] = useState<ActiveSection>(
-    sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-passes'].includes(sectionParam) ? sectionParam : 'all-jobs'
-  );
+  const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs'); // initial active section is 'all-jobs'
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Update active section when URL changes
+  // Upon onMount this page, we will first fetch contractor profile completion query
+  const { data: isProfileComplete = false, isLoading: isProfileLoading } = useQuery({
+    queryKey: ['contractor-profile-completion'],
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('No token available');
+      return checkContractorProfileCompletion(token);
+    },
+    enabled: !!userId && !!getToken() && !!user,
+  });
+
+  // Update active section when URL changes with search params on certain sections
   useEffect(() => {
-    if (sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-passes'].includes(sectionParam)) {
+    if (sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-credits'].includes(sectionParam)) {
       setActiveSection(sectionParam);
     }
   }, [sectionParam]);
@@ -54,17 +63,7 @@ function MainContractorDashboard() {
     }
   }, [userId, user, router]);
 
-  // Upon this page, we will first fetch contractor profile completion query
-  const { data: isProfileComplete = false, isLoading: isProfileLoading } = useQuery({
-    queryKey: ['contractor-profile-completion'],
-    queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error('No token available');
-      return checkContractorProfileCompletion(token);
-    },
-    enabled: !!userId && !!getToken() && !!user,
-  });
-
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading state
   if (!user || isProfileLoading) {
     return (
@@ -92,7 +91,7 @@ function MainContractorDashboard() {
             {activeSection === 'all-jobs' && <AllJobsSection />}
             {activeSection === 'your-bids' && <YourBidsSection setActiveSection={setActiveSection} />}
             {activeSection === 'profile' && <ProfileSection />}
-            {activeSection === 'your-passes' && <YourPassesSection />}
+            {activeSection === 'your-credits' && <YourCreditsSection />}
           </div>
         </div>
       </div>

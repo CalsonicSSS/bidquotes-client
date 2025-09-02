@@ -12,7 +12,7 @@ import { StatusCard } from './StatusCards';
 import { BidCard } from './BidCard';
 import { Actions, ActiveFilter } from './Actions';
 
-export function YourBidsSection({ setActiveSection }: { setActiveSection: (section: 'all-jobs' | 'your-bids' | 'profile' | 'your-passes') => void }) {
+export function YourBidsSection({ setActiveSection }: { setActiveSection: (section: 'all-jobs' | 'your-bids' | 'profile' | 'your-credits') => void }) {
   const { getToken } = useAuth();
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
@@ -43,18 +43,18 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
   const statusCounts = {
     total: contractorBids.length,
     draft: contractorBids.filter((bid) => bid.status === 'draft').length,
-    pending: contractorBids.filter((bid) => bid.status === 'pending').length,
-    confirmed: contractorBids.filter((bid) => bid.status === 'confirmed').length,
+    // pending: contractorBids.filter((bid) => bid.status === 'pending').length,
+    // confirmed: contractorBids.filter((bid) => bid.status === 'confirmed').length,
   };
 
   // Filter options with counts (like buyer side)
   const filterOptions = [
     { value: 'all', label: 'All Bids', count: contractorBids.length },
     { value: 'draft', label: 'Drafts', count: contractorBids.filter((b) => b.status === 'draft').length },
-    { value: 'pending', label: 'Pending', count: contractorBids.filter((b) => b.status === 'pending').length },
-    { value: 'selected', label: 'Selected', count: contractorBids.filter((b) => b.status === 'selected').length },
-    { value: 'confirmed', label: 'Confirmed', count: contractorBids.filter((b) => b.status === 'confirmed').length },
-    { value: 'declined', label: 'Declined', count: contractorBids.filter((b) => b.status === 'declined').length },
+    { value: 'pending', label: 'Submitted', count: contractorBids.filter((b) => b.status === 'pending').length },
+    // { value: 'selected', label: 'Selected', count: contractorBids.filter((b) => b.status === 'selected').length },
+    // { value: 'confirmed', label: 'Confirmed', count: contractorBids.filter((b) => b.status === 'confirmed').length },
+    // { value: 'declined', label: 'Declined', count: contractorBids.filter((b) => b.status === 'declined').length },
   ];
 
   // Filter bids based on active filter (client-side filtering like buyer side)
@@ -102,8 +102,8 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
       <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
         <StatusCard title='Total Bids' count={statusCounts.total} icon={<FileText className='h-6 w-6 text-blue-600' />} bgColor='bg-blue-100' />
         <StatusCard title='Drafts' count={statusCounts.draft} icon={<Clock className='h-6 w-6 text-gray-600' />} bgColor='bg-gray-100' />
-        <StatusCard title='Pending' count={statusCounts.pending} icon={<Clock className='h-6 w-6 text-yellow-600' />} bgColor='bg-yellow-100' />
-        <StatusCard title='Confirmed' count={statusCounts.confirmed} icon={<CheckCircle className='h-6 w-6 text-green-600' />} bgColor='bg-green-100' />
+        {/* <StatusCard title='Pending' count={statusCounts.pending} icon={<Clock className='h-6 w-6 text-yellow-600' />} bgColor='bg-yellow-100' />
+        <StatusCard title='Confirmed' count={statusCounts.confirmed} icon={<CheckCircle className='h-6 w-6 text-green-600' />} bgColor='bg-green-100' /> */}
       </div>
 
       {/* Actions (Filter + Browse Jobs button) */}
