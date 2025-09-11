@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { UserAuthConditionalButtons } from '@/components/UserAuthConditionalButtons';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, Clock, CheckCircle, Facebook, Instagram } from 'lucide-react';
+import { Star, Clock, CheckCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 

@@ -255,12 +255,6 @@ export async function getBuyerJobCards(clerkJwt: string, status?: string): Promi
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-// export async function getJobDrafts(clerkJwt: string): Promise<JobCardResponse[]> {
-//   return await getBuyerJobCards(clerkJwt, 'draft');
-// }
-
-// -------------------------------------------------------------------------------------------------------------------------------------
-
 export async function getSpecificJob(jobId: string, clerkJwt: string): Promise<JobDetailResponse> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${jobId}`, {
     method: 'GET',

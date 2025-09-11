@@ -6,51 +6,82 @@ import { Save, Send } from 'lucide-react';
 type FormActionsProps = {
   isEditingDraft: boolean;
   isEditingJob: boolean;
-  onSaveDraft: () => void;
-  onJobSubmit: () => void;
-  saveDraftPending: boolean;
-  createOrUpdateJobPending: boolean;
-  deleteDraftPending: boolean;
+  saveNewDraftPending: boolean;
+  createNewJobPending: boolean;
+  updateExistingJobPending: boolean;
+  updateExistingDraftPending: boolean;
+  createJobFromDraftPending: boolean;
+  saveNewDraftHandler: () => void;
+  createNewJobHandler: () => void;
+  updateExistingJobHandler: () => void;
+  updateExistingDraftHandler: () => void;
+  createJobFromDraftHandler: () => void;
 };
 
-// rewrite this actions here by clearly separate the case of no edit / draft, draft only, is editing only cases
-
-export function Actions({ isEditingDraft, isEditingJob, onSaveDraft, onJobSubmit, saveDraftPending, createOrUpdateJobPending, deleteDraftPending }: FormActionsProps) {
-  const isAnyActionPending = saveDraftPending || createOrUpdateJobPending || deleteDraftPending;
-
+export function Actions({
+  isEditingDraft,
+  isEditingJob,
+  saveNewDraftPending,
+  createNewJobPending,
+  updateExistingJobPending,
+  updateExistingDraftPending,
+  createJobFromDraftPending,
+  saveNewDraftHandler,
+  createNewJobHandler,
+  updateExistingJobHandler,
+  updateExistingDraftHandler,
+  createJobFromDraftHandler,
+}: FormActionsProps) {
   return (
     <>
+      {/* no existing job / draft case */}
       {!isEditingDraft && !isEditingJob && (
-        <div className='flex flex-col sm:flex-row gap-3 pt-6'>
-          <Button type='button' variant='outline' onClick={onSaveDraft} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2'>
+        <div className='flex flex-col sm:flex-row gap-3'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={saveNewDraftHandler}
+            disabled={saveNewDraftPending || createNewJobPending}
+            className='font-roboto flex items-center gap-2'
+          >
             <Save className='h-4 w-4' />
-            {saveDraftPending ? 'Saving...' : isEditingDraft ? 'Update Draft' : 'Save as Draft'}
+            {saveNewDraftPending ? 'Saving...' : 'Save as Draft'}
           </Button>
-          <Button type='button' onClick={onJobSubmit} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
+          <Button type='button' onClick={createNewJobHandler} disabled={createNewJobPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
             <Send className='h-4 w-4' />
-            {createOrUpdateJobPending ? 'Posting Job...' : 'Create Job'}
+            {createNewJobPending ? 'Posting Job...' : 'Create Job'}
           </Button>
         </div>
       )}
-
+      {/* editing existing draft case */}
       {isEditingDraft && (
-        <div className='flex flex-col sm:flex-row gap-3 pt-6'>
-          <Button type='button' variant='outline' onClick={onSaveDraft} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2'>
+        <div className='flex flex-col sm:flex-row gap-3'>
+          <Button type='button' variant='outline' onClick={updateExistingDraftHandler} disabled={updateExistingDraftPending} className='font-roboto flex items-center gap-2 '>
             <Save className='h-4 w-4' />
-            {saveDraftPending ? 'Saving...' : 'Update Draft'}
+            {updateExistingDraftPending ? 'Updating...' : 'Update Draft'}
           </Button>
-          <Button type='button' onClick={onJobSubmit} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
+          <Button
+            type='button'
+            onClick={createJobFromDraftHandler}
+            disabled={createJobFromDraftPending}
+            className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'
+          >
             <Send className='h-4 w-4' />
-            {createOrUpdateJobPending ? 'Posting Job...' : 'Post Draft'}
+            {createJobFromDraftPending ? 'Posting Job...' : 'Post Draft'}
           </Button>
         </div>
       )}
-
+      {/* editing existing job case */}
       {isEditingJob && (
-        <div className='flex flex-col sm:flex-row gap-3 pt-6'>
-          <Button type='button' onClick={onJobSubmit} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
-            <Send className='h-4 w-4' />
-            {createOrUpdateJobPending ? 'Posting Job...' : 'Update Job'}
+        <div className='flex flex-col sm:flex-row gap-3'>
+          <Button
+            type='button'
+            onClick={updateExistingJobHandler}
+            disabled={updateExistingJobPending}
+            className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white'
+          >
+            <Save className='h-4 w-4' />
+            {updateExistingJobPending ? 'Updating...' : 'Update Job'}
           </Button>
         </div>
       )}

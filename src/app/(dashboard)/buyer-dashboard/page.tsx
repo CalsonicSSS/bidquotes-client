@@ -15,7 +15,7 @@ import { ContactInfoSection } from '@/components/buyer-dashboard/menu-sections/C
 type ActiveSection = 'all-jobs' | 'contact-info';
 
 export default function BuyerDashboard() {
-  const { userId, getToken } = useAuth(); // the getToken here is the function to retrieve the user's JWT from Clerk
+  const { userId, getToken } = useAuth(); // the "getToken" here is the function to retrieve the user's JWT from Clerk
   const { user } = useUser();
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<ActiveSection>('all-jobs'); // initial active section is 'all-jobs' in this dashboard
@@ -29,9 +29,9 @@ export default function BuyerDashboard() {
         router.push('/contractor-dashboard');
       }
     }
-  }, [userId, user, router]);
+  }, [user, router]);
 
-  // here, we use two (multiple) useQuery hooks to fetch buyer's contact info and their all jobs.
+  // multiple useQuery hooks to fetch buyer's contact info and their all jobs.
   // even though it's not always explicitly shown, useQuery relies entirely on the QueryClient that you provide via the QueryClientProvider
   // By default, each useQuery() fetches concurrently in Non-blocking (You don't need to wrap them in a Promise.all() or similar—the QueryClient handles it for you).
   // However, you can enable waterfall for dependent queries by using the `enabled` option.
@@ -50,10 +50,10 @@ export default function BuyerDashboard() {
       if (!token) throw new Error('No token available');
       return getBuyerContactInfo(token); // since this getBuyerContactInfo is already promise, JS will not double-wrap promise. It just passes single promise through.
     },
-    enabled: !!userId && !!getToken() && !!user, // On mount: if userId, getToken(), or user are falsy → query does not run. | As soon as all three are truthy → TanStack Query triggers the fetch for you.
+    enabled: !!userId && !!getToken() && !!user, // if any of userId, getToken() or user are falsy → query does not run. | As soon as all three are truthy → TanStack Query triggers the fetch for you.
   });
 
-  // Check if user can post jobs (based on contact info complete)
+  // Check if user can post jobs (based on contact info completeness)
   const canPostJob = isContactInfoCompleteChecker({
     email: buyerContactInfo?.contact_email || '',
     phone: buyerContactInfo?.phone_number || '',
@@ -66,7 +66,7 @@ export default function BuyerDashboard() {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
+          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4' />
           <p className='font-inter text-gray-600'>Loading...</p>
         </div>
       </div>
@@ -76,7 +76,7 @@ export default function BuyerDashboard() {
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Contact Info Modal Popup */}
-      <BuyerContactInfoModal isOpen={!canPostJob} userEmail={user?.emailAddresses[0]?.emailAddress || ''} />
+      <BuyerContactInfoModal isOpen={!canPostJob} homeOwnerEmail={user?.emailAddresses[0]?.emailAddress || ''} />
 
       <div className='flex relative'>
         {/* Sidebar Component */}
@@ -87,7 +87,7 @@ export default function BuyerDashboard() {
           {/* Mobile Header Component */}
           <BuyerMobileHeader activeSection={activeSection} setSidebarOpen={setSidebarOpen} />
 
-          {/* Page Content */}
+          {/* Menu Section Content */}
           <div className='p-4 lg:p-8'>
             {activeSection === 'all-jobs' && <AllJobsSection canPostJob={canPostJob} />}
 

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
-// define multiple components in a single file (server or client).
+// Define multiple components in a single file (server or client).
 // Only the ones you export are usable from other files. Unexported components can still be used within the same file (like helpers).
 // In the App Router (Next.js 13/14), FILES are Server Components by default unless they start with "use client". So here, every component is a Server Component by default.
 
@@ -47,7 +47,7 @@ async function UserTypeIndicator() {
   );
 }
 
-async function ContractorNavLinks() {
+async function ContractorYourCreditsNavLinks() {
   const user = await currentUser();
   const userType = user?.unsafeMetadata?.userType as string;
 
@@ -91,7 +91,7 @@ export async function Header() {
           </Link>
 
           {/* Contractor only "your credits" link */}
-          <ContractorNavLinks />
+          <ContractorYourCreditsNavLinks />
         </nav>
 
         {/* Right: Auth Elements */}

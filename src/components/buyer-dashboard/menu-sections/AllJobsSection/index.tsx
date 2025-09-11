@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getBuyerJobCards, JobCardResponse } from '@/lib/apis/buyer-jobs';
+import { getBuyerJobCards } from '@/lib/apis/buyer-jobs';
 import { Actions } from './Actions';
 import { StatsCards } from './StatsCards';
 import { JobsList } from './JobList';
@@ -10,21 +10,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { Briefcase } from 'lucide-react';
 
-// type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
+type JobFilterOptions = 'all' | 'open' | 'draft' | 'closed';
 
-type ActiveFilter = 'all' | 'draft' | 'open' | 'closed';
-
-type AllJobsSectionProps = {
-  canPostJob: boolean;
-};
-
-export function AllJobsSection({ canPostJob }: AllJobsSectionProps) {
-  const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
-  const { userId, getToken } = useAuth(); // the getToken here is the function to retrieve the user's JWT from Clerk
+export function AllJobsSection({ canPostJob }: { canPostJob: boolean }) {
+  const [activeJobFilter, setActiveJobFilter] = useState<JobFilterOptions>('all');
+  const { userId, getToken } = useAuth();
   const { user } = useUser();
 
   // Query to fetch buyer's job cards
-  // only filtered by buyer id, fetch all jobs existing with no ther filters
+  // only filtered by buyer / home owner id, fetch all jobs existing with no filters
   const { data: allJobs = [], isLoading: isAllJobsLoading } = useQuery({
     queryKey: ['buyer-jobs'],
     queryFn: async () => {
@@ -33,50 +27,37 @@ export function AllJobsSection({ canPostJob }: AllJobsSectionProps) {
       return getBuyerJobCards(token);
     },
     enabled: !!userId && !!getToken() && !!user,
-    staleTime: 0,
   });
 
-  // Calculate all 4 stats card values based on the fully fetch jobs data in client
+  // Calculate all 4 stats card values based on the fully fetch jobs data in client side directly
   const stats = {
-    activeJobs: allJobs.filter((job) => job.status === 'open').length,
-    totalBids: allJobs.reduce((total, job) => total + job.bid_count, 0),
-    savedDrafts: allJobs.filter((job) => job.status === 'draft').length,
-    closedJobs: allJobs.filter((job) => job.status === 'closed').length,
-    // confirmedJobs: allJobs.filter((job) => job.status === 'confirmed').length,
+    activeJobsCount: allJobs.filter((job) => job.status === 'open').length,
+    totalBidsCount: allJobs.reduce((total, job) => total + job.bid_count, 0),
+    savedDraftsCount: allJobs.filter((job) => job.status === 'draft').length,
+    closedJobsCount: allJobs.filter((job) => job.status === 'closed').length,
   };
 
   // setup Filter options and calculate counts for each of the filter in the dropdown
-  const filterOptions = [
+  const jobFilterOptions = [
     { value: 'all', label: 'All Jobs', count: allJobs.length },
-    { value: 'draft', label: 'Drafts', count: stats.savedDrafts },
     { value: 'open', label: 'Open', count: allJobs.filter((j) => j.status === 'open').length },
     { value: 'closed', label: 'Closed', count: allJobs.filter((j) => j.status === 'closed').length },
-    // { value: 'full_bid', label: 'Full Bids', count: allJobs.filter((j) => j.status === 'full_bid').length },
-    // { value: 'waiting_confirmation', label: 'Waiting confirmation', count: allJobs.filter((j) => j.status === 'waiting_confirmation').length },
-    // { value: 'confirmed', label: 'Confirmed', count: stats.confirmedJobs },
+    { value: 'draft', label: 'Drafts', count: allJobs.filter((j) => j.status === 'draft').length },
   ];
 
-  // Filter jobs calculated based on allJobs state and activeFilter state
+  // Filter jobs view based on active job filter value
   const filteredJobs = allJobs.filter((job) => {
-    if (activeFilter === 'all') return true;
-    return job.status === activeFilter;
+    if (activeJobFilter === 'all') return true;
+    return job.status === activeJobFilter;
   });
 
   // Get section title based on active filter
   const getFilteredSectionTitle = () => {
-    switch (activeFilter) {
-      case 'all':
-        return 'All Jobs';
+    switch (activeJobFilter) {
       case 'draft':
         return 'Saved Drafts';
-      case 'closed':
-        return 'Closed Jobs';
-      // case 'full_bid':
-      //   return 'Jobs with Full Bids';
-      // case 'waiting_confirmation':
-      //   return 'Jobs waiting on confirmation';
       default:
-        return `${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Jobs`;
+        return `${activeJobFilter.charAt(0).toUpperCase() + activeJobFilter.slice(1)} Jobs`;
     }
   };
 
@@ -86,7 +67,7 @@ export function AllJobsSection({ canPostJob }: AllJobsSectionProps) {
       <StatsCards stats={stats} />
 
       {/* Action Buttons */}
-      <Actions activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterOptions={filterOptions} canPostJob={canPostJob} />
+      <Actions activeJobFilter={activeJobFilter} setActiveJobFilter={setActiveJobFilter} jobFilterOptions={jobFilterOptions} canPostJob={canPostJob} />
 
       {/* Jobs List Area */}
 
@@ -101,7 +82,7 @@ export function AllJobsSection({ canPostJob }: AllJobsSectionProps) {
             <CardTitle className='font-roboto'>{getFilteredSectionTitle()}</CardTitle>
           </CardHeader>
           <CardContent>
-            <JobsList filteredJobs={filteredJobs} activeFilter={activeFilter} canPostJob={canPostJob} />
+            <JobsList filteredJobs={filteredJobs} activeJobFilter={activeJobFilter} canPostJob={canPostJob} />
           </CardContent>
         </Card>
       )}

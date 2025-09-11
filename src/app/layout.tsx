@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
 };
 
-// The root layout will only be rendered once, and its child is the current navigated route page rendered (all other are not rendered / executed -> very efficient).
+// The root layout will only be rendered once, and its child is the current navigated route page rendered (all others are not rendered / executed -> very efficient).
 // we have checked that any component that need to initialize react context and any components that consumes context as subscriber, all must be client components
 // we have also checked that if any lower child component passed as "children prop" under the higher parent component, then:
 // 1. Children components don't auto re-render when parent re-renders

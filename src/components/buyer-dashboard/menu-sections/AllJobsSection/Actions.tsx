@@ -3,13 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 
-// type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
-type ActiveFilter = 'all' | 'draft' | 'open' | 'closed';
+type ActiveFilter = 'all' | 'open' | 'closed' | 'draft';
 
 type ActionsProps = {
-  activeFilter: ActiveFilter;
-  setActiveFilter: (filter: ActiveFilter) => void;
-  filterOptions: Array<{
+  activeJobFilter: ActiveFilter;
+  setActiveJobFilter: (filter: ActiveFilter) => void;
+  jobFilterOptions: Array<{
     value: string;
     label: string;
     count: number;
@@ -17,17 +16,17 @@ type ActionsProps = {
   canPostJob: boolean;
 };
 
-export function Actions({ activeFilter, setActiveFilter, filterOptions, canPostJob }: ActionsProps) {
+export function Actions({ activeJobFilter, setActiveJobFilter, jobFilterOptions, canPostJob }: ActionsProps) {
   return (
     <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4'>
-      {/* Left side - Filter dropdown */}
+      {/* Left side - Job Filter Option Dropdown */}
       <div className='flex-1 max-w-sm'>
-        <Select value={activeFilter} onValueChange={(value) => setActiveFilter(value as ActiveFilter)}>
+        <Select value={activeJobFilter} onValueChange={(value) => setActiveJobFilter(value as ActiveFilter)}>
           <SelectTrigger className='w-full font-roboto'>
             <SelectValue placeholder='Filter jobs...' />
           </SelectTrigger>
           <SelectContent>
-            {filterOptions.map((option) => (
+            {jobFilterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value} className='font-roboto'>
                 {option.label} ({option.count})
               </SelectItem>

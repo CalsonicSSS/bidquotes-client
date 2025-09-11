@@ -6,22 +6,21 @@ import Link from 'next/link';
 import { JobCardResponse } from '@/lib/apis/buyer-jobs';
 import { formatDateTime } from '@/lib/utils/custom-format';
 
-// type ActiveFilter = 'all' | 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
-type ActiveFilter = 'all' | 'draft' | 'open' | 'closed';
+type ActiveJobFilter = 'all' | 'open' | 'closed' | 'draft';
 
 type JobsListProps = {
   filteredJobs: JobCardResponse[];
-  activeFilter: ActiveFilter;
+  activeJobFilter: ActiveJobFilter;
   canPostJob: boolean;
 };
 
-export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListProps) {
+export function JobsList({ filteredJobs, activeJobFilter, canPostJob }: JobsListProps) {
   const router = useRouter();
 
   // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   if (filteredJobs.length === 0) {
-    if (activeFilter === 'all') {
+    if (activeJobFilter === 'all') {
       return (
         <div className='text-center py-8 lg:py-12'>
           <Briefcase className='h-12 lg:h-16 w-12 lg:w-16 text-gray-300 mx-auto mb-4' />
@@ -39,9 +38,9 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
     return (
       <div className='text-center py-8'>
         <Briefcase className='h-12 w-12 text-gray-300 mx-auto mb-4' />
-        <h3 className='font-roboto text-lg font-semibold text-gray-900 mb-2'>No {activeFilter === 'draft' ? 'drafts' : `${activeFilter.replace('_', ' ')} jobs`}</h3>
+        <h3 className='font-roboto text-lg font-semibold text-gray-900 mb-2'>No {activeJobFilter === 'draft' ? 'drafts' : `${activeJobFilter.replace('_', ' ')} jobs`}</h3>
         <p className='font-inter text-gray-600'>
-          {activeFilter === 'draft' ? 'Your saved drafts will appear here.' : `You don't have any ${activeFilter.replace('_', ' ')} jobs yet.`}
+          {activeJobFilter === 'draft' ? 'Any saved drafts will appear here.' : `You don't have any ${activeJobFilter.replace('_', ' ')} jobs yet.`}
         </p>
       </div>
     );
@@ -81,21 +80,15 @@ export function JobsList({ filteredJobs, activeFilter, canPostJob }: JobsListPro
                 <span
                   className={`px-2 py-1 rounded-full text-sm font-bold font-roboto ${
                     job.status === 'open'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-green-200 text-green-800'
                       : job.status === 'draft'
-                      ? 'bg-gray-100 text-gray-800'
-                      : job.status === 'full_bid'
-                      ? 'bg-blue-100 text-blue-800'
-                      : job.status === 'confirmed'
-                      ? 'bg-purple-100 text-purple-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-gray-200 text-gray-800'
+                      : job.status === 'closed'
+                      ? 'bg-red-200 text-red-800'
+                      : ''
                   }`}
                 >
-                  {job.status === 'full_bid'
-                    ? 'Full Bids'
-                    : job.status === 'waiting_confirmation'
-                    ? 'Waiting Confirmation'
-                    : job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+                  {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
                 </span>
               </div>
 

@@ -34,6 +34,7 @@ export async function saveBuyerContactInfo(data: BuyerContactInfoData, clerkJwt:
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
+// this is get contact info through clerkJwt (for the currently logged in buyer)
 export async function getBuyerContactInfo(clerkJwt: string): Promise<BuyerContactInfoResponse | null> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/buyer-contact-info`, {
     method: 'GET',
@@ -50,6 +51,9 @@ export async function getBuyerContactInfo(clerkJwt: string): Promise<BuyerContac
   return await response.json();
 }
 
+// -------------------------------------------------------------------------------------------------------------------------------------
+
+// this is get contact info through our own buyerId
 export async function getBuyerContactInfoByBuyerId(buyerId: string): Promise<BuyerContactInfoResponse> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/buyer-contact-info/${buyerId}`, {
     method: 'GET',

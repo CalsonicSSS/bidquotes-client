@@ -14,11 +14,25 @@ import { JobBasicInfoSection } from '@/components/buyer-dashboard/post-job-forms
 import { Actions } from '@/components/buyer-dashboard/post-job-forms/Actions';
 import { ImageUploadSection } from '@/components/ImageUploadSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
-import { DeleteDraftModal } from '../DeleteDraftModal';
+import { DeleteDraftModal } from './DeleteDraftModal';
 
 export default function MainJobForm() {
-  // keyof creates a "union literal type" of the keys of the JobFormData type.
+  // keyof creates a "union literal type" of the keys of the JobFormData type (type Keys = keyof JobFormData ->  "title" | "description" | "salary" ....)
+  // Record<Keys, string> object type with keys of type Keys and values of type string -> Record<'a' | 'b', string> = { a: string, b: string }
+  // Partial makes makes all properties optional -> Partial<{ a: string, b: string }> = { a?: string, b?: string }
+
   const [errors, setErrors] = useState<Partial<Record<keyof JobFormData, string>>>({});
+  const [formData, setFormData] = useState<JobFormData>({
+    title: '',
+    job_type: '',
+    job_budget: '',
+    description: '',
+    location_address: '',
+    city: '',
+    other_requirements: '',
+    images: [],
+  });
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -34,25 +48,14 @@ export default function MainJobForm() {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
 
-  const [formData, setFormData] = useState<JobFormData>({
-    title: '',
-    job_type: '',
-    job_budget: '',
-    description: '',
-    location_address: '',
-    city: '',
-    other_requirements: '',
-    images: [],
-  });
-
-  // identify if this is draft or new post creation
+  // identify if this navigation is based on existing draft / job (for update) or new post creation purpose
   const jobId = searchParams.get('draft') || searchParams.get('edit');
   const isEditingDraft = !!searchParams.get('draft');
   const isEditingJob = !!searchParams.get('edit');
 
   // ----------------------------------------------------------------------------------------------------------
 
-  // Fetch existing job data if this is either draft or edit case
+  // Fetch existing job data IF this is either draft or edit case
   const { data: existingJobData, isLoading: isJobLoading } = useQuery({
     queryKey: ['job-detail', jobId],
     queryFn: async () => {
@@ -60,15 +63,14 @@ export default function MainJobForm() {
       if (!token || !jobId) throw new Error('No token or job ID available');
       return getSpecificJob(jobId, token);
     },
-    staleTime: 0,
     enabled: !!jobId && !!getToken, // if jobId is falsy, the query will not run
   });
 
   // Pre-populate form field data if existing job data is available from either draft or edit case
   useEffect(() => {
     const loadJobData = async () => {
+      // Pre-populate fields if existing job data is available
       if (existingJobData) {
-        // Pre-populate fields
         setFormData({
           title: existingJobData.title || '',
           job_type: existingJobData.job_type || '',
@@ -193,23 +195,13 @@ export default function MainJobForm() {
   };
 
   // ----------------------------------------------------------------------------------------------------------------------
-  // Mutations for creating/updating job, saving draft, and deleting draft
+  // All Mutation actions for creating new job, updating existing job, saving draft, and deleting draft
 
-  const createOrUpdateJobMutation = useMutation({
+  const createNewJobMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
-
-      if (isEditingDraft && jobId) {
-        // If editing a draft, update it with isDraftPost set to true for posting the existing draft job
-        return updateJob(jobId, formData, token, true);
-      } else if (isEditingJob && jobId) {
-        // If its editing an existing job, update it
-        return updateJob(jobId, formData, token, false);
-      } else {
-        // Only create new job if not editing anything
-        return createJob(formData, token);
-      }
+      return createJob(formData, token);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
@@ -223,19 +215,33 @@ export default function MainJobForm() {
     },
   });
 
-  // purely for saving drafts,if its first time save / create or update existing draft WITHOUT POSTING
-  const saveDraftMutation = useMutation({
+  const updateExistingJobMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token || !jobId) throw new Error('Unable to get authentication token or job ID');
+      if (isEditingJob && jobId) {
+        return updateJob(jobId, formData, token, false);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
+      setHasUnsavedChanges(false);
+      setSuccessType('job');
+      setShowSuccessModal(true);
+    },
+    onError: (error) => {
+      console.error('Error updating job:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update job. Please try again.');
+    },
+  });
+
+  // Saving new drafts
+  const saveNewDraftMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
-
-      // very important: distinguish if this is the first time draft save or its the continuous updates for the existing draft
-      // thats why we have this isDraftPost
-      if (isEditingDraft && jobId) {
-        return updateJob(jobId, formData, token, false);
-      } else {
-        return saveJobDraft(formData, token);
-      }
+      return saveJobDraft(formData, token);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
@@ -249,6 +255,48 @@ export default function MainJobForm() {
     },
   });
 
+  const updateExistingDraftMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token || !jobId) throw new Error('Unable to get authentication token or job ID');
+      if (isEditingDraft && jobId) {
+        return updateJob(jobId, formData, token, false);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
+      setHasUnsavedChanges(false);
+      setSuccessType('draft');
+      setShowSuccessModal(true);
+    },
+    onError: (error) => {
+      console.error('Error updating job:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update job. Please try again.');
+    },
+  });
+
+  const createJobFromDraftMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token || !jobId) throw new Error('Unable to get authentication token or job ID');
+      if (isEditingDraft && jobId) {
+        return updateJob(jobId, formData, token, true);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
+      setHasUnsavedChanges(false);
+      setSuccessType('job');
+      setShowSuccessModal(true);
+    },
+    onError: (error) => {
+      console.error('Error updating job:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update job. Please try again.');
+    },
+  });
+
   // Delete draft mutation
   const deleteDraftMutation = useMutation({
     mutationFn: async () => {
@@ -259,7 +307,6 @@ export default function MainJobForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
       setHasUnsavedChanges(false);
-      router.push('/buyer-dashboard');
     },
     onError: (error) => {
       console.error('Error deleting draft:', error);
@@ -270,23 +317,41 @@ export default function MainJobForm() {
   // ------------------------------------------------------------------------------------------------------------------------
   // Handlers for form actions
 
-  const handleSaveDraft = async () => {
-    saveDraftMutation.mutate();
-  };
-
-  const handleJobSubmit = async () => {
+  const createNewJobHandler = async () => {
     if (!validateRequiredFields()) return;
-    createOrUpdateJobMutation.mutate();
+    createNewJobMutation.mutate();
   };
 
-  const handleDeleteDraft = () => {
-    setShowDeleteDraftModal(true);
+  const updateExistingJobHandler = async () => {
+    if (!validateRequiredFields()) return;
+    updateExistingJobMutation.mutate();
   };
 
-  const handleConfirmDeleteDraft = () => {
-    deleteDraftMutation.mutate();
-    setShowDeleteDraftModal(false);
+  const saveNewDraftHandler = async () => {
+    saveNewDraftMutation.mutate();
   };
+
+  const updateExistingDraftHandler = async () => {
+    updateExistingDraftMutation.mutate();
+  };
+
+  const createJobFromDraftHandler = async () => {
+    if (!validateRequiredFields()) return;
+    createJobFromDraftMutation.mutate();
+  };
+
+  const deleteDraftHandler = async () => {
+    try {
+      await deleteDraftMutation.mutateAsync();
+      setShowDeleteDraftModal(false); // only runs after mutation succeeds
+      router.push('/buyer-dashboard');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // ------------------------------------------------------------------------------------------------------------------------
+  // Other handlers
 
   const handleBackNavigation = () => {
     if (hasUnsavedChanges) {
@@ -304,7 +369,7 @@ export default function MainJobForm() {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading while fetching draft
 
-  if ((isEditingDraft || isEditingJob) && (isJobLoading || isLoadingImages)) {
+  if ((isEditingDraft || isEditingJob) && isJobLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -320,12 +385,8 @@ export default function MainJobForm() {
       <SuccessModal
         isOpen={showSuccessModal}
         title={successType === 'job' ? 'Job Posted Successfully!' : 'Draft Saved Successfully!'}
-        message={
-          successType === 'job'
-            ? 'Your job posting is now live and contractors can start submitting bids.'
-            : 'Your job draft has been saved. You can continue editing it anytime from your dashboard.'
-        }
-        buttonText={successType === 'job' ? 'View Dashboard' : 'Back to Dashboard'}
+        message={successType === 'job' ? 'Your job is live and contractors can start submitting bids.' : 'Your job draft has been saved. You can view it from your dashboard.'}
+        buttonText={'Back to Job Dashboard'}
         onClose={handleSuccessModalClose}
       />
 
@@ -333,7 +394,7 @@ export default function MainJobForm() {
       <DeleteDraftModal
         isOpen={showDeleteDraftModal}
         onClose={() => setShowDeleteDraftModal(false)}
-        onConfirm={handleConfirmDeleteDraft}
+        onConfirm={deleteDraftHandler}
         isDeleting={deleteDraftMutation.isPending}
         draftTitle={formData.title}
       />
@@ -357,7 +418,14 @@ export default function MainJobForm() {
             <div className='flex gap-3'>
               {/* Delete Draft button - only show when editing a draft */}
               {isEditingDraft && (
-                <Button onClick={handleDeleteDraft} variant='destructive' className='font-roboto flex items-center gap-2' disabled={deleteDraftMutation.isPending}>
+                <Button
+                  onClick={() => {
+                    setShowDeleteDraftModal(true);
+                  }}
+                  variant='destructive'
+                  className='font-roboto flex items-center gap-2'
+                  disabled={deleteDraftMutation.isPending}
+                >
                   <Trash2 className='h-4 w-4' />
                   {deleteDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
                 </Button>
@@ -370,6 +438,7 @@ export default function MainJobForm() {
           </p>
         </div>
 
+        {/* Form main content */}
         <div className='space-y-6'>
           {/* Job Basic Info Section */}
           <JobBasicInfoSection
@@ -413,33 +482,39 @@ export default function MainJobForm() {
               />
             </CardContent>
           </Card>
+        </div>
 
+        <div className='mt-8'>
+          {/*  Actions */}
+          <Actions
+            isEditingDraft={isEditingDraft}
+            isEditingJob={isEditingJob}
+            saveNewDraftPending={saveNewDraftMutation.isPending}
+            createNewJobPending={createNewJobMutation.isPending}
+            updateExistingJobPending={updateExistingJobMutation.isPending}
+            updateExistingDraftPending={updateExistingDraftMutation.isPending}
+            createJobFromDraftPending={createJobFromDraftMutation.isPending}
+            saveNewDraftHandler={saveNewDraftHandler}
+            createNewJobHandler={createNewJobHandler}
+            updateExistingJobHandler={updateExistingJobHandler}
+            updateExistingDraftHandler={updateExistingDraftHandler}
+            createJobFromDraftHandler={createJobFromDraftHandler}
+          />
           {/* Mobile Delete Draft Button - only show when editing a draft */}
           {isEditingDraft && (
             <div className='lg:hidden'>
               <Button
                 type='button'
                 variant='destructive'
-                onClick={handleDeleteDraft}
+                onClick={() => setShowDeleteDraftModal(true)}
                 disabled={deleteDraftMutation.isPending}
-                className='font-roboto flex items-center gap-2 w-full'
+                className='font-roboto flex items-center w-full mt-5'
               >
                 <Trash2 className='h-4 w-4' />
                 {deleteDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
               </Button>
             </div>
           )}
-
-          {/* Form Actions */}
-          <Actions
-            isEditingDraft={isEditingDraft}
-            isEditingJob={isEditingJob}
-            onSaveDraft={handleSaveDraft}
-            onJobSubmit={handleJobSubmit}
-            saveDraftPending={saveDraftMutation.isPending}
-            createOrUpdateJobPending={createOrUpdateJobMutation.isPending}
-            deleteDraftPending={deleteDraftMutation.isPending}
-          />
         </div>
       </div>
     </div>

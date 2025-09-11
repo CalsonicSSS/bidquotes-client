@@ -2,15 +2,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 
-type CloseJobModalProps = {
+type DeleteDraftModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  isClosing: boolean;
-  jobTitle: string;
+  isDeleting: boolean;
+  draftTitle: string;
 };
 
-export function CloseJobModal({ isOpen, onClose, onConfirm, isClosing, jobTitle }: CloseJobModalProps) {
+export function DeleteDraftModal({ isOpen, onClose, onConfirm, isDeleting, draftTitle }: DeleteDraftModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className='sm:max-w-md'>
@@ -20,7 +20,7 @@ export function CloseJobModal({ isOpen, onClose, onConfirm, isClosing, jobTitle 
               <AlertTriangle className='h-5 w-5 text-red-600' />
             </div>
             <div>
-              <DialogTitle className='font-roboto text-lg flex justify-start'>Close Job</DialogTitle>
+              <DialogTitle className='font-roboto text-lg flex justify-start'>Delete Draft</DialogTitle>
               <DialogDescription className='font-inter text-yellow-600 mt-1'>This action cannot be undone</DialogDescription>
             </div>
           </div>
@@ -28,16 +28,16 @@ export function CloseJobModal({ isOpen, onClose, onConfirm, isClosing, jobTitle 
 
         <div className='py-4'>
           <p className='font-inter text-gray-700 leading-relaxed'>
-            Are you sure you want to close <span className='font-semibold'>"{jobTitle}"</span>? Once closed, you can not receive any new bids.
+            Are you sure you want to delete the draft <span className='font-semibold'>"{draftTitle || 'Untitled Draft'}"</span>? This will permanently remove your saved progress.
           </p>
         </div>
 
         <div className='flex gap-3 pt-4'>
-          <Button variant='outline' onClick={onClose} className='flex-1 font-roboto' disabled={isClosing}>
+          <Button variant='outline' onClick={onClose} className='flex-1 font-roboto' disabled={isDeleting}>
             Cancel
           </Button>
-          <Button variant='destructive' onClick={onConfirm} className='flex-1 font-roboto' disabled={isClosing}>
-            {isClosing ? 'Closing...' : 'Close Job'}
+          <Button variant='destructive' onClick={onConfirm} className='flex-1 font-roboto' disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete Draft'}
           </Button>
         </div>
       </DialogContent>

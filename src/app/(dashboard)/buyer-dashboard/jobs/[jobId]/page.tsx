@@ -21,7 +21,6 @@ export default function JobDetailPage() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
-  // const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const jobId = params.jobId as string;
 
@@ -38,28 +37,10 @@ export default function JobDetailPage() {
       return getSpecificJob(jobId, token);
     },
     enabled: !!jobId && !!getToken,
-    staleTime: 0,
   });
 
-  // Delete mutation
-  // const deleteMutation = useMutation({
-  //   mutationFn: async () => {
-  //     const token = await getToken();
-  //     if (!token) throw new Error('Unable to get authentication token');
-  //     return deleteJob(jobId, token);
-  //   },
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
-  //     router.push('/buyer-dashboard');
-  //   },
-  //   onError: (error) => {
-  //     console.error('Error deleting job:', error);
-  //     alert(error instanceof Error ? error.message : 'Failed to delete job. Please try again.');
-  //   },
-  // });
-
   // close job mutation
-  const closeMutation = useMutation({
+  const closeJobMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
@@ -67,7 +48,7 @@ export default function JobDetailPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyer-jobs'] });
-      router.push('/buyer-dashboard');
+      queryClient.invalidateQueries({ queryKey: ['job-detail', jobId] });
     },
     onError: (error) => {
       console.error('Error closing job:', error);
@@ -75,27 +56,17 @@ export default function JobDetailPage() {
     },
   });
 
-  // Navigate to post job page with "edit" query parameter
-  const handleEdit = () => {
-    router.push(`/buyer-dashboard/post-job?edit=${jobId}`);
-  };
+  // -------------------------------------------------------------------------------------------------------------------------------
+  // Handlers
 
-  // const handleDelete = () => {
-  //   setShowDeleteModal(true);
-  // };
-
-  // const handleConfirmDelete = () => {
-  //   deleteMutation.mutate();
-  //   setShowDeleteModal(false);
-  // };
-
-  const openCloseJob = () => {
-    setShowCloseModal(true);
-  };
-
-  const handleConfirmClose = () => {
-    closeMutation.mutate();
-    setShowCloseModal(false);
+  const handleConfirmJobClose = async () => {
+    try {
+      await closeJobMutation.mutateAsync();
+      setShowCloseModal(false);
+      router.push('/buyer-dashboard'); // stay on the same page and show updated status
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleBackDashboard = () => {
@@ -140,8 +111,8 @@ export default function JobDetailPage() {
       <CloseJobModal
         isOpen={showCloseModal}
         onClose={() => setShowCloseModal(false)}
-        onConfirm={handleConfirmClose}
-        isClosing={closeMutation.isPending}
+        onConfirm={handleConfirmJobClose}
+        isClosing={closeJobMutation.isPending}
         jobTitle={jobDetail.title}
       />
 
@@ -165,44 +136,35 @@ export default function JobDetailPage() {
 
             {/* desktop actions */}
             <div className='flex gap-3'>
-              {canModify && <Actions isMobile={false} onEdit={handleEdit} onClose={openCloseJob} isClosing={closeMutation.isPending} />}
+              {canModify && (
+                <Actions
+                  isMobile={false}
+                  navToJobEdit={() => {
+                    router.push(`/buyer-dashboard/post-job?edit=${jobId}`);
+                  }}
+                  openJobCloseModal={() => {
+                    setShowCloseModal(true);
+                  }}
+                  isClosing={closeJobMutation.isPending}
+                />
+              )}
               <Button onClick={handleBackDashboard}>Back to Dashboard</Button>
             </div>
           </div>
         </div>
 
-        {/* {jobDetail.status === 'confirmed' && (
-          <Card className='bg-purple-50 border-purple-200 mb-5'>
-            <CardHeader>
-              <CardTitle className='font-roboto text-lg flex items-center gap-2 text-purple-900'>
-                <CheckCircle className='h-5 w-5' />
-                Job Confirmed 🎉
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <p className='font-inter text-sm text-purple-700 mb-4'>Congratulations! Your job has been successfully confirmed by the contractor.</p>
-              <p className='font-inter text-sm text-purple-700 mb-4'>Contractor will soon contact you</p>
-            </CardContent>
-          </Card>
-        )} */}
-
         <div className='space-y-6'>
           {/* Job Details Card */}
           <Card>
-            {/* mobile card title + badge + mobile actions (all components are hidden in <lg:hidden>) */}
+            {/* mobile card title */}
             <CardHeader className='sm:pb-4 lg:pb-0'>
               <div className='flex justify-between items-center'>
-                <div className='flex items-center'>
+                <div className='flex items-center justify-between w-full'>
                   <CardTitle className='font-roboto text-lg lg:text-xl lg:hidden mr-3'>{jobDetail.title}</CardTitle>
                   <div className='lg:hidden'>
                     <JobStatusBadge status={jobDetail.status} />
                   </div>
                 </div>
-                {canModify && (
-                  <div className='lg:hidden'>
-                    <Actions isMobile={true} onEdit={handleEdit} onClose={openCloseJob} isClosing={closeMutation.isPending} />{' '}
-                  </div>
-                )}
               </div>
             </CardHeader>
 
@@ -261,6 +223,18 @@ export default function JobDetailPage() {
 
           {/* Bids Section */}
           <JobBidsSection jobId={jobId} bidCount={jobDetail.bid_count} bids={jobDetail.bids} />
+
+          {/* Mobile Actions */}
+          <div className='lg:hidden'>
+            <Actions
+              isMobile={true}
+              navToJobEdit={() => {
+                router.push(`/buyer-dashboard/post-job?edit=${jobId}`);
+              }}
+              openJobCloseModal={() => setShowCloseModal(true)}
+              isClosing={closeJobMutation.isPending}
+            />
+          </div>
         </div>
       </div>
     </div>

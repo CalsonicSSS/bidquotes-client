@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 type JobBidsSectionProps = {
   jobId: string;
-  // jobStatus: string;
   bidCount: number;
   bids?: BidCardInfo[];
 };
@@ -37,14 +36,6 @@ export function JobBidsSection({ jobId, bidCount, bids }: JobBidsSectionProps) {
                   <div className='flex items-center justify-between mb-3'>
                     <h4 className='font-roboto font-semibold text-gray-900 flex-1'>{bid.title}</h4>
                     <span className='font-inter text-xs text-blue-600 font-semibold'>View details →</span>
-
-                    {/* bid status */}
-                    {/* <div className='flex items-center gap-2'>
-                      {bid.is_selected && <CheckCircle className='h-4 w-4 text-blue-600' />}
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeStyle(bid.status, bid.is_selected)}`}>
-                        {bid.is_selected ? 'Selected' : bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
-                      </span>
-                    </div> */}
                   </div>
 
                   {/* Bid details grid */}
@@ -75,16 +66,6 @@ export function JobBidsSection({ jobId, bidCount, bids }: JobBidsSectionProps) {
                       </div>
                     </div>
                   </div>
-
-                  {/* Selected bid indicator */}
-                  {/* {bid.is_selected && jobStatus === 'waiting_confirmation' && (
-                    <div className='mt-3 p-3 bg-blue-100 border border-blue-200 rounded-lg'>
-                      <p className='font-inter text-sm text-blue-800'>
-                        <CheckCircle className='h-4 w-4 inline mr-2' />
-                        This bid is selected. Waiting for contractor confirmation.
-                      </p>
-                    </div>
-                  )} */}
                 </div>
               </Link>
             ))}

@@ -14,12 +14,12 @@ import { BuyerContactInfoData } from '@/lib/apis/buyer-contact-info';
 
 type BuyerContactInfoModalProps = {
   isOpen: boolean;
-  userEmail: string;
+  homeOwnerEmail: string;
 };
 
-export function BuyerContactInfoModal({ isOpen, userEmail }: BuyerContactInfoModalProps) {
+export function BuyerContactInfoModal({ isOpen, homeOwnerEmail }: BuyerContactInfoModalProps) {
   const [formInputData, setFormInputData] = useState<BuyerContactInfoData>({
-    contact_email: userEmail,
+    contact_email: homeOwnerEmail,
     phone_number: '',
   });
 
@@ -36,6 +36,8 @@ export function BuyerContactInfoModal({ isOpen, userEmail }: BuyerContactInfoMod
       return saveBuyerContactInfo(formInputData, token);
     },
     onSuccess: () => {
+      // invalidate here means: after successfully saving the contact info, refetch the "buyer-contact-info" query to get the latest data from server
+      // this will automatically update any component that uses the 'buyer-contact-info' query key
       queryClient.invalidateQueries({ queryKey: ['buyer-contact-info'] });
     },
   });
