@@ -4,7 +4,6 @@ import { useAuth, useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ContractorProfileModal } from '@/components/contractor-dashboard/ContractorProfileModal';
 import { ContractorSidebar } from '@/components/contractor-dashboard/Sidebar';
 import { ContractorMobileHeader } from '@/components/contractor-dashboard/MobileHeader';
 import { ProfileSection } from '@/components/contractor-dashboard/menu-sections/ProfileSection';
@@ -13,6 +12,7 @@ import { YourCreditsSection } from '@/components/contractor-dashboard/menu-secti
 import { checkContractorProfileCompletion } from '@/lib/apis/contractor-profile';
 import { YourBidsSection } from '@/components/contractor-dashboard/menu-sections/YourBidsSection';
 import { Suspense } from 'react';
+import { ContractorProfileCompletionModal } from '@/components/contractor-dashboard/ContractorProfileCompletionModal';
 
 export default function ContractorDashboard() {
   return (
@@ -22,7 +22,7 @@ export default function ContractorDashboard() {
   );
 }
 
-type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-credits';
+export type ActiveSection = 'all-jobs' | 'your-bids' | 'profile' | 'your-credits';
 
 function MainContractorDashboard() {
   const { userId, getToken } = useAuth();
@@ -36,7 +36,7 @@ function MainContractorDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Upon onMount this page, we will first fetch contractor profile completion query
-  const { data: isProfileComplete = false, isLoading: isProfileLoading } = useQuery({
+  const { data: isProfileComplete, isLoading: isProfileCompleteLoading } = useQuery({
     queryKey: ['contractor-profile-completion'],
     queryFn: async () => {
       const token = await getToken();
@@ -45,13 +45,6 @@ function MainContractorDashboard() {
     },
     enabled: !!userId && !!getToken() && !!user,
   });
-
-  // Update active section when URL changes with search params on certain sections
-  useEffect(() => {
-    if (sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-credits'].includes(sectionParam)) {
-      setActiveSection(sectionParam);
-    }
-  }, [sectionParam]);
 
   // Auth redirections based on user type
   useEffect(() => {
@@ -63,9 +56,16 @@ function MainContractorDashboard() {
     }
   }, [userId, user, router]);
 
+  // Update active section when URL changes with search params on certain sections
+  useEffect(() => {
+    if (sectionParam && ['all-jobs', 'your-bids', 'profile', 'your-credits'].includes(sectionParam)) {
+      setActiveSection(sectionParam);
+    }
+  }, [sectionParam]);
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Show loading state
-  if (!user || isProfileLoading) {
+  if (!user || isProfileCompleteLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -78,7 +78,7 @@ function MainContractorDashboard() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <ContractorProfileModal isOpen={!isProfileComplete} userEmail={user?.emailAddresses[0]?.emailAddress || ''} />
+      {isProfileComplete !== undefined ? <ContractorProfileCompletionModal isOpen={!isProfileComplete} userEmail={user?.emailAddresses[0]?.emailAddress || ''} /> : null}
 
       <div className='flex relative'>
         <ContractorSidebar user={user} activeSection={activeSection} setActiveSection={setActiveSection} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />

@@ -5,21 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle } from 'lucide-react';
 import { UpdateContactInfoModal } from './UpdateContactInfoModal';
+import { BuyerContactInfoResponse } from '@/lib/apis/buyer-contact-info';
+import { formatDateTime } from '@/lib/utils/custom-format';
 
-type ContactInfo = {
-  id: string;
-  user_id: string;
-  contact_email: string;
-  phone_number: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type ContactInfoSectionProps = {
-  contactInfo: ContactInfo | null | undefined;
-};
-
-export function ContactInfoSection({ contactInfo }: ContactInfoSectionProps) {
+export function ContactInfoSection({ contactInfo }: { contactInfo: BuyerContactInfoResponse | undefined | null }) {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   const handleUpdateClick = () => {
@@ -32,6 +21,9 @@ export function ContactInfoSection({ contactInfo }: ContactInfoSectionProps) {
 
   return (
     <div className='space-y-6'>
+      {/* Update Contact Info Modal */}
+      {contactInfo && <UpdateContactInfoModal isOpen={showUpdateModal} onClose={handleModalClose} currentContactInfo={contactInfo} />}
+
       <h2 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900 hidden lg:block'>Contact Information</h2>
 
       <Card className='lg:max-w-2xl'>
@@ -58,7 +50,7 @@ export function ContactInfoSection({ contactInfo }: ContactInfoSectionProps) {
                 <p className='font-inter text-gray-900 mt-1'>{contactInfo.phone_number}</p>
               </div>
               <div className='pt-2'>
-                <p className='font-inter text-xs text-gray-500 mb-3'>Last updated: {new Date(contactInfo.updated_at).toLocaleDateString()}</p>
+                <p className='font-inter text-xs text-gray-500 mb-3'>Last updated: {formatDateTime(contactInfo.updated_at)}</p>
                 <Button onClick={handleUpdateClick} className='font-roboto bg-blue-600 hover:bg-blue-700 w-full lg:hidden'>
                   Update Contact Info
                 </Button>
@@ -73,9 +65,6 @@ export function ContactInfoSection({ contactInfo }: ContactInfoSectionProps) {
           )}
         </CardContent>
       </Card>
-
-      {/* Update Contact Info Modal */}
-      {contactInfo && <UpdateContactInfoModal isOpen={showUpdateModal} onClose={handleModalClose} currentContactInfo={contactInfo} />}
     </div>
   );
 }

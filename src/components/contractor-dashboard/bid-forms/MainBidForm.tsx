@@ -13,7 +13,6 @@ import { SuccessModal } from '@/components/SuccessModal';
 import { BidInfoSection } from './BidInfoSection';
 import { Actions } from './Actions';
 import { DeleteBidDraftModal } from './DeleteBidDraftModal';
-// import { getContractorProfileName } from '@/lib/apis/contractor-profile';
 
 export default function MainBidForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof BidFormData, string>>>({});
@@ -22,7 +21,7 @@ export default function MainBidForm() {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showDeleteDraftModal, setShowDeleteDraftModal] = useState(false);
+  const [showDeleteBidDraftModal, setShowDeleteBidDraftModal] = useState(false);
   const [successType, setSuccessType] = useState<'bid' | 'draft'>('bid');
 
   const hasPushed = useRef(false);
@@ -38,30 +37,19 @@ export default function MainBidForm() {
     price_min: '',
     price_max: '',
     timeline_estimate: '',
-    work_description: 'placeholder',
-    additional_notes: 'placeholder',
+    work_description: ' ', // use space to avoid uncontrolled to controlled warning
+    additional_notes: ' ', // use space to avoid uncontrolled to controlled warning
   });
 
   // Identify the mode and IDs
   // there 3 ways to navigate to this post bid form page:
-  // 1. From the job detail page (new bid posting) -> comes with jobId in query params
-  // 2. From the bids list page (draft) -> comes with draft id in query params
-  // 3. From the bid detail page (edit) -> comes with bid id in query params
+  // 1. From the job detail page (new bid posting) -> comes with "job Id" (only through this way) in query params
+  // 2. From the bids list page (draft) -> comes with "draft id" in query params
+  // 3. From the bid detail page (edit) -> comes with "bid id" in query params
   const jobId = searchParams.get('jobId');
   const bidId = searchParams.get('draft') || searchParams.get('edit');
   const isEditingDraft = !!searchParams.get('draft');
   const isEditingBid = !!searchParams.get('edit');
-
-  // Fetch contractor name based on user token, the name will be used as value for bid title (now we need to input the title)
-  // const { data: contractorName } = useQuery({
-  //   queryKey: ['contractor-name'],
-  //   queryFn: async () => {
-  //     const token = await getToken();
-  //     if (!token) throw new Error('No token available');
-  //     return getContractorProfileName(token);
-  //   },
-  //   enabled: !!getToken,
-  // });
 
   // Fetch job details based on job id (to display some basic top level job information)
   const { data: jobDetail } = useQuery({
@@ -72,6 +60,7 @@ export default function MainBidForm() {
       return getContractorJobDetail(jobId, token);
     },
     enabled: !!jobId && !!getToken,
+    staleTime: 0,
   });
 
   // Fetch existing bid data if its either editing or drafting
@@ -83,8 +72,8 @@ export default function MainBidForm() {
       if (!token || !bidId) throw new Error('No token or bid ID available');
       return getBidDetail(bidId, token);
     },
-    staleTime: 0,
     enabled: !!bidId && !!getToken,
+    staleTime: 0,
   });
 
   // Pre-populate form data
@@ -154,11 +143,10 @@ export default function MainBidForm() {
   const validateRequiredFields = () => {
     const newErrors: Partial<Record<keyof BidFormData, string>> = {};
 
-    // if (!formData.title.trim()) newErrors.title = 'Bid title is required';
+    if (!formData.title.trim()) newErrors.title = 'Bid title is required';
     if (!formData.price_min.trim()) newErrors.price_min = 'Minimum price is required';
     if (!formData.price_max.trim()) newErrors.price_max = 'Maximum price is required';
     if (!formData.timeline_estimate.trim()) newErrors.timeline_estimate = 'Timeline estimate is required';
-    // if (!formData.work_description.trim()) newErrors.work_description = 'Work description is required';
 
     setErrors(newErrors);
     const isValid = Object.keys(newErrors).length === 0;
@@ -170,22 +158,14 @@ export default function MainBidForm() {
     return isValid;
   };
 
+  // ----------------------------------------------------------------------------------------------------------------------------------------------------
   // Mutations
-  const createOrUpdateBidMutation = useMutation({
+
+  const createBidMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
-
-      if (user && userId) {
-        // User is authenticated
-        if (isEditingDraft && bidId) {
-          return updateBid(bidId, formData, token, true);
-        } else if (isEditingBid && bidId) {
-          return updateBid(bidId, formData, token, false);
-        } else {
-          return createBid(formData, token);
-        }
-      }
+      return createBid(formData, token);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
@@ -200,18 +180,34 @@ export default function MainBidForm() {
     },
   });
 
-  const saveDraftMutation = useMutation({
+  const updateExistingBidMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
 
-      if (user && userId) {
-        if (isEditingDraft && bidId) {
-          return updateBid(bidId, formData, token, false);
-        } else {
-          return saveBidDraft(formData, token);
-        }
+      if (isEditingBid && bidId) {
+        return updateBid(bidId, formData, token, false);
       }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+      queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
+      setHasUnsavedChanges(false);
+      setSuccessType('bid');
+      setShowSuccessModal(true);
+    },
+    onError: (error) => {
+      console.error('Error updating bid:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update bid. Please try again.');
+    },
+  });
+
+  const saveBidDraftMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return saveBidDraft(formData, token);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
@@ -222,6 +218,49 @@ export default function MainBidForm() {
     onError: (error) => {
       console.error('Error saving draft:', error);
       alert(error instanceof Error ? error.message : 'Failed to save draft. Please try again.');
+    },
+  });
+
+  const updateExistingBidDraftMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+
+      if (isEditingDraft && bidId) {
+        return updateBid(bidId, formData, token, false);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+      queryClient.invalidateQueries({ queryKey: ['bid-detail', bidId] });
+      setHasUnsavedChanges(false);
+      setSuccessType('draft');
+      setShowSuccessModal(true);
+    },
+    onError: (error) => {
+      console.error('Error updating draft:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update draft. Please try again.');
+    },
+  });
+
+  const createBidFromDraftMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      if (isEditingDraft && bidId) {
+        return updateBid(bidId, formData, token, true);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
+      setHasUnsavedChanges(false);
+      setSuccessType('bid');
+      setShowSuccessModal(true);
+    },
+    onError: (error) => {
+      console.error('Error submitting bid from draft:', error);
+      alert(error instanceof Error ? error.message : 'Failed to submit bid. Please try again.');
     },
   });
 
@@ -237,7 +276,6 @@ export default function MainBidForm() {
       queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
       queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
       setHasUnsavedChanges(false);
-      router.push('/contractor-dashboard?section=your-bids');
     },
     onError: (error) => {
       console.error('Error deleting bid draft:', error);
@@ -245,24 +283,43 @@ export default function MainBidForm() {
     },
   });
 
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------
   // Action handlers
-  const handleSaveDraft = () => {
-    saveDraftMutation.mutate();
-  };
-
-  const handleBidSubmit = () => {
+  const createBidHandler = async () => {
     if (!validateRequiredFields()) return;
-    createOrUpdateBidMutation.mutate();
+    createBidMutation.mutate();
   };
 
-  const handleDeleteDraft = () => {
-    setShowDeleteDraftModal(true);
+  const updateExistingBidHandler = async () => {
+    if (!validateRequiredFields()) return;
+    updateExistingBidMutation.mutate();
   };
 
-  const handleConfirmDeleteDraft = () => {
-    deleteBidDraftMutation.mutate();
-    setShowDeleteDraftModal(false);
+  const saveBidDraftHandler = async () => {
+    saveBidDraftMutation.mutate();
   };
+
+  const updateExistingBidDraftHandler = async () => {
+    updateExistingBidDraftMutation.mutate();
+  };
+
+  const createBidFromDraftHandler = async () => {
+    if (!validateRequiredFields()) return;
+    createBidFromDraftMutation.mutate();
+  };
+
+  const deleteDraftHandler = async () => {
+    try {
+      await deleteBidDraftMutation.mutateAsync();
+      setShowDeleteBidDraftModal(false); // only runs after mutation succeeds
+      router.push('/contractor-dashboard?section=your-bids');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------
+  // other handlers
 
   const handleBackNavigation = () => {
     if (hasUnsavedChanges) {
@@ -306,15 +363,15 @@ export default function MainBidForm() {
             ? 'Your bid has been submitted to this job. Navigate to "Your Bids" section to view revealed details.'
             : 'Your bid draft has been saved. You can continue editing it anytime from your dashboard.'
         }
-        buttonText={successType === 'bid' ? "Let's Go" : 'Back to Dashboard'}
+        buttonText={'Back to your bids'}
         onClose={handleSuccessModalClose}
       />
 
       {/* Delete Draft Confirmation Modal */}
       <DeleteBidDraftModal
-        isOpen={showDeleteDraftModal}
-        onClose={() => setShowDeleteDraftModal(false)}
-        onConfirm={handleConfirmDeleteDraft}
+        isOpen={showDeleteBidDraftModal}
+        onClose={() => setShowDeleteBidDraftModal(false)}
+        onConfirm={deleteDraftHandler}
         isDeleting={deleteBidDraftMutation.isPending}
         draftTitle={formData.title}
       />
@@ -336,7 +393,14 @@ export default function MainBidForm() {
             <div className='flex gap-3'>
               {/* Delete Draft button - only show when editing a draft */}
               {isEditingDraft && (
-                <Button onClick={handleDeleteDraft} variant='destructive' className='font-roboto flex items-center gap-2' disabled={deleteBidDraftMutation.isPending}>
+                <Button
+                  onClick={() => {
+                    setShowDeleteBidDraftModal(true);
+                  }}
+                  variant='destructive'
+                  className='font-roboto flex items-center gap-2'
+                  disabled={deleteBidDraftMutation.isPending}
+                >
                   <Trash2 className='h-4 w-4' />
                   {deleteBidDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
                 </Button>
@@ -386,13 +450,33 @@ export default function MainBidForm() {
           <Actions
             isEditingDraft={isEditingDraft}
             isEditingBid={isEditingBid}
-            onSaveDraft={handleSaveDraft}
-            onBidSubmit={handleBidSubmit}
-            saveDraftPending={saveDraftMutation.isPending}
-            createOrUpdateBidPending={createOrUpdateBidMutation.isPending}
-            deleteBidPending={deleteBidDraftMutation.isPending}
-            onDeleteDraft={isEditingDraft ? handleDeleteDraft : undefined}
+            createBidPending={createBidMutation.isPending}
+            saveBidDraftPending={saveBidDraftMutation.isPending}
+            updateBidPending={updateExistingBidMutation.isPending}
+            updateBidDraftPending={updateExistingBidDraftMutation.isPending}
+            createBidFromDraftPending={createBidFromDraftMutation.isPending}
+            createBidHandler={createBidHandler}
+            saveBidDraftHandler={saveBidDraftHandler}
+            updateBidHandler={updateExistingBidHandler}
+            updateBidDraftHandler={updateExistingBidDraftHandler}
+            createBidFromDraftHandler={createBidFromDraftHandler}
           />
+
+          {/* Mobile Delete Draft Button - only show when editing a draft */}
+          {isEditingDraft && (
+            <div className='lg:hidden'>
+              <Button
+                type='button'
+                variant='destructive'
+                onClick={() => setShowDeleteBidDraftModal(true)}
+                disabled={deleteBidDraftMutation.isPending}
+                className='font-roboto flex items-center w-full mt-5'
+              >
+                <Trash2 className='h-4 w-4' />
+                {deleteBidDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

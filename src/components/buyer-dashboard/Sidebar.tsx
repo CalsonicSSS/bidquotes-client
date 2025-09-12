@@ -67,7 +67,7 @@ export function BuyerSidebar({ user, activeSection, setActiveSection, sidebarOpe
 
             {/* User Type Badge */}
             <div className='flex items-center gap-2'>
-              <span className='inline-flex px-3 py-1 rounded-full text-xs font-inter font-medium bg-blue-100 text-blue-800 border border-blue-200'>🏠 Home Owner Account</span>
+              <span className='inline-flex px-3 py-1 rounded-full text-xs font-inter font-medium bg-blue-200 text-blue-800 border border-blue-300'>🏠 Home Owner Account</span>
             </div>
           </div>
 
@@ -80,7 +80,7 @@ export function BuyerSidebar({ user, activeSection, setActiveSection, sidebarOpe
                   key={item.id}
                   onClick={() => handleMenuItemClick(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeSection === item.id ? 'bg-blue-50 text-blue-700 font-roboto font-semibold' : 'text-gray-700 hover:bg-gray-50 font-inter'
+                    activeSection === item.id ? 'bg-blue-100 text-blue-700 font-roboto font-semibold' : 'text-gray-700 hover:bg-gray-50 font-inter'
                   }`}
                 >
                   <Icon className='h-5 w-5' />

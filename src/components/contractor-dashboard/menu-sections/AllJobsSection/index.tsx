@@ -11,11 +11,7 @@ export function AllJobsSection() {
   const { getToken } = useAuth();
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [jobTypeFilter, setJobTypeFilter] = useState<string>('all');
-  // const [showSavedOnly, setShowSavedOnly] = useState(false);
 
-  // Fetch available jobs based on filter values
-  // we use 2 states in the query key to trigger the refetch immediately whenever filters change, by pass the stale time and other triggers all
-  // recall that stale time is respected only on specific query key used
   const {
     data: availableJobs = [],
     isLoading: isJobsLoading,
@@ -25,10 +21,10 @@ export function AllJobsSection() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-
       return getAvailableJobs(token, cityFilter === 'all' ? undefined : cityFilter, jobTypeFilter === 'all' ? undefined : jobTypeFilter);
     },
     enabled: !!getToken,
+    staleTime: 0, // always fetch fresh data
   });
 
   // Fetch available cities as filter options in real time
@@ -45,7 +41,6 @@ export function AllJobsSection() {
   const handleClearAllFilters = () => {
     setCityFilter('all');
     setJobTypeFilter('all');
-    // setShowSavedOnly(false);
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,12 +69,9 @@ export function AllJobsSection() {
         setCityFilter={setCityFilter}
         jobTypeFilter={jobTypeFilter}
         setJobTypeFilter={setJobTypeFilter}
-        // showSavedOnly={showSavedOnly}
-        // setShowSavedOnly={setShowSavedOnly}
         cityFilterOptions={cityFilterOptions}
         handleClearAllFilters={handleClearAllFilters}
         jobsCount={availableJobs.length}
-        isJobsLoading={isJobsLoading}
       />
 
       <JobsGrid availableJobs={availableJobs} isJobsLoading={isJobsLoading} cityFilter={cityFilter} jobTypeFilter={jobTypeFilter} handleClearAllFilters={handleClearAllFilters} />

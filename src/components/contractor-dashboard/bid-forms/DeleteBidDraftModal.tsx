@@ -20,8 +20,8 @@ export function DeleteBidDraftModal({ isOpen, onClose, onConfirm, isDeleting, dr
               <AlertTriangle className='h-5 w-5 text-red-600' />
             </div>
             <div>
-              <DialogTitle className='font-roboto text-lg'>Delete Bid Draft</DialogTitle>
-              <DialogDescription className='font-inter text-gray-600 mt-1'>This action cannot be undone</DialogDescription>
+              <DialogTitle className='font-roboto text-lg flex justify-start'>Delete Bid Draft</DialogTitle>
+              <DialogDescription className='font-inter text-yellow-600 mt-1'>This action cannot be undone</DialogDescription>
             </div>
           </div>
         </DialogHeader>

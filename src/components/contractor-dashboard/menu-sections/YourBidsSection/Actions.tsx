@@ -1,8 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-
-export type ActiveFilter = 'all' | 'draft' | 'pending' | 'selected' | 'confirmed' | 'declined';
+import { ActiveFilter } from '.';
 
 export function Actions({
   activeFilter,
@@ -25,6 +24,7 @@ export function Actions({
           </SelectTrigger>
           <SelectContent>
             {filterOptions.map((option) => (
+              // the value prop here is what gets passed to onValueChange above
               <SelectItem key={option.value} value={option.value} className='font-roboto'>
                 {option.label} ({option.count})
               </SelectItem>

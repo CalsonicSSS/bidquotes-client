@@ -6,54 +6,74 @@ import { Save, Send, Trash2 } from 'lucide-react';
 type BidFormActionsProps = {
   isEditingDraft: boolean;
   isEditingBid: boolean;
-  onSaveDraft: () => void;
-  onBidSubmit: () => void;
-  saveDraftPending: boolean;
-  createOrUpdateBidPending: boolean;
-  deleteBidPending: boolean;
-  onDeleteDraft?: () => void;
+  createBidPending: boolean;
+  saveBidDraftPending: boolean;
+  updateBidPending: boolean;
+  updateBidDraftPending: boolean;
+  createBidFromDraftPending: boolean;
+  createBidHandler: () => void;
+  saveBidDraftHandler: () => void;
+  updateBidHandler: () => void;
+  updateBidDraftHandler: () => void;
+  createBidFromDraftHandler: () => void;
 };
 
 export function Actions({
   isEditingDraft,
   isEditingBid,
-  onSaveDraft,
-  onBidSubmit,
-  saveDraftPending,
-  createOrUpdateBidPending,
-  deleteBidPending,
-  onDeleteDraft,
+  createBidPending,
+  saveBidDraftPending,
+  updateBidPending,
+  updateBidDraftPending,
+  createBidFromDraftPending,
+  createBidHandler,
+  saveBidDraftHandler,
+  updateBidHandler,
+  updateBidDraftHandler,
+  createBidFromDraftHandler,
 }: BidFormActionsProps) {
-  const isAnyActionPending = saveDraftPending || createOrUpdateBidPending || deleteBidPending;
-
   return (
-    <div className='space-y-4'>
-      {/* Mobile Delete Draft Button - only show when editing a draft */}
-      {isEditingDraft && onDeleteDraft && (
-        <div className='lg:hidden'>
-          <Button type='button' variant='destructive' onClick={onDeleteDraft} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2 w-full'>
-            <Trash2 className='h-4 w-4' />
-            {deleteBidPending ? 'Deleting...' : 'Delete Draft'}
+    <>
+      {/* no existing bid / draft case */}
+      {!isEditingDraft && !isEditingBid && (
+        <div className='flex flex-col sm:flex-row gap-3'>
+          <Button type='button' variant='outline' onClick={saveBidDraftHandler} disabled={saveBidDraftPending || createBidPending} className='font-roboto flex items-center gap-2'>
+            <Save className='h-4 w-4' />
+            {saveBidDraftPending ? 'Saving draft...' : 'Save as Draft'}
+          </Button>
+          <Button type='button' onClick={createBidHandler} disabled={createBidPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
+            <Send className='h-4 w-4' />
+            {createBidPending ? 'Submitting bid...' : 'Submit Bid'}
           </Button>
         </div>
       )}
-
-      {/* Main Action Buttons */}
-      <div className='flex flex-col sm:flex-row gap-3 pt-2'>
-        {/* Save Draft Button - only show if not editing existing bid */}
-        {!isEditingBid && (
-          <Button type='button' variant='outline' onClick={onSaveDraft} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2'>
+      {/* editing existing draft case */}
+      {isEditingDraft && (
+        <div className='flex flex-col sm:flex-row gap-3'>
+          <Button type='button' variant='outline' onClick={updateBidDraftHandler} disabled={updateBidDraftPending} className='font-roboto flex items-center gap-2 '>
             <Save className='h-4 w-4' />
-            {saveDraftPending ? 'Saving...' : isEditingDraft ? 'Update Draft' : 'Save as Draft'}
+            {updateBidDraftPending ? 'Updating draft...' : 'Update Draft'}
           </Button>
-        )}
-
-        {/* Submit/Update Bid Button */}
-        <Button type='button' onClick={onBidSubmit} disabled={isAnyActionPending} className='font-roboto flex items-center gap-2 bg-green-600 hover:bg-green-700'>
-          <Send className='h-4 w-4' />
-          {createOrUpdateBidPending ? 'Submitting...' : isEditingBid ? 'Update Bid' : 'Submit Bid'}
-        </Button>
-      </div>
-    </div>
+          <Button
+            type='button'
+            onClick={createBidFromDraftHandler}
+            disabled={createBidFromDraftPending}
+            className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'
+          >
+            <Send className='h-4 w-4' />
+            {createBidFromDraftPending ? 'Submitting Bid...' : 'Submit Draft'}
+          </Button>
+        </div>
+      )}
+      {/* editing existing bid case */}
+      {isEditingBid && (
+        <div className='flex flex-col sm:flex-row gap-3'>
+          <Button type='button' onClick={updateBidHandler} disabled={updateBidPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white'>
+            <Save className='h-4 w-4' />
+            {updateBidPending ? 'Updating bid...' : 'Update Bid'}
+          </Button>
+        </div>
+      )}
+    </>
   );
 }

@@ -9,26 +9,12 @@ interface JobFiltersProps {
   setCityFilter: (value: string) => void;
   jobTypeFilter: string;
   setJobTypeFilter: (value: string) => void;
-  // showSavedOnly: boolean;
-  // setShowSavedOnly: (value: boolean) => void;
   cityFilterOptions: string[];
   handleClearAllFilters: () => void;
   jobsCount: number;
-  isJobsLoading: boolean;
 }
 
-export function JobFilters({
-  cityFilter,
-  setCityFilter,
-  jobTypeFilter,
-  setJobTypeFilter,
-  // showSavedOnly,
-  // setShowSavedOnly,
-  cityFilterOptions,
-  handleClearAllFilters,
-  jobsCount,
-  isJobsLoading,
-}: JobFiltersProps) {
+export function JobFilters({ cityFilter, setCityFilter, jobTypeFilter, setJobTypeFilter, cityFilterOptions, handleClearAllFilters, jobsCount }: JobFiltersProps) {
   return (
     <Card>
       <CardHeader>
@@ -80,14 +66,6 @@ export function JobFilters({
           <div className='space-y-2'>
             <label className='font-roboto text-sm font-medium'>Actions</label>
             <div className='flex gap-2'>
-              {/* <Button
-                variant={showSavedOnly ? 'default' : 'outline'}
-                onClick={() => setShowSavedOnly(!showSavedOnly)}
-                className='font-roboto'
-                disabled // TODO: Implement saved jobs functionality
-              >
-                Saved Jobs
-              </Button> */}
               <Button onClick={handleClearAllFilters} className='font-roboto hover:opacity-80'>
                 Clear All Filters
               </Button>
@@ -96,7 +74,7 @@ export function JobFilters({
         </div>
 
         {/* Results Summary */}
-        <div className='text-sm text-gray-600 font-inter'>{isJobsLoading ? 'Loading jobs...' : `${jobsCount} jobs available`}</div>
+        <div className='text-sm text-gray-600 font-inter'>{`${jobsCount} jobs available`}</div>
       </CardContent>
     </Card>
   );

@@ -18,7 +18,7 @@ export function AllJobsSection({ canPostJob }: { canPostJob: boolean }) {
   const { user } = useUser();
 
   // Query to fetch buyer's job cards
-  // only filtered by buyer / home owner id, fetch all jobs existing with no filters
+  // only filtered by buyer / home owner id, fetch all jobs existing with no filters ALL AT ONCE AS allJobs
   const { data: allJobs = [], isLoading: isAllJobsLoading } = useQuery({
     queryKey: ['buyer-jobs'],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function AllJobsSection({ canPostJob }: { canPostJob: boolean }) {
     enabled: !!userId && !!getToken() && !!user,
   });
 
-  // Calculate all 4 stats card values based on the fully fetch jobs data in client side directly
+  // CLIENT SIDE STATS COUNT CALCULATION DIRECTLY
   const stats = {
     activeJobsCount: allJobs.filter((job) => job.status === 'open').length,
     totalBidsCount: allJobs.reduce((total, job) => total + job.bid_count, 0),
@@ -37,7 +37,7 @@ export function AllJobsSection({ canPostJob }: { canPostJob: boolean }) {
     closedJobsCount: allJobs.filter((job) => job.status === 'closed').length,
   };
 
-  // setup Filter options and calculate counts for each of the filter in the dropdown
+  // Hard code the job filter options with dynamic counts
   const jobFilterOptions = [
     { value: 'all', label: 'All Jobs', count: allJobs.length },
     { value: 'open', label: 'Open', count: allJobs.filter((j) => j.status === 'open').length },

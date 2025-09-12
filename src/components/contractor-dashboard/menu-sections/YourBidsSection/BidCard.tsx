@@ -3,40 +3,6 @@ import { type ContractorBidCardResponse } from '@/lib/apis/contractor-bids';
 import { Calendar } from 'lucide-react';
 
 export function BidCard({ bid, onClick }: { bid: ContractorBidCardResponse; onClick: () => void }) {
-  // const getStatusColor = (status: string) => {
-  //   switch (status) {
-  //     case 'draft':
-  //       return 'bg-gray-100 text-gray-700';
-  //     case 'pending':
-  //       return 'bg-yellow-100 text-yellow-700';
-  //     case 'selected':
-  //       return 'bg-blue-100 text-blue-700';
-  //     case 'confirmed':
-  //       return 'bg-green-100 text-green-700';
-  //     case 'declined':
-  //       return 'bg-red-100 text-red-700';
-  //     default:
-  //       return 'bg-gray-100 text-gray-700';
-  //   }
-  // };
-
-  // const getStatusIcon = (status: string) => {
-  //   switch (status) {
-  //     case 'draft':
-  //       return <FileText className='h-4 w-4' />;
-  //     case 'pending':
-  //       return <Clock className='h-4 w-4' />;
-  //     case 'selected':
-  //       return <Star className='h-4 w-4' />;
-  //     case 'confirmed':
-  //       return <CheckCircle className='h-4 w-4' />;
-  //     case 'declined':
-  //       return <XCircle className='h-4 w-4' />;
-  //     default:
-  //       return <FileText className='h-4 w-4' />;
-  //   }
-  // };
-
   return (
     <Card className='border border-gray-200 hover:shadow-md transition-shadow cursor-pointer' onClick={onClick}>
       <CardContent className='p-4 lg:p-6'>
@@ -44,7 +10,8 @@ export function BidCard({ bid, onClick }: { bid: ContractorBidCardResponse; onCl
           {/* Bid Title & Status */}
           <div className='flex items-start justify-between'>
             <h3 className='font-roboto text-base lg:text-lg font-bold text-gray-900 flex-1 pr-2'>{bid.title || 'Untitled Bid'}</h3>
-            {bid.status === 'draft' && <span className='text-xs font-bold bg-gray-100 text-gray-700 font-roboto rounded-full px-3 py-2'>Draft</span>}
+            {bid.status === 'draft' && <span className='text-xs font-bold bg-gray-200 text-gray-700 font-roboto rounded-full px-3 py-2'>Draft</span>}
+            {bid.status === 'submitted' && <span className='text-xs font-bold bg-green-200 text-green-800 font-roboto rounded-full px-3 py-2'>Submitted</span>}
           </div>
 
           {/* Job Info */}

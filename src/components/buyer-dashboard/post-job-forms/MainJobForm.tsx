@@ -197,7 +197,7 @@ export default function MainJobForm() {
   // ----------------------------------------------------------------------------------------------------------------------
   // All Mutation actions for creating new job, updating existing job, saving draft, and deleting draft
 
-  const createNewJobMutation = useMutation({
+  const createJobMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
@@ -237,7 +237,7 @@ export default function MainJobForm() {
   });
 
   // Saving new drafts
-  const saveNewDraftMutation = useMutation({
+  const saveJobDraftMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
@@ -255,7 +255,7 @@ export default function MainJobForm() {
     },
   });
 
-  const updateExistingDraftMutation = useMutation({
+  const updateExistingJobDraftMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token || !jobId) throw new Error('Unable to get authentication token or job ID');
@@ -298,7 +298,7 @@ export default function MainJobForm() {
   });
 
   // Delete draft mutation
-  const deleteDraftMutation = useMutation({
+  const deleteJobDraftMutation = useMutation({
     mutationFn: async () => {
       const token = await getToken();
       if (!token || !jobId) throw new Error('Unable to get authentication token or job ID');
@@ -317,9 +317,9 @@ export default function MainJobForm() {
   // ------------------------------------------------------------------------------------------------------------------------
   // Handlers for form actions
 
-  const createNewJobHandler = async () => {
+  const createJobHandler = async () => {
     if (!validateRequiredFields()) return;
-    createNewJobMutation.mutate();
+    createJobMutation.mutate();
   };
 
   const updateExistingJobHandler = async () => {
@@ -327,12 +327,12 @@ export default function MainJobForm() {
     updateExistingJobMutation.mutate();
   };
 
-  const saveNewDraftHandler = async () => {
-    saveNewDraftMutation.mutate();
+  const saveJobDraftHandler = async () => {
+    saveJobDraftMutation.mutate();
   };
 
   const updateExistingDraftHandler = async () => {
-    updateExistingDraftMutation.mutate();
+    updateExistingJobDraftMutation.mutate();
   };
 
   const createJobFromDraftHandler = async () => {
@@ -342,7 +342,7 @@ export default function MainJobForm() {
 
   const deleteDraftHandler = async () => {
     try {
-      await deleteDraftMutation.mutateAsync();
+      await deleteJobDraftMutation.mutateAsync();
       setShowDeleteDraftModal(false); // only runs after mutation succeeds
       router.push('/buyer-dashboard');
     } catch (error) {
@@ -395,7 +395,7 @@ export default function MainJobForm() {
         isOpen={showDeleteDraftModal}
         onClose={() => setShowDeleteDraftModal(false)}
         onConfirm={deleteDraftHandler}
-        isDeleting={deleteDraftMutation.isPending}
+        isDeleting={deleteJobDraftMutation.isPending}
         draftTitle={formData.title}
       />
 
@@ -424,10 +424,10 @@ export default function MainJobForm() {
                   }}
                   variant='destructive'
                   className='font-roboto flex items-center gap-2'
-                  disabled={deleteDraftMutation.isPending}
+                  disabled={deleteJobDraftMutation.isPending}
                 >
                   <Trash2 className='h-4 w-4' />
-                  {deleteDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
+                  {deleteJobDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
                 </Button>
               )}
               <Button onClick={handleBackNavigation}>Back to Dashboard</Button>
@@ -489,13 +489,13 @@ export default function MainJobForm() {
           <Actions
             isEditingDraft={isEditingDraft}
             isEditingJob={isEditingJob}
-            saveNewDraftPending={saveNewDraftMutation.isPending}
-            createNewJobPending={createNewJobMutation.isPending}
+            saveJobDraftPending={saveJobDraftMutation.isPending}
+            createJobPending={createJobMutation.isPending}
             updateExistingJobPending={updateExistingJobMutation.isPending}
-            updateExistingDraftPending={updateExistingDraftMutation.isPending}
+            updateExistingDraftPending={updateExistingJobDraftMutation.isPending}
             createJobFromDraftPending={createJobFromDraftMutation.isPending}
-            saveNewDraftHandler={saveNewDraftHandler}
-            createNewJobHandler={createNewJobHandler}
+            saveJobDraftHandler={saveJobDraftHandler}
+            createJobHandler={createJobHandler}
             updateExistingJobHandler={updateExistingJobHandler}
             updateExistingDraftHandler={updateExistingDraftHandler}
             createJobFromDraftHandler={createJobFromDraftHandler}
@@ -507,11 +507,11 @@ export default function MainJobForm() {
                 type='button'
                 variant='destructive'
                 onClick={() => setShowDeleteDraftModal(true)}
-                disabled={deleteDraftMutation.isPending}
+                disabled={deleteJobDraftMutation.isPending}
                 className='font-roboto flex items-center w-full mt-5'
               >
                 <Trash2 className='h-4 w-4' />
-                {deleteDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
+                {deleteJobDraftMutation.isPending ? 'Deleting...' : 'Delete Draft'}
               </Button>
             </div>
           )}

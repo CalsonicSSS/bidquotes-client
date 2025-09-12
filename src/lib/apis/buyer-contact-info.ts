@@ -3,7 +3,7 @@ export type BuyerContactInfoData = {
   phone_number: string;
 };
 
-type BuyerContactInfoResponse = {
+export type BuyerContactInfoResponse = {
   id: string;
   user_id: string;
   contact_email: string;

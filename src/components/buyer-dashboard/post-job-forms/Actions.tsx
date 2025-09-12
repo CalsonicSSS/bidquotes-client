@@ -6,13 +6,13 @@ import { Save, Send } from 'lucide-react';
 type FormActionsProps = {
   isEditingDraft: boolean;
   isEditingJob: boolean;
-  saveNewDraftPending: boolean;
-  createNewJobPending: boolean;
+  saveJobDraftPending: boolean;
+  createJobPending: boolean;
   updateExistingJobPending: boolean;
   updateExistingDraftPending: boolean;
   createJobFromDraftPending: boolean;
-  saveNewDraftHandler: () => void;
-  createNewJobHandler: () => void;
+  saveJobDraftHandler: () => void;
+  createJobHandler: () => void;
   updateExistingJobHandler: () => void;
   updateExistingDraftHandler: () => void;
   createJobFromDraftHandler: () => void;
@@ -21,13 +21,13 @@ type FormActionsProps = {
 export function Actions({
   isEditingDraft,
   isEditingJob,
-  saveNewDraftPending,
-  createNewJobPending,
+  saveJobDraftPending,
+  createJobPending,
   updateExistingJobPending,
   updateExistingDraftPending,
   createJobFromDraftPending,
-  saveNewDraftHandler,
-  createNewJobHandler,
+  saveJobDraftHandler,
+  createJobHandler,
   updateExistingJobHandler,
   updateExistingDraftHandler,
   createJobFromDraftHandler,
@@ -37,19 +37,13 @@ export function Actions({
       {/* no existing job / draft case */}
       {!isEditingDraft && !isEditingJob && (
         <div className='flex flex-col sm:flex-row gap-3'>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={saveNewDraftHandler}
-            disabled={saveNewDraftPending || createNewJobPending}
-            className='font-roboto flex items-center gap-2'
-          >
+          <Button type='button' variant='outline' onClick={saveJobDraftHandler} disabled={saveJobDraftPending || createJobPending} className='font-roboto flex items-center gap-2'>
             <Save className='h-4 w-4' />
-            {saveNewDraftPending ? 'Saving...' : 'Save as Draft'}
+            {saveJobDraftPending ? 'Saving...' : 'Save as Draft'}
           </Button>
-          <Button type='button' onClick={createNewJobHandler} disabled={createNewJobPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
+          <Button type='button' onClick={createJobHandler} disabled={createJobPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
             <Send className='h-4 w-4' />
-            {createNewJobPending ? 'Posting Job...' : 'Create Job'}
+            {createJobPending ? 'Posting Job...' : 'Create Job'}
           </Button>
         </div>
       )}

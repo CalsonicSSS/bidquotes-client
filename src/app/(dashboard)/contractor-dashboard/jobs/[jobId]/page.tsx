@@ -122,15 +122,6 @@ export default function ContractorJobDetailPage() {
                 <p className='font-inter text-gray-700'>{jobDetail.job_budget}</p>
               </div>
 
-              {/* Job Description (not to reveal at this page, only show after contractor full paid and submit the bid) */}
-              {/* <div>
-                <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
-                  <ClipboardCheck className='h-4 w-4' />
-                  Description
-                </h3>
-                <p className='font-inter text-gray-700 whitespace-pre-wrap leading-relaxed'>{jobDetail.description}</p>
-              </div> */}
-
               {/* Location (showing only general city) */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
@@ -141,23 +132,16 @@ export default function ContractorJobDetailPage() {
                 <p className='font-inter text-gray-700'>{jobDetail.city}</p>
               </div>
 
-              {/* contact information, job description, and other information (not to reveal at this page, only show after contractor full paid and submit the bid) */}
+              {/* Owner contact information, job description, and other information (not to reveal ON THIS TIME YET)
+              only show after contractor full paid and submit the bid) */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2 flex items-center gap-2'>
                   <Info className='h-4 w-4' />
-                  Job Contact & detail information
+                  Job Contact & Detail Information
                 </h3>
                 {/* will be shared with selected contractor only */}
-                <p className='font-inter text-xs text-blue-600 mt-2'>* All job detail information will be revealed once bid and payment are completed for this job</p>
+                <p className='font-inter text-sm text-blue-600 mt-2'>* All detail information will be revealed once bid & payment are completed for this job</p>
               </div>
-
-              {/* Other Requirements */}
-              {/* {jobDetail.other_requirements && (
-                <div>
-                  <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Additional Requirements</h3>
-                  <p className='font-inter text-gray-700 whitespace-pre-wrap leading-relaxed'>{jobDetail.other_requirements}</p>
-                </div>
-              )} */}
 
               {/* Images */}
               {jobDetail.images && jobDetail.images.length > 0 && (
@@ -184,7 +168,7 @@ export default function ContractorJobDetailPage() {
                     <h4 className='font-roboto font-semibold text-green-800 mb-1'>{jobDetail.bid_count} of 5 bids submitted</h4>
                   </div>
                   {jobDetail.bid_count < 5 && (
-                    <Button onClick={handleSubmitBid} className='font-roboto bg-green-600 hover:bg-green-700'>
+                    <Button onClick={handleSubmitBid} className='font-roboto bg-green-600 hover:bg-green-700 hidden lg:inline-flex'>
                       Submit Your Bid
                     </Button>
                   )}
@@ -198,7 +182,7 @@ export default function ContractorJobDetailPage() {
                 <ul className='space-y-1 list-disc list-inside'>
                   <li>Submit your competitive bid for this job</li>
                   <li>Full job detail will be revealed once bid payment is completed</li>
-                  <li>Contact home owner!</li>
+                  <li>Contact job owner!</li>
                 </ul>
               </div>
             </CardContent>

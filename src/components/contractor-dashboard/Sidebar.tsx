@@ -69,7 +69,7 @@ export function ContractorSidebar({ user, activeSection, setActiveSection, sideb
 
             {/* User Type Badge */}
             <div className='flex items-center gap-2'>
-              <span className='inline-flex px-3 py-1 rounded-full text-xs font-inter font-medium bg-green-100 text-green-800 border border-green-200'>🔧 Contractor Account</span>
+              <span className='inline-flex px-3 py-1 rounded-full text-xs font-inter font-medium bg-green-200 text-green-800 border border-green-300'>🔧 Contractor Account</span>
             </div>
           </div>
 
@@ -82,7 +82,7 @@ export function ContractorSidebar({ user, activeSection, setActiveSection, sideb
                   key={item.id}
                   onClick={() => handleMenuItemClick(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeSection === item.id ? 'bg-green-50 text-green-700 font-roboto font-semibold' : 'text-gray-700 hover:bg-gray-50 font-inter'
+                    activeSection === item.id ? 'bg-green-100 text-green-700 font-roboto font-semibold' : 'text-gray-700 hover:bg-gray-50 font-inter'
                   }`}
                 >
                   <Icon className='h-5 w-5' />

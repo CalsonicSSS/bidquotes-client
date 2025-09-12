@@ -3,19 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Briefcase, ImageIcon, MapPin, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-interface Job {
-  id: string;
-  title: string;
-  job_type: string;
-  city: string;
-  created_at: string;
-  bid_count: number;
-  thumbnail_image?: string;
-}
+import { ContractorJobCardResponse } from '@/lib/apis/contractor-jobs';
 
 interface JobsGridProps {
-  availableJobs: Job[];
+  availableJobs: ContractorJobCardResponse[];
   isJobsLoading: boolean;
   cityFilter: string;
   jobTypeFilter: string;

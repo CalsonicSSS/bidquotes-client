@@ -7,22 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { saveBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
+import { BuyerContactInfoResponse, saveBuyerContactInfo } from '@/lib/apis/buyer-contact-info';
 import { formatPhoneInput, getCleanPhoneNumber } from '@/lib/utils/custom-format';
-
-type ContactInfo = {
-  id: string;
-  user_id: string;
-  contact_email: string;
-  phone_number: string;
-  created_at: string;
-  updated_at: string;
-};
 
 type UpdateContactInfoModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  currentContactInfo: ContactInfo;
+  currentContactInfo: BuyerContactInfoResponse;
 };
 
 export function UpdateContactInfoModal({ isOpen, onClose, currentContactInfo }: UpdateContactInfoModalProps) {

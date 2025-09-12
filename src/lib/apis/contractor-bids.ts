@@ -18,7 +18,7 @@ export type BidResponse = {
   timeline_estimate: string;
   work_description: string;
   additional_notes?: string;
-  status: 'draft' | 'pending' | 'selected' | 'confirmed' | 'declined';
+  status: string;
   is_selected: boolean;
   created_at: string;
   updated_at: string;
@@ -52,7 +52,7 @@ export type ContractorBidCardResponse = {
   id: string;
   job_id: string;
   title: string;
-  status: 'draft' | 'pending' | 'selected' | 'confirmed' | 'declined';
+  status: string;
   created_at: string;
   updated_at: string;
   // Job context info
@@ -209,39 +209,3 @@ export async function getContractorBidCards(clerkJwt: string, status?: string): 
 
   return await response.json();
 }
-
-// ------------------------------------------------------------------------------------------------------------------------------------
-
-// export async function declineSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
-//   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/decline`, {
-//     method: 'POST',
-//     headers: {
-//       Authorization: `Bearer ${clerkJwt}`,
-//     },
-//   });
-
-//   if (!response.ok) {
-//     const errorData = await response.json();
-//     throw new Error(errorData.detail || 'Failed to decline bid selection');
-//   }
-
-//   return await response.json();
-// }
-
-// // -------------------------------------------------------------------------------------------------------------------------------------
-
-// export async function confirmSelectedBid(bidId: string, clerkJwt: string): Promise<boolean> {
-//   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}/confirm`, {
-//     method: 'POST',
-//     headers: {
-//       Authorization: `Bearer ${clerkJwt}`,
-//     },
-//   });
-
-//   if (!response.ok) {
-//     const errorData = await response.json();
-//     throw new Error(errorData.detail || 'Failed to confirm bid selection');
-//   }
-
-//   return await response.json();
-// }

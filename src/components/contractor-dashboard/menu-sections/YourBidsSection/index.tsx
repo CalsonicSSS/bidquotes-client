@@ -2,17 +2,20 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getContractorBidCards, type ContractorBidCardResponse } from '@/lib/apis/contractor-bids';
-import { Clock, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, FileText, XCircle } from 'lucide-react';
 import { StatusCard } from './StatusCards';
 import { BidCard } from './BidCard';
-import { Actions, ActiveFilter } from './Actions';
+import { Actions } from './Actions';
+import { ActiveSection } from '@/app/(dashboard)/contractor-dashboard/page';
 
-export function YourBidsSection({ setActiveSection }: { setActiveSection: (section: 'all-jobs' | 'your-bids' | 'profile' | 'your-credits') => void }) {
+export type ActiveFilter = 'all' | 'draft' | 'submitted';
+
+export function YourBidsSection({ setActiveSection }: { setActiveSection: Dispatch<SetStateAction<ActiveSection>> }) {
   const { getToken } = useAuth();
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
@@ -24,7 +27,7 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
 
   // Fetch contractor bids (always fetch all, filter on client side like buyer)
   const {
-    data: contractorBids = [],
+    data: allContractorBids = [],
     isLoading,
     error,
   } = useQuery({
@@ -41,24 +44,20 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
 
   // Calculate status counts
   const statusCounts = {
-    total: contractorBids.length,
-    draft: contractorBids.filter((bid) => bid.status === 'draft').length,
-    // pending: contractorBids.filter((bid) => bid.status === 'pending').length,
-    // confirmed: contractorBids.filter((bid) => bid.status === 'confirmed').length,
+    total: allContractorBids.length,
+    draft: allContractorBids.filter((bid) => bid.status === 'draft').length,
   };
 
-  // Filter options with counts (like buyer side)
+  // Filter bids options with counts (like buyer side) based on status
+  // we hardcode them here
   const filterOptions = [
-    { value: 'all', label: 'All Bids', count: contractorBids.length },
-    { value: 'draft', label: 'Drafts', count: contractorBids.filter((b) => b.status === 'draft').length },
-    { value: 'pending', label: 'Submitted', count: contractorBids.filter((b) => b.status === 'pending').length },
-    // { value: 'selected', label: 'Selected', count: contractorBids.filter((b) => b.status === 'selected').length },
-    // { value: 'confirmed', label: 'Confirmed', count: contractorBids.filter((b) => b.status === 'confirmed').length },
-    // { value: 'declined', label: 'Declined', count: contractorBids.filter((b) => b.status === 'declined').length },
+    { value: 'all', label: 'All Bids', count: allContractorBids.length },
+    { value: 'draft', label: 'Drafts', count: allContractorBids.filter((b) => b.status === 'draft').length },
+    { value: 'submitted', label: 'Submitted', count: allContractorBids.filter((b) => b.status === 'submitted').length },
   ];
 
   // Filter bids based on active filter (client-side filtering like buyer side)
-  const filteredBids = contractorBids.filter((bid) => {
+  const filteredBids = allContractorBids.filter((bid) => {
     if (activeFilter === 'all') return true;
     return bid.status === activeFilter;
   });
@@ -70,14 +69,8 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
         return 'All Bids';
       case 'draft':
         return 'Draft Bids';
-      case 'pending':
-        return 'Pending Bids';
-      case 'selected':
-        return 'Selected Bids';
-      case 'confirmed':
-        return 'Confirmed Bids';
-      case 'declined':
-        return 'Declined Bids';
+      case 'submitted':
+        return 'Submitted Bids';
       default:
         return `${(activeFilter as string).charAt(0).toUpperCase() + (activeFilter as string).slice(1)} Bids`;
     }
@@ -94,6 +87,8 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
     }
   };
 
+  // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   return (
     <div className='space-y-6'>
       <h2 className='font-roboto text-xl lg:text-2xl font-bold text-gray-900 hidden lg:block'>Your Bids</h2>
@@ -102,8 +97,6 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: (secti
       <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
         <StatusCard title='Total Bids' count={statusCounts.total} icon={<FileText className='h-6 w-6 text-blue-600' />} bgColor='bg-blue-100' />
         <StatusCard title='Drafts' count={statusCounts.draft} icon={<Clock className='h-6 w-6 text-gray-600' />} bgColor='bg-gray-100' />
-        {/* <StatusCard title='Pending' count={statusCounts.pending} icon={<Clock className='h-6 w-6 text-yellow-600' />} bgColor='bg-yellow-100' />
-        <StatusCard title='Confirmed' count={statusCounts.confirmed} icon={<CheckCircle className='h-6 w-6 text-green-600' />} bgColor='bg-green-100' /> */}
       </div>
 
       {/* Actions (Filter + Browse Jobs button) */}
