@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,9 @@ import { User } from 'lucide-react';
 import { getContractorProfile } from '@/lib/apis/contractor-profile';
 import { ImagesGallery } from '@/components/ImagesGallery';
 import { UpdateContractorProfileModal } from './UpdateContractorProfileModal';
+import { ActiveSection } from '@/app/(dashboard)/contractor-dashboard/page';
 
-export function ProfileSection() {
+export function ProfileSection({ setActiveSection }: { setActiveSection: Dispatch<SetStateAction<ActiveSection>> }) {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const { getToken } = useAuth();
 
@@ -97,6 +98,17 @@ export function ProfileSection() {
                   <p className='font-inter text-gray-900 mt-1'>
                     {contractorProfile.team_size} {parseInt(contractorProfile.team_size) === 1 ? 'person' : 'people'}
                   </p>
+                </div>
+                {/* credits count */}
+                <div>
+                  <label className='font-roboto text-sm font-semibold text-gray-700'>Credit Counts</label>
+                  <div className='flex items-center space-x-2 mt-1'>
+                    <p className='font-inter text-green-900 font-medium  animate-bounce'>{contractorProfile.credit_count} left</p>
+                    {/* formatted shadcn button component that click to nav to your credits section */}
+                    <Button size='sm' className='font-roboto text-sm px-3 bg-green-600' onClick={() => setActiveSection('your-credits')}>
+                      Get More Credits
+                    </Button>
+                  </div>
                 </div>
 
                 <div>

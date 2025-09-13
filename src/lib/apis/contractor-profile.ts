@@ -1,4 +1,4 @@
-export type ContractorProfileData = {
+export type ContractorProfileCreate = {
   contractor_name: string;
   main_service_areas: string;
   years_of_experience: string;
@@ -33,13 +33,14 @@ export type ContractorProfileResponse = {
   company_website?: string;
   additional_information?: string;
   images: ContractorProfileImageResponse[];
+  credit_count: number;
   created_at: string;
   updated_at: string;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export async function saveContractorProfile(data: ContractorProfileData, clerkJwt: string): Promise<ContractorProfileResponse> {
+export async function saveContractorProfile(data: ContractorProfileCreate, clerkJwt: string): Promise<ContractorProfileResponse> {
   const formData = new FormData();
 
   // Add all profile fields
@@ -79,7 +80,7 @@ export async function saveContractorProfile(data: ContractorProfileData, clerkJw
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function updateContractorProfile(data: Partial<ContractorProfileData>, clerkJwt: string): Promise<ContractorProfileResponse> {
+export async function updateContractorProfile(data: Partial<ContractorProfileCreate>, clerkJwt: string): Promise<ContractorProfileResponse> {
   const formData = new FormData();
 
   // Add only provided fields
@@ -134,28 +135,12 @@ export async function getContractorProfile(clerkJwt: string): Promise<Contractor
   return await response.json();
 }
 
-// get contractor profile by user ID
-export async function getContractorProfileById(userId: string): Promise<ContractorProfileResponse> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/profile/contractor-id/${userId}`, {
-    method: 'GET',
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to get contractor profile');
-  }
-
-  return await response.json();
-}
-
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getContractorProfileName(clerkJwt: string): Promise<string> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/profile/name`, {
+// get contractor profile by user ID
+export async function getContractorProfileByContractorId(userId: string): Promise<ContractorProfileResponse> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/profile/contractor-id/${userId}`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${clerkJwt}`,
-    },
   });
 
   if (!response.ok) {

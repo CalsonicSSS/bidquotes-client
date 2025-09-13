@@ -77,7 +77,7 @@ export function JobsGrid({ availableJobs, isJobsLoading, cityFilter, jobTypeFilt
                           <Calendar className='h-3 w-3' />
                           <span>{new Date(job.created_at).toLocaleDateString()}</span>
                         </div>
-                        <span className='bg-green-100 text-green-800 px-2 py-1 rounded-full font-semibold'>{job.bid_count}/5 bids</span>
+                        <span className='bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold'>{job.bid_count}/5 bids</span>
                       </div>
                     </div>
                   </div>

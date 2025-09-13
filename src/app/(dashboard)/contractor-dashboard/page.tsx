@@ -90,7 +90,7 @@ function MainContractorDashboard() {
           <div className='p-4 lg:p-8'>
             {activeSection === 'all-jobs' && <AllJobsSection />}
             {activeSection === 'your-bids' && <YourBidsSection setActiveSection={setActiveSection} />}
-            {activeSection === 'profile' && <ProfileSection />}
+            {activeSection === 'profile' && <ProfileSection setActiveSection={setActiveSection} />}
             {activeSection === 'your-credits' && <YourCreditsSection />}
           </div>
         </div>

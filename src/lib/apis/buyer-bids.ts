@@ -6,10 +6,7 @@ export type BuyerBidDetailResponse = {
   price_min: string;
   price_max: string;
   timeline_estimate: string;
-  work_description: string;
-  additional_notes?: string;
   status: string;
-  is_selected: boolean;
   created_at: string;
   updated_at: string;
   // Job context info

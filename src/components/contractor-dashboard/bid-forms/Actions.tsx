@@ -41,7 +41,7 @@ export function Actions({
             <Save className='h-4 w-4' />
             {saveBidDraftPending ? 'Saving draft...' : 'Save as Draft'}
           </Button>
-          <Button type='button' onClick={createBidHandler} disabled={createBidPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'>
+          <Button type='button' onClick={createBidHandler} disabled={createBidPending} className='font-roboto flex items-center gap-2 bg-green-600 hover:bg-green-700'>
             <Send className='h-4 w-4' />
             {createBidPending ? 'Submitting bid...' : 'Submit Bid'}
           </Button>
@@ -58,7 +58,7 @@ export function Actions({
             type='button'
             onClick={createBidFromDraftHandler}
             disabled={createBidFromDraftPending}
-            className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700'
+            className='font-roboto flex items-center gap-2 bg-green-600 hover:bg-green-700'
           >
             <Send className='h-4 w-4' />
             {createBidFromDraftPending ? 'Submitting Bid...' : 'Submit Draft'}
@@ -68,7 +68,7 @@ export function Actions({
       {/* editing existing bid case */}
       {isEditingBid && (
         <div className='flex flex-col sm:flex-row gap-3'>
-          <Button type='button' onClick={updateBidHandler} disabled={updateBidPending} className='font-roboto flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white'>
+          <Button type='button' onClick={updateBidHandler} disabled={updateBidPending} className='font-roboto flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white'>
             <Save className='h-4 w-4' />
             {updateBidPending ? 'Updating bid...' : 'Update Bid'}
           </Button>

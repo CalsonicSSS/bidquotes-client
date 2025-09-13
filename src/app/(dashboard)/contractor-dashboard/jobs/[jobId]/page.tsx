@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, MessageSquare, MapPin, Send, Hammer, Info, Wallet, Phone, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getContractorJobDetail } from '@/lib/apis/contractor-jobs';
+import { getPreBidJobDetail } from '@/lib/apis/contractor-jobs';
 import { ImagesGallery } from '@/components/ImagesGallery';
 import { formatDateTime } from '@/lib/utils/custom-format';
 
@@ -27,7 +27,7 @@ export default function ContractorJobDetailPage() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-      return getContractorJobDetail(jobId, token);
+      return getPreBidJobDetail(jobId, token);
     },
     enabled: !!jobId && !!getToken,
     staleTime: 0,
@@ -162,7 +162,7 @@ export default function ContractorJobDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
+              <div className='bg-green-100 border border-green-200 rounded-lg p-4'>
                 <div className='flex items-center justify-between'>
                   <div>
                     <h4 className='font-roboto font-semibold text-green-800 mb-1'>{jobDetail.bid_count} of 5 bids submitted</h4>

@@ -1,11 +1,9 @@
-export type BidFormData = {
+export type BidCreate = {
   job_id: string;
   title: string;
   price_min: string;
   price_max: string;
   timeline_estimate: string;
-  work_description: string;
-  additional_notes: string;
 };
 
 export type BidResponse = {
@@ -16,10 +14,7 @@ export type BidResponse = {
   price_min: string;
   price_max: string;
   timeline_estimate: string;
-  work_description: string;
-  additional_notes?: string;
   status: string;
-  is_selected: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -32,10 +27,7 @@ export type BidDetailResponse = {
   price_min: string;
   price_max: string;
   timeline_estimate: string;
-  work_description: string;
-  additional_notes?: string;
   status: string;
-  is_selected: boolean;
   created_at: string;
   updated_at: string;
   // Include job info for context
@@ -43,9 +35,6 @@ export type BidDetailResponse = {
   job_type: string;
   job_budget: string;
   job_city: string;
-  // Buyer contact info (only revealed when bid is confirmed)
-  buyer_contact_email?: string;
-  buyer_contact_phone?: string;
 };
 
 export type ContractorBidCardResponse = {
@@ -63,7 +52,7 @@ export type ContractorBidCardResponse = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export async function createBid(data: BidFormData, clerkJwt: string): Promise<BidResponse> {
+export async function createBid(data: BidCreate, clerkJwt: string): Promise<BidResponse> {
   const formData = new FormData();
 
   // Add all bid fields
@@ -72,8 +61,6 @@ export async function createBid(data: BidFormData, clerkJwt: string): Promise<Bi
   formData.append('price_min', data.price_min);
   formData.append('price_max', data.price_max);
   formData.append('timeline_estimate', data.timeline_estimate);
-  formData.append('work_description', data.work_description);
-  formData.append('additional_notes', data.additional_notes);
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids`, {
     method: 'POST',
@@ -93,7 +80,7 @@ export async function createBid(data: BidFormData, clerkJwt: string): Promise<Bi
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function updateBid(bidId: string, data: Partial<BidFormData>, clerkJwt: string, isDraftSubmit: boolean): Promise<BidResponse> {
+export async function updateBid(bidId: string, data: Partial<BidCreate>, clerkJwt: string, isDraftSubmit: boolean): Promise<BidResponse> {
   const formData = new FormData();
 
   // Add only provided fields
@@ -101,8 +88,7 @@ export async function updateBid(bidId: string, data: Partial<BidFormData>, clerk
   if (data.price_min !== undefined) formData.append('price_min', data.price_min);
   if (data.price_max !== undefined) formData.append('price_max', data.price_max);
   if (data.timeline_estimate !== undefined) formData.append('timeline_estimate', data.timeline_estimate);
-  if (data.work_description !== undefined) formData.append('work_description', data.work_description);
-  if (data.additional_notes !== undefined) formData.append('additional_notes', data.additional_notes);
+  if (data.job_id !== undefined) formData.append('job_id', data.job_id);
 
   const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/${bidId}`;
   const url = isDraftSubmit ? `${baseUrl}?is-draft-submit=true` : baseUrl;
@@ -125,7 +111,7 @@ export async function updateBid(bidId: string, data: Partial<BidFormData>, clerk
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function saveBidDraft(data: BidFormData, clerkJwt: string): Promise<BidResponse> {
+export async function saveBidDraft(data: BidCreate, clerkJwt: string): Promise<BidResponse> {
   const formData = new FormData();
 
   // Add all bid fields (all optional for drafts)
@@ -134,8 +120,6 @@ export async function saveBidDraft(data: BidFormData, clerkJwt: string): Promise
   formData.append('price_min', data.price_min);
   formData.append('price_max', data.price_max);
   formData.append('timeline_estimate', data.timeline_estimate);
-  formData.append('work_description', data.work_description);
-  formData.append('additional_notes', data.additional_notes);
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bids/drafts`, {
     method: 'POST',

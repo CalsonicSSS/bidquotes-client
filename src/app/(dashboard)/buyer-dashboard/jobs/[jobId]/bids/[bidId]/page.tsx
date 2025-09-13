@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSpecificBidDetailForSpecificJob } from '@/lib/apis/buyer-bids';
 import { formatDateTime } from '@/lib/utils/custom-format';
-import { getContractorProfileById } from '@/lib/apis/contractor-profile';
+import { getContractorProfileByContractorId } from '@/lib/apis/contractor-profile';
 import ContractorProfileSection from '@/components/buyer-dashboard/job-detail/ContractorProfile';
 
 export default function BuyerBidDetailPage() {
@@ -43,7 +43,7 @@ export default function BuyerBidDetailPage() {
   } = useQuery({
     queryKey: ['bid-contractor-profile', bidDetail?.contractor_id],
     queryFn: async () => {
-      return getContractorProfileById(bidDetail?.contractor_id as string);
+      return getContractorProfileByContractorId(bidDetail?.contractor_id as string);
     },
     enabled: !!bidDetail?.contractor_id,
   });

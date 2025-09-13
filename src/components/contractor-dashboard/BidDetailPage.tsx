@@ -9,7 +9,7 @@ import { ArrowLeft, Edit, Wallet, XCircle, ClipboardCheck, FileText, Users, Came
 import { getBidDetail } from '@/lib/apis/contractor-bids';
 import { Phone, Briefcase, Calendar, Hammer, MapPin } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils/custom-format';
-import { getContractorJobDetail } from '@/lib/apis/contractor-jobs';
+import { getContractorFullJobDetail } from '@/lib/apis/contractor-jobs';
 import { ImagesGallery } from '../ImagesGallery';
 import { getBuyerContactInfoByBuyerId } from '@/lib/apis/buyer-contact-info';
 
@@ -42,7 +42,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('No token available');
-      return getContractorJobDetail(bid?.job_id as string, token);
+      return getContractorFullJobDetail(bid?.job_id as string, token);
     },
     enabled: !!bid?.job_id && !!getToken(),
   });
@@ -314,7 +314,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
           <Card>
             <CardContent className='pt-6'>
               <div className='flex flex-col sm:flex-row gap-3'>
-                {bid.status === 'pending' && (
+                {bid.status === 'submitted' && (
                   <>
                     <Button onClick={handleEditBid} className='font-roboto bg-green-600 hover:bg-green-700'>
                       <Edit className='h-4 w-4 mr-1' />

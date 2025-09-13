@@ -7,15 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createBid, saveBidDraft, getBidDetail, updateBid, deleteBid, type BidFormData } from '@/lib/apis/contractor-bids';
-import { getContractorJobDetail } from '@/lib/apis/contractor-jobs';
+import { createBid, saveBidDraft, getBidDetail, updateBid, deleteBid, type BidCreate } from '@/lib/apis/contractor-bids';
+import { getPreBidJobDetail } from '@/lib/apis/contractor-jobs';
 import { SuccessModal } from '@/components/SuccessModal';
 import { BidInfoSection } from './BidInfoSection';
 import { Actions } from './Actions';
 import { DeleteBidDraftModal } from './DeleteBidDraftModal';
 
 export default function MainBidForm() {
-  const [errors, setErrors] = useState<Partial<Record<keyof BidFormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof BidCreate, string>>>({});
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -31,14 +31,12 @@ export default function MainBidForm() {
   const { userId, getToken } = useAuth();
   const { user } = useUser();
 
-  const [formData, setFormData] = useState<BidFormData>({
+  const [formData, setFormData] = useState<BidCreate>({
     job_id: '',
     title: '',
     price_min: '',
     price_max: '',
     timeline_estimate: '',
-    work_description: ' ', // use space to avoid uncontrolled to controlled warning
-    additional_notes: ' ', // use space to avoid uncontrolled to controlled warning
   });
 
   // Identify the mode and IDs
@@ -51,13 +49,13 @@ export default function MainBidForm() {
   const isEditingDraft = !!searchParams.get('draft');
   const isEditingBid = !!searchParams.get('edit');
 
-  // Fetch job details based on job id (to display some basic top level job information)
-  const { data: jobDetail } = useQuery({
+  // Fetch pre-bid job details based on job id (to display some basic top level job information)
+  const { data: preBidJobDetail } = useQuery({
     queryKey: ['contractor-job-detail', jobId],
     queryFn: async () => {
       const token = await getToken();
       if (!token || !jobId) throw new Error('No token or job ID available');
-      return getContractorJobDetail(jobId, token);
+      return getPreBidJobDetail(jobId, token);
     },
     enabled: !!jobId && !!getToken,
     staleTime: 0,
@@ -82,15 +80,13 @@ export default function MainBidForm() {
       // New bid for specific job
       setFormData((prev) => ({ ...prev, job_id: jobId }));
     } else if (existingBidData) {
-      // Only do this if there is existing bid/draft, then do the pre-populate form fields
+      // Only do this if there is existing bid or draft, then do the pre-populate form fields
       setFormData({
         job_id: existingBidData.job_id,
         title: existingBidData.title || '',
         price_min: existingBidData.price_min || '',
         price_max: existingBidData.price_max || '',
         timeline_estimate: existingBidData.timeline_estimate || '',
-        work_description: existingBidData.work_description || '',
-        additional_notes: existingBidData.additional_notes || '',
       });
     }
   }, [jobId, bidId, existingBidData]);
@@ -131,7 +127,7 @@ export default function MainBidForm() {
   }, [hasUnsavedChanges]);
 
   // Form change handler
-  const handleFormInputChange = (field: keyof BidFormData, value: string) => {
+  const handleFormInputChange = (field: keyof BidCreate, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
     if (errors[field]) {
@@ -141,7 +137,7 @@ export default function MainBidForm() {
 
   // Form validation
   const validateRequiredFields = () => {
-    const newErrors: Partial<Record<keyof BidFormData, string>> = {};
+    const newErrors: Partial<Record<keyof BidCreate, string>> = {};
 
     if (!formData.title.trim()) newErrors.title = 'Bid title is required';
     if (!formData.price_min.trim()) newErrors.price_min = 'Minimum price is required';
@@ -335,7 +331,19 @@ export default function MainBidForm() {
 
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    router.push('/contractor-dashboard?section=your-bids');
+    if (successType === 'bid') {
+      if (createBidMutation.data?.id) {
+        router.push(`/contractor-dashboard/bids/${createBidMutation.data.id}`);
+      }
+      if (createBidFromDraftMutation.data?.id) {
+        router.push(`/contractor-dashboard/bids/${createBidFromDraftMutation.data.id}`);
+      }
+      if (updateExistingBidMutation.data?.id) {
+        router.push(`/contractor-dashboard/bids/${updateExistingBidMutation.data.id}`);
+      }
+    } else {
+      router.push('/contractor-dashboard?section=your-bids');
+    }
   };
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -351,7 +359,7 @@ export default function MainBidForm() {
     );
   }
 
-  const contextJob = jobDetail || existingBidData;
+  const contextJob = preBidJobDetail || existingBidData;
 
   return (
     <div className='min-h-screen bg-gray-50'>
@@ -360,10 +368,10 @@ export default function MainBidForm() {
         title={successType === 'bid' ? 'Bid Submitted Successfully!' : 'Draft Saved Successfully!'}
         message={
           successType === 'bid'
-            ? 'Your bid has been submitted to this job. Navigate to "Your Bids" section to view revealed details.'
+            ? 'Your bid has been submitted to this job. View bid detail to see all revealed information of this job!'
             : 'Your bid draft has been saved. You can continue editing it anytime from your dashboard.'
         }
-        buttonText={'Back to your bids'}
+        buttonText={`${successType === 'bid' ? 'View Bid Detail' : 'Back to Dashboard'}`}
         onClose={handleSuccessModalClose}
       />
 
@@ -422,21 +430,21 @@ export default function MainBidForm() {
           {contextJob && (
             <Card className='bg-blue-50 border-blue-200'>
               <CardHeader>
-                <CardTitle className='font-roboto text-lg'>Job Title: {jobDetail?.title || existingBidData?.job_title}</CardTitle>
+                <CardTitle className='font-roboto text-lg'>Job Title: {preBidJobDetail?.title || existingBidData?.job_title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4 text-sm'>
                   <div>
                     <span className='font-roboto font-semibold'>Type:</span>
-                    <span className='font-inter ml-2'>{jobDetail?.job_type || existingBidData?.job_type}</span>
+                    <span className='font-inter ml-2'>{preBidJobDetail?.job_type || existingBidData?.job_type}</span>
                   </div>
                   <div>
                     <span className='font-roboto font-semibold'>Budget:</span>
-                    <span className='font-inter ml-2'>{jobDetail?.job_budget || existingBidData?.job_budget}</span>
+                    <span className='font-inter ml-2'>{preBidJobDetail?.job_budget || existingBidData?.job_budget}</span>
                   </div>
                   <div>
                     <span className='font-roboto font-semibold'>Location:</span>
-                    <span className='font-inter ml-2'>{jobDetail?.city || existingBidData?.job_city}</span>
+                    <span className='font-inter ml-2'>{preBidJobDetail?.city || existingBidData?.job_city}</span>
                   </div>
                 </div>
               </CardContent>

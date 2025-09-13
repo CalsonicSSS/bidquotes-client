@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updateContractorProfile } from '@/lib/apis/contractor-profile';
-import { ContractorProfileResponse, ContractorProfileData } from '@/lib/apis/contractor-profile';
+import { ContractorProfileResponse, ContractorProfileCreate } from '@/lib/apis/contractor-profile';
 import { ImageUploadSection } from '@/components/ImageUploadSection';
 import { convertImageUrlsToFiles } from '@/lib/utils/image-utils';
 import { formatPhoneInput } from '@/lib/utils/custom-format';
@@ -20,7 +20,7 @@ type UpdateContractorProfileModalProps = {
 };
 
 export function UpdateContractorProfileModal({ isOpen, onClose, currentProfile }: UpdateContractorProfileModalProps) {
-  const [formInputData, setFormInputData] = useState<ContractorProfileData>({
+  const [formInputData, setFormInputData] = useState<ContractorProfileCreate>({
     contractor_name: currentProfile.contractor_name,
     main_service_areas: currentProfile.main_service_areas,
     years_of_experience: currentProfile.years_of_experience,

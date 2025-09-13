@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertCircle } from 'lucide-react';
 import { saveContractorProfile } from '@/lib/apis/contractor-profile';
-import { ContractorProfileData } from '@/lib/apis/contractor-profile';
+import { ContractorProfileCreate } from '@/lib/apis/contractor-profile';
 import { ImageUploadSection } from '@/components/ImageUploadSection';
 import { formatPhoneInput } from '@/lib/utils/custom-format';
 
@@ -21,7 +21,7 @@ type ContractorProfileModalProps = {
 export function ContractorProfileCompletionModal({ isOpen, userEmail }: ContractorProfileModalProps) {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
-  const [formInputData, setFormInputData] = useState<ContractorProfileData>({
+  const [formInputData, setFormInputData] = useState<ContractorProfileCreate>({
     contractor_name: '',
     main_service_areas: '',
     years_of_experience: '',

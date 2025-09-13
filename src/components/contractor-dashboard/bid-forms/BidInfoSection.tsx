@@ -3,13 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BidFormData } from '@/lib/apis/contractor-bids';
+import { BidCreate } from '@/lib/apis/contractor-bids';
 import { formatCurrency } from '@/lib/utils/custom-format';
 
 type BidInfoSectionProps = {
-  formData: BidFormData;
-  onFormInputChange: (field: keyof BidFormData, value: string) => void;
-  errors: Partial<Record<keyof BidFormData, string>>;
+  formData: BidCreate;
+  onFormInputChange: (field: keyof BidCreate, value: string) => void;
+  errors: Partial<Record<keyof BidCreate, string>>;
 };
 
 export function BidInfoSection({ formData, onFormInputChange, errors }: BidInfoSectionProps) {
@@ -88,35 +88,6 @@ export function BidInfoSection({ formData, onFormInputChange, errors }: BidInfoS
           />
           {errors.timeline_estimate && <p className='font-inter text-sm text-red-600'>{errors.timeline_estimate}</p>}
           <p className='font-inter text-xs text-gray-500'>How long will this job take to complete?</p>
-        </div>
-
-        {/* Work Description (hidden) */}
-        <div className='space-y-2 hidden'>
-          <Label htmlFor='work_description' className='font-roboto'>
-            Detailed Work Description <span className='text-red-500'>*</span>
-          </Label>
-          <textarea
-            id='work_description'
-            value={formData.work_description}
-            onChange={(e) => onFormInputChange('work_description', e.target.value)}
-            placeholder='Describe in detail what work you will perform, your approach, materials you will use, and any guarantees you provide...'
-            className={`w-full min-h-32 px-3 py-2 text-sm border rounded-md font-inter resize-y ${errors.work_description ? 'border-red-500' : 'border-gray-300'}`}
-          />
-          {errors.work_description && <p className='font-inter text-sm text-red-600'>{errors.work_description}</p>}
-        </div>
-
-        {/* Additional Notes (hidden) */}
-        <div className='space-y-2 hidden'>
-          <Label htmlFor='additional_notes' className='font-roboto'>
-            Additional Notes <span className='font-inter text-sm text-gray-500'>(Optional)</span>
-          </Label>
-          <textarea
-            id='additional_notes'
-            value={formData.additional_notes}
-            onChange={(e) => onFormInputChange('additional_notes', e.target.value)}
-            placeholder='Any additional information, special offers, or questions for the buyer...'
-            className='w-full min-h-24 px-3 py-2 text-sm border rounded-md font-inter resize-y border-gray-300'
-          />
         </div>
       </CardContent>
     </Card>

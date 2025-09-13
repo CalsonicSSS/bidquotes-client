@@ -1,4 +1,3 @@
-// Job API Types
 export type JobFormData = {
   title: string;
   job_type: string;
@@ -20,9 +19,7 @@ export type JobResponse = {
   location_address: string;
   city: string;
   other_requirements?: string;
-  status: 'draft' | 'open' | 'full_bid' | 'waiting_confirmation' | 'confirmed';
-  selection_count: number;
-  max_selections: number;
+  status: string;
   created_at: string;
   updated_at: string;
 };
@@ -56,7 +53,6 @@ export type BidCardInfo = {
   price_max: string;
   timeline_estimate: string;
   status: string;
-  is_selected: boolean;
   created_at: string;
 };
 
@@ -71,13 +67,11 @@ export type JobDetailResponse = {
   city: string;
   other_requirements?: string;
   status: string;
-  selection_count: number;
-  max_selections: number;
   created_at: string;
   updated_at: string;
   images: JobImageResponse[];
   bid_count: number;
-  bids?: BidCardInfo[];
+  bids: BidCardInfo[];
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

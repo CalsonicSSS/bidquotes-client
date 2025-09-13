@@ -2,8 +2,7 @@ export type ContractorJobCardResponse = {
   id: string;
   title: string;
   job_type: string;
-  status: string;
-  city: string; // Add city field for contractors
+  city: string;
   bid_count: number;
   created_at: string;
   thumbnail_image?: string;
@@ -18,7 +17,19 @@ export type JobImageResponse = {
   created_at: string;
 };
 
-export type ContractorJobDetailResponse = {
+export type PreBidJobDetailResponse = {
+  id: string;
+  buyer_id: string;
+  title: string;
+  job_type: string;
+  job_budget: string;
+  city: string;
+  created_at: string;
+  images: JobImageResponse[];
+  bid_count: number;
+};
+
+export type ContractorFullJobDetailResponse = {
   id: string;
   buyer_id: string;
   title: string;
@@ -84,8 +95,27 @@ export async function getJobCities(clerkJwt: string): Promise<string[]> {
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function getContractorJobDetail(jobId: string, clerkJwt: string): Promise<ContractorJobDetailResponse> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/jobs/${jobId}`, {
+export async function getPreBidJobDetail(jobId: string, clerkJwt: string): Promise<PreBidJobDetailResponse> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/pre-bid-job/${jobId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to get job details');
+  }
+
+  return await response.json();
+}
+
+// -------------------------------------------------------------------------------------------------------------------------------------
+
+// get full job details for contractor (after bid is placed)
+export async function getContractorFullJobDetail(jobId: string, clerkJwt: string): Promise<ContractorFullJobDetailResponse> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contractors/full-job/${jobId}`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${clerkJwt}`,
