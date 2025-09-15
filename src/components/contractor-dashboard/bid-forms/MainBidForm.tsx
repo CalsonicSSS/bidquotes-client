@@ -15,6 +15,7 @@ import { Actions } from './Actions';
 import { DeleteBidDraftModal } from './DeleteBidDraftModal';
 import { InsufficientCreditsModal } from './InsufficientCreditsModal';
 import { createDraftBidPayment } from '@/lib/apis/payments-credits';
+import { PaymentSuccessModal } from './PaymentSuccessModal';
 
 export default function MainBidForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof BidCreate, string>>>({});
@@ -25,6 +26,7 @@ export default function MainBidForm() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteBidDraftModal, setShowDeleteBidDraftModal] = useState(false);
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+  const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
 
   const [draftBidForPayment, setDraftBidForPayment] = useState<BidResponse | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -97,6 +99,21 @@ export default function MainBidForm() {
       });
     }
   }, [jobId, bidId, existingBidData]);
+
+  // to detect payment success
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+
+    if (paymentStatus === 'success' && isEditingDraft) {
+      // Show payment success modal
+      setShowPaymentSuccessModal(true);
+
+      // Clean up URL params to avoid showing modal on refresh
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('payment');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [searchParams, isEditingDraft]);
 
   // Browser navigation protection
   useEffect(() => {
@@ -441,6 +458,15 @@ export default function MainBidForm() {
           router.push('/contractor-dashboard?section=your-credits');
         }}
         isProcessingPayment={isProcessingPayment}
+      />
+
+      <PaymentSuccessModal
+        isOpen={showPaymentSuccessModal}
+        onClose={() => setShowPaymentSuccessModal(false)}
+        onSubmitBid={async () => {
+          await createBidFromDraftMutation.mutateAsync();
+        }}
+        isSubmitting={createBidFromDraftMutation.isPending}
       />
 
       {/* Mobile Header */}
