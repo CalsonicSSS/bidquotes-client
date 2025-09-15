@@ -14,6 +14,7 @@ import { BidInfoSection } from './BidInfoSection';
 import { Actions } from './Actions';
 import { DeleteBidDraftModal } from './DeleteBidDraftModal';
 import { InsufficientCreditsModal } from './InsufficientCreditsModal';
+import { createDraftBidPayment } from '@/lib/apis/payments-credits';
 
 export default function MainBidForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof BidCreate, string>>>({});
@@ -26,6 +27,7 @@ export default function MainBidForm() {
   const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
 
   const [draftBidForPayment, setDraftBidForPayment] = useState<BidResponse | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const [successType, setSuccessType] = useState<'bid' | 'draft'>('bid');
 
@@ -299,7 +301,31 @@ export default function MainBidForm() {
   });
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------
+  // payment processing
+
+  // this function is triggered under the InsufficientCreditsModal for onBuySingleBid action
+  // it creates a Stripe checkout session and redirects user to Stripe payment page
+  // after payment is completed, user will be redirected back to the bid detail page by the backend
+  const createPaymentMutation = useMutation({
+    mutationFn: async (draftBidId: string) => {
+      const token = await getToken();
+      if (!token) throw new Error('Unable to get authentication token');
+      return createDraftBidPayment(draftBidId, token);
+    },
+    onSuccess: (response) => {
+      // Redirect to Stripe payment page
+      window.location.href = response.session_url;
+    },
+    onError: (error) => {
+      console.error('Error creating payment session:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create payment session. Please try again.');
+      setIsProcessingPayment(false);
+    },
+  });
+
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------
   // Action handlers
+
   const createBidHandler = async () => {
     if (!validateRequiredFields()) return;
     createBidMutation.mutate();
@@ -407,13 +433,14 @@ export default function MainBidForm() {
         onClose={() => setShowInsufficientCreditsModal(false)}
         onBuySingleBid={() => {
           if (draftBidForPayment) {
-            alert(`Payment flow for draft bid ${draftBidForPayment.id} will be implemented next!`);
-            // TODO: Navigate to payment with draft ID
+            setIsProcessingPayment(true);
+            createPaymentMutation.mutate(draftBidForPayment.id);
           }
         }}
         onGoToCredits={() => {
           router.push('/contractor-dashboard?section=your-credits');
         }}
+        isProcessingPayment={isProcessingPayment}
       />
 
       {/* Mobile Header */}
@@ -429,7 +456,7 @@ export default function MainBidForm() {
         {/* Desktop Header */}
         <div className='hidden lg:block mb-8'>
           <div className='flex justify-between items-center'>
-            <h1 className='font-roboto text-3xl font-bold text-gray-900'>{isEditingDraft ? 'Edit Bid Draft' : isEditingBid ? 'Edit Your Bid' : 'Submit Your Bid'}</h1>
+            <h1 className='font-roboto text-3xl font-bold text-gray-900'>{isEditingDraft ? 'Your Bid' : isEditingBid ? 'Edit Your Bid' : 'Submit Your Bid'}</h1>
             <div className='flex gap-3'>
               {/* Delete Draft button - only show when editing a draft */}
               {isEditingDraft && (

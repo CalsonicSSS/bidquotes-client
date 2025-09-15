@@ -9,9 +9,10 @@ type InsufficientCreditsModalProps = {
   onClose: () => void;
   onBuySingleBid: () => void;
   onGoToCredits: () => void;
+  isProcessingPayment?: boolean;
 };
 
-export function InsufficientCreditsModal({ isOpen, onClose, onBuySingleBid, onGoToCredits }: InsufficientCreditsModalProps) {
+export function InsufficientCreditsModal({ isOpen, onClose, onBuySingleBid, onGoToCredits, isProcessingPayment }: InsufficientCreditsModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className='sm:max-w-md' onPointerDownOutside={(e) => e.preventDefault()}>
@@ -36,11 +37,12 @@ export function InsufficientCreditsModal({ isOpen, onClose, onBuySingleBid, onGo
             <Button
               onClick={() => {
                 onBuySingleBid();
-                onClose();
+                // Don't close modal immediately - let payment mutation handle it
               }}
               className='font-roboto bg-green-600 hover:bg-green-700 w-full'
+              disabled={isProcessingPayment}
             >
-              Pay This Bid ($70)
+              {isProcessingPayment ? 'Creating Payment...' : 'Pay This Bid ($70)'}
             </Button>
 
             <Button

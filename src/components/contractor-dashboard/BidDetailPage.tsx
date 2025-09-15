@@ -33,7 +33,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
       if (!token) throw new Error('No token available');
       return getBidDetail(bidId, token);
     },
-    enabled: !!bidId && !!getToken(),
+    enabled: !!bidId && !!getToken,
   });
 
   // after fully fetched bid, we will use job_id from bid to the full job details
@@ -44,7 +44,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
       if (!token) throw new Error('No token available');
       return getContractorFullJobDetail(bid?.job_id as string, token);
     },
-    enabled: !!bid?.job_id && !!getToken(),
+    enabled: !!bid?.job_id && !!getToken,
   });
 
   // after fully fetched job detail, we will use buyer_id to fetch buyer contact information
@@ -55,7 +55,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
       if (!token) throw new Error('No token available');
       return getBuyerContactInfoByBuyerId(jobDetail?.buyer_id as string);
     },
-    enabled: !!jobDetail?.buyer_id && !!getToken(),
+    enabled: !!jobDetail?.buyer_id && !!getToken,
   });
 
   const handleEditBid = () => {
@@ -69,7 +69,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
   // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Loading state
-  if (isLoading) {
+  if (isLoading || !bid) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -81,7 +81,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
   }
 
   // Error state
-  if (error || !bid) {
+  if (error) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -112,6 +112,7 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
         <div className='hidden lg:block mb-8'>
           <div className='flex justify-between items-center'>
             <h1 className='font-roboto text-3xl font-bold text-gray-900'>Bid Details</h1>
+
             <Button onClick={handleBackToDashboard}>Back to Dashboard</Button>
           </div>
         </div>
@@ -314,14 +315,12 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
           <Card>
             <CardContent className='pt-6'>
               <div className='flex flex-col sm:flex-row gap-3'>
-                {bid.status === 'submitted' && (
-                  <>
-                    <Button onClick={handleEditBid} className='font-roboto bg-green-600 hover:bg-green-700'>
-                      <Edit className='h-4 w-4 mr-1' />
-                      Edit Bid
-                    </Button>
-                  </>
-                )}
+                <>
+                  <Button onClick={handleEditBid} className='font-roboto bg-green-600 hover:bg-green-700'>
+                    <Edit className='h-4 w-4 mr-1' />
+                    Edit Bid
+                  </Button>
+                </>
               </div>
             </CardContent>
           </Card>
