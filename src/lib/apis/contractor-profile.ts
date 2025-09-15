@@ -33,7 +33,6 @@ export type ContractorProfileResponse = {
   company_website?: string;
   additional_information?: string;
   images: ContractorProfileImageResponse[];
-  credit_count: number;
   created_at: string;
   updated_at: string;
 };

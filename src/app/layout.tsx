@@ -3,6 +3,7 @@ import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { StripeProvider } from '@/providers/StripeProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -48,19 +49,14 @@ export const metadata: Metadata = {
 //    - all other client components that are not directly imported under the AuthProvider component nor they are the context subscribers
 // all server component remains the same.
 
-// so now we can make some conclusions
-// this ClerkProvider should be a client component, because it initializes context
-// other SignedIn and SignedOut components must also be client components that consume the context as subscribers
-// all the children of ClerkProvider will be rendered continued as SC as default.
-// as we have also tested, even if this ClerkProvider re-renders, the children will not re-render, so we can safely use ClerkProvider here as a top-level parent component even as CC
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // this afterSignOutUrl is to configured for auto redirect to home page after user signs out through the UserButton component
     <ClerkProvider afterSignOutUrl='/' signInUrl='/sign-in' signUpUrl='/sign-up'>
       <html lang='en'>
         <body className={`${roboto.variable} ${inter.variable} antialiased`} cz-shortcut-listen='true'>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <StripeProvider>{children}</StripeProvider>
+          </QueryProvider>
         </body>
       </html>
     </ClerkProvider>

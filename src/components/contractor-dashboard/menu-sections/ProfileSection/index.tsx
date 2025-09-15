@@ -101,12 +101,12 @@ export function ProfileSection({ setActiveSection }: { setActiveSection: Dispatc
                 </div>
                 {/* credits count */}
                 <div>
-                  <label className='font-roboto text-sm font-semibold text-gray-700'>Credit Counts</label>
+                  <label className='font-roboto text-sm font-semibold text-gray-700'>Credits</label>
                   <div className='flex items-center space-x-2 mt-1'>
-                    <p className='font-inter text-green-900 font-medium  animate-bounce'>{contractorProfile.credit_count} left</p>
+                    {/* <p className='font-inter text-green-900 font-medium  animate-bounce'>{contractorProfile.credit_count} left</p> */}
                     {/* formatted shadcn button component that click to nav to your credits section */}
                     <Button size='sm' className='font-roboto text-sm px-3 bg-green-600' onClick={() => setActiveSection('your-credits')}>
-                      Get More Credits
+                      Check your credits
                     </Button>
                   </div>
                 </div>
