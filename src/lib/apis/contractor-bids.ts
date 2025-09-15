@@ -50,9 +50,20 @@ export type ContractorBidCardResponse = {
   job_city: string;
 };
 
+// --------------------------------------------------------
+
+export type BidCreationStatus = 'submitted' | 'draft_payment_required';
+
+export type BidCreationResponse = {
+  status: BidCreationStatus;
+  bid: BidResponse;
+  payment_required: boolean;
+  message: string;
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export async function createBid(data: BidCreate, clerkJwt: string): Promise<BidResponse> {
+export async function createBid(data: BidCreate, clerkJwt: string): Promise<BidCreationResponse> {
   const formData = new FormData();
 
   // Add all bid fields
@@ -80,7 +91,7 @@ export async function createBid(data: BidCreate, clerkJwt: string): Promise<BidR
 
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-export async function updateBid(bidId: string, data: Partial<BidCreate>, clerkJwt: string, isDraftSubmit: boolean): Promise<BidResponse> {
+export async function updateBid(bidId: string, data: Partial<BidCreate>, clerkJwt: string, isDraftSubmit: boolean): Promise<BidCreationResponse> {
   const formData = new FormData();
 
   // Add only provided fields

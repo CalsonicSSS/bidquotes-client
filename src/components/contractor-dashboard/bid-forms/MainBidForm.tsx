@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createBid, saveBidDraft, getBidDetail, updateBid, deleteBid, type BidCreate } from '@/lib/apis/contractor-bids';
+import { createBid, saveBidDraft, getBidDetail, updateBid, deleteBid, type BidCreate, BidResponse } from '@/lib/apis/contractor-bids';
 import { getPreBidJobDetail } from '@/lib/apis/contractor-jobs';
 import { SuccessModal } from '@/components/SuccessModal';
 import { BidInfoSection } from './BidInfoSection';
 import { Actions } from './Actions';
 import { DeleteBidDraftModal } from './DeleteBidDraftModal';
+import { InsufficientCreditsModal } from './InsufficientCreditsModal';
 
 export default function MainBidForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof BidCreate, string>>>({});
@@ -22,6 +23,10 @@ export default function MainBidForm() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteBidDraftModal, setShowDeleteBidDraftModal] = useState(false);
+  const [showInsufficientCreditsModal, setShowInsufficientCreditsModal] = useState(false);
+
+  const [draftBidForPayment, setDraftBidForPayment] = useState<BidResponse | null>(null);
+
   const [successType, setSuccessType] = useState<'bid' | 'draft'>('bid');
 
   const hasPushed = useRef(false);
@@ -163,12 +168,20 @@ export default function MainBidForm() {
       if (!token) throw new Error('Unable to get authentication token');
       return createBid(formData, token);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
       queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
       setHasUnsavedChanges(false);
-      setSuccessType('bid');
-      setShowSuccessModal(true);
+
+      if (response.status === 'submitted') {
+        // Normal success - bid was submitted with credits
+        setSuccessType('bid');
+        setShowSuccessModal(true);
+      } else if (response.status === 'draft_payment_required') {
+        // Auto-saved as draft - show payment modal
+        setDraftBidForPayment(response.bid);
+        setShowInsufficientCreditsModal(true);
+      }
     },
     onError: (error) => {
       console.error('Error submitting bid:', error);
@@ -243,19 +256,25 @@ export default function MainBidForm() {
     mutationFn: async () => {
       const token = await getToken();
       if (!token) throw new Error('Unable to get authentication token');
-      if (isEditingDraft && bidId) {
-        return updateBid(bidId, formData, token, true);
-      }
+      return updateBid(bidId!, formData, token, true);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['contractor-available-jobs'] });
       queryClient.invalidateQueries({ queryKey: ['contractor-bids'] });
       setHasUnsavedChanges(false);
-      setSuccessType('bid');
-      setShowSuccessModal(true);
+
+      if (response.status === 'submitted') {
+        // Normal success - draft was submitted with credits
+        setSuccessType('bid');
+        setShowSuccessModal(true);
+      } else if (response.status === 'draft_payment_required') {
+        // Draft updated but payment required - show payment modal
+        setDraftBidForPayment(response.bid);
+        setShowInsufficientCreditsModal(true);
+      }
     },
     onError: (error) => {
-      console.error('Error submitting bid from draft:', error);
+      console.error('Error submitting draft bid:', error);
       alert(error instanceof Error ? error.message : 'Failed to submit bid. Please try again.');
     },
   });
@@ -332,14 +351,11 @@ export default function MainBidForm() {
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     if (successType === 'bid') {
-      if (createBidMutation.data?.id) {
-        router.push(`/contractor-dashboard/bids/${createBidMutation.data.id}`);
-      }
-      if (createBidFromDraftMutation.data?.id) {
-        router.push(`/contractor-dashboard/bids/${createBidFromDraftMutation.data.id}`);
-      }
-      if (updateExistingBidMutation.data?.id) {
-        router.push(`/contractor-dashboard/bids/${updateExistingBidMutation.data.id}`);
+      // Check which mutation provided the successful bid
+      const bidId = createBidMutation.data?.bid?.id || createBidFromDraftMutation.data?.bid?.id || updateExistingBidMutation.data?.bid?.id;
+
+      if (bidId) {
+        router.push(`/contractor-dashboard/bids/${bidId}`);
       }
     } else {
       router.push('/contractor-dashboard?section=your-bids');
@@ -363,6 +379,7 @@ export default function MainBidForm() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
+      {/* success modal */}
       <SuccessModal
         isOpen={showSuccessModal}
         title={successType === 'bid' ? 'Bid Submitted Successfully!' : 'Draft Saved Successfully!'}
@@ -384,12 +401,27 @@ export default function MainBidForm() {
         draftTitle={formData.title}
       />
 
+      {/* Insufficient Credits Modal */}
+      <InsufficientCreditsModal
+        isOpen={showInsufficientCreditsModal}
+        onClose={() => setShowInsufficientCreditsModal(false)}
+        onBuySingleBid={() => {
+          if (draftBidForPayment) {
+            alert(`Payment flow for draft bid ${draftBidForPayment.id} will be implemented next!`);
+            // TODO: Navigate to payment with draft ID
+          }
+        }}
+        onGoToCredits={() => {
+          router.push('/contractor-dashboard?section=your-credits');
+        }}
+      />
+
       {/* Mobile Header */}
       <div className='lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10'>
         <button onClick={handleBackNavigation} className='p-2 rounded-md hover:bg-gray-100'>
           <ArrowLeft className='h-5 w-5' />
         </button>
-        <h1 className='font-roboto font-semibold text-gray-900'>{isEditingDraft ? 'Edit Draft' : isEditingBid ? 'Edit Bid' : 'Submit Bid'}</h1>
+        <h1 className='font-roboto font-semibold text-gray-900'>{isEditingDraft ? 'Your Bid' : isEditingBid ? 'Edit Bid' : 'Submit Bid'}</h1>
         <div className='w-9' />
       </div>
 
