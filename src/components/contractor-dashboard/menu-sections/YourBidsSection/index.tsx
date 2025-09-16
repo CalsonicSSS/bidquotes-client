@@ -76,13 +76,14 @@ export function YourBidsSection({ setActiveSection }: { setActiveSection: Dispat
     }
   };
 
-  // Handle bid card click
+  // Handle bid card click (THIS IS SUPER IMPORTANT)
+  // WE WILL NAVIGATE DIFFERENTLY BASED ON BID STATUS (draft vs submitted)
   const handleBidClick = (bid: ContractorBidCardResponse) => {
     if (bid.status === 'draft') {
       // Draft bids go to post-bid page for editing with draft param
       router.push(`/contractor-dashboard/post-bid?draft=${bid.id}`);
     } else {
-      // Other bids go to bid detail page
+      // THE SUBMITTED bids go to bid detail page
       router.push(`/contractor-dashboard/bids/${bid.id}`);
     }
   };

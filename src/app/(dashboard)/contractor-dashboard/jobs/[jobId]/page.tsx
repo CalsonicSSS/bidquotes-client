@@ -10,7 +10,7 @@ import { getPreBidJobDetail } from '@/lib/apis/contractor-jobs';
 import { ImagesGallery } from '@/components/ImagesGallery';
 import { formatDateTime } from '@/lib/utils/custom-format';
 
-export default function ContractorJobDetailPage() {
+export default function ContractorPreBidJobPage() {
   const router = useRouter();
   const params = useParams();
   const { getToken } = useAuth();
