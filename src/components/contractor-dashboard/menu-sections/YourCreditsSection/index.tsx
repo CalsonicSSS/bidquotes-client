@@ -6,10 +6,10 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Zap, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { getContractorCredits, createCreditPurchase } from '@/lib/apis/payments-credits';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { CreditPurchaseModals } from './CreditPurchaseModal';
 
-export function YourCreditsSection() {
+function YourCreditsSectionHandler() {
   const { getToken } = useAuth();
   const { user } = useUser();
   const queryClient = useQueryClient();
@@ -52,7 +52,7 @@ export function YourCreditsSection() {
       if (!token) throw new Error('No token available');
       return getContractorCredits(token);
     },
-    enabled: !!getToken(),
+    enabled: !!user && !!getToken(),
     staleTime: 0,
   });
 
@@ -213,5 +213,15 @@ export function YourCreditsSection() {
         onCloseCancelModal={() => setShowCancelModal(false)}
       />
     </div>
+  );
+}
+
+// ------------------------------------------------------------------------------
+
+export function YourCreditsSection() {
+  return (
+    <Suspense fallback={<div>Loading credits...</div>}>
+      <YourCreditsSectionHandler />
+    </Suspense>
   );
 }
