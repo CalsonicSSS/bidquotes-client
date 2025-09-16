@@ -1,11 +1,5 @@
 export type ItemType = 'bid_payment' | 'credit_purchase';
 
-export type CreateCheckoutRequest = {
-  item_type: ItemType; // 'bid_payment' or 'credit_purchase'
-  job_id?: string; // Only required for bid payments
-  bid_id?: string; // Only required for bid payments
-};
-
 export type CheckoutSessionResponse = {
   session_id: string;
   session_url: string;
@@ -34,6 +28,8 @@ export type CreditTransactionResponse = {
   created_at: string;
 };
 
+// ################################################################################################################################################
+
 export async function createDraftBidPayment(draftBidId: string, clerkJwt: string): Promise<CheckoutSessionResponse> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-draft-bid-payment`, {
     method: 'POST',
@@ -54,6 +50,8 @@ export async function createDraftBidPayment(draftBidId: string, clerkJwt: string
   return await response.json();
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------
+
 export async function getContractorCredits(clerkJwt: string): Promise<number> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/credits`, {
     method: 'GET',
@@ -68,5 +66,24 @@ export async function getContractorCredits(clerkJwt: string): Promise<number> {
   }
 
   const data = await response.json();
-  return data.credits;
+  return data.credits; // get only the credits number
+}
+
+// ------------------------------------------------------------------------------------------------------------------------------
+
+export async function createCreditPurchase(clerkJwt: string): Promise<CheckoutSessionResponse> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/create-credit-purchase`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${clerkJwt}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to create credit purchase session');
+  }
+
+  return await response.json();
 }
