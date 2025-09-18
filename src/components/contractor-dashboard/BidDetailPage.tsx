@@ -358,7 +358,7 @@ function IdentifierItem({ label, value }: { label: string; value: string }) {
   return (
     <div className='bg-white/70 p-3 rounded-lg border border-gray-200 flex items-center justify-between'>
       <div>
-        <p className='font-roboto text-sm text-gray-600'>{label}</p>
+        <p className='font-roboto text-sm text-gray-600 font-medium'>{label}</p>
         <p className='font-inter text-gray-900 break-all text-sm'>{value}</p>
       </div>
       <button onClick={handleCopy} className='p-2 rounded-md hover:bg-gray-100 flex-shrink-0' aria-label={`Copy ${label}`}>
