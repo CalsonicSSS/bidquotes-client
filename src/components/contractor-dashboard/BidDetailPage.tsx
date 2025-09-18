@@ -129,6 +129,17 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
               </div>
             </CardHeader>
             <CardContent className='space-y-6'>
+              {/* Identifiers */}
+              <div>
+                <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Identifiers</h3>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                  {/* Bid ID */}
+                  <IdentifierItem label='Bid ID' value={bid.id} />
+                  {/* Job ID */}
+                  <IdentifierItem label='Job ID' value={bid.job_id} />
+                </div>
+              </div>
+
               {/* Pricing */}
               <div>
                 <h3 className='font-roboto font-semibold text-gray-900 mb-2'>Pricing</h3>
@@ -326,6 +337,33 @@ export default function BidDetailPage({ bidId }: BidDetailPageProps) {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ################################################################################################################################################
+
+import { useState } from 'react';
+import { Clipboard, Check } from 'lucide-react';
+
+function IdentifierItem({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className='bg-white/70 p-3 rounded-lg border border-gray-200 flex items-center justify-between'>
+      <div>
+        <p className='font-roboto text-sm text-gray-600'>{label}</p>
+        <p className='font-inter text-gray-900 break-all text-sm'>{value}</p>
+      </div>
+      <button onClick={handleCopy} className='p-2 rounded-md hover:bg-gray-100 flex-shrink-0' aria-label={`Copy ${label}`}>
+        {copied ? <Check className='h-4 w-4 text-green-600' /> : <Clipboard className='h-4 w-4 text-gray-600' />}
+      </button>
     </div>
   );
 }
