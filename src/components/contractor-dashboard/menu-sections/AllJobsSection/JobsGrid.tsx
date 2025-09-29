@@ -44,7 +44,7 @@ export function JobsGrid({ availableJobs, isJobsLoading, cityFilter, jobTypeFilt
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
             {availableJobs.map((job) => (
               <Link key={job.id} href={`/contractor-dashboard/jobs/${job.id}`} className='block'>
-                <div className='bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer overflow-hidden h-40'>
+                <div className='bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer overflow-hidden h-[160px]'>
                   <div className='flex h-full'>
                     {/* Image Section - Left side */}
                     <div className='w-24 lg:w-32 h-full bg-gray-100 flex-shrink-0 relative'>
@@ -58,26 +58,26 @@ export function JobsGrid({ availableJobs, isJobsLoading, cityFilter, jobTypeFilt
                     </div>
 
                     {/* Content Section - Right side */}
-                    <div className='flex-1 p-3 flex flex-col justify-between'>
+                    <div className='flex-1 min-w-0 p-3 flex flex-col justify-between'>
                       {/* Header - Title and Job Type */}
-                      <div>
-                        <h3 className='font-roboto font-semibold text-gray-900 text-sm line-clamp-2 leading-tight mb-1'>{job.title || 'Untitled Job'}</h3>
-                        <p className='font-inter text-xs text-gray-600 mb-2'>{job.job_type}</p>
+                      <div className='min-w-0'>
+                        <h3 className='font-roboto font-semibold text-gray-900 text-sm line-clamp-2 leading-tight mb-1 break-words'>{job.title || 'Untitled Job'}</h3>
+                        <p className='font-inter text-xs text-gray-600 mb-2 truncate'>{job.job_type}</p>
                       </div>
 
                       {/* Middle - Location */}
-                      <div className='flex items-center gap-1 mb-2'>
-                        <MapPin className='h-3 w-3 text-gray-500' />
+                      <div className='flex items-center gap-1 mb-2 min-w-0'>
+                        <MapPin className='h-3 w-3 text-gray-500 flex-shrink-0' />
                         <span className='font-inter text-xs text-gray-600 truncate'>{job.city}</span>
                       </div>
 
                       {/* Footer - Date and Bids */}
-                      <div className='flex items-center justify-between text-xs font-inter text-gray-500'>
-                        <div className='flex items-center gap-1'>
-                          <Calendar className='h-3 w-3' />
-                          <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                      <div className='flex items-center justify-between gap-2 text-xs font-inter text-gray-500'>
+                        <div className='flex items-center gap-1 min-w-0'>
+                          <Calendar className='h-3 w-3 flex-shrink-0' />
+                          <span className='truncate'>{new Date(job.created_at).toLocaleDateString()}</span>
                         </div>
-                        <span className='bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold'>{job.bid_count}/5 bids</span>
+                        <span className='bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold whitespace-nowrap flex-shrink-0'>{job.bid_count}/5 bids</span>
                       </div>
                     </div>
                   </div>

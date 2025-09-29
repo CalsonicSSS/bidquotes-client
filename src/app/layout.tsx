@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter, Roboto } from 'next/font/google';
-import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { StripeProvider } from '@/providers/StripeProvider';
+import './globals.css';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 // we have checked that any component that need to initialize react context and any components that consumes context as subscriber, all must be client components
 // we have also checked that if any lower child component passed as "children prop" under the higher parent component, then:
 // 1. Children components don't auto re-render when parent re-renders
-// 2. if children component is SC, then it will continue to be SC if parent is CC (this is very important to realize)
+// 2. if children component is SC, then it will continue to be SC even if parent is CC (this is very important to realize)
 // we have fully fully tested BOTH of these cases !!!!
 // above two rules will not be the case if child component is directly passed / called under parent through import
 

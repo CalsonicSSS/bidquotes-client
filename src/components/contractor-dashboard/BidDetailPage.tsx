@@ -355,13 +355,23 @@ function IdentifierItem({ label, value }: { label: string; value: string }) {
     setTimeout(() => setCopied(false), 1500);
   };
 
+  // Truncate ID to show first 8 and last 6 characters with ellipsis
+  const truncateId = (id: string): string => {
+    if (id.length <= 18) return id; // Don't truncate if too short
+    const start = id.slice(0, 8);
+    const end = id.slice(-6);
+    return `${start}...${end}`;
+  };
+
   return (
-    <div className='bg-white/70 p-3 rounded-lg border border-gray-200 flex items-center justify-between'>
-      <div>
-        <p className='font-roboto text-sm text-gray-600 font-medium'>{label}</p>
-        <p className='font-inter text-gray-900 break-all text-sm'>{value}</p>
+    <div className='bg-white/70 p-3 rounded-lg border border-gray-200 flex items-center justify-between gap-2'>
+      <div className='min-w-0 flex-1'>
+        <p className='font-roboto text-sm text-gray-600 font-medium mb-1'>{label}</p>
+        <p className='font-inter text-gray-900 text-sm' title={value}>
+          {truncateId(value)}
+        </p>
       </div>
-      <button onClick={handleCopy} className='p-2 rounded-md hover:bg-gray-100 flex-shrink-0' aria-label={`Copy ${label}`}>
+      <button onClick={handleCopy} className='p-2 rounded-md hover:bg-gray-100 flex-shrink-0 transition-colors' aria-label={`Copy ${label}`} title='Copy full ID'>
         {copied ? <Check className='h-4 w-4 text-green-600' /> : <Clipboard className='h-4 w-4 text-gray-600' />}
       </button>
     </div>

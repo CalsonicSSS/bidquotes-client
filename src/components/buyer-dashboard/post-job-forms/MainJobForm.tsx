@@ -469,7 +469,7 @@ export default function MainJobForm() {
           {/* Images Section */}
           <Card>
             <CardHeader>
-              <CardTitle className='font-roboto'>Photos Upload</CardTitle>
+              <CardTitle className='font-roboto'>Photos Upload (Optional)</CardTitle>
             </CardHeader>
             <CardContent className='space-y-6'>
               <ImageUploadSection
@@ -478,7 +478,7 @@ export default function MainJobForm() {
                 isLoading={isLoadingImages}
                 maxImages={6}
                 title='Job Photos'
-                description='Optional, max 6 images'
+                description='max 6 images'
               />
             </CardContent>
           </Card>
