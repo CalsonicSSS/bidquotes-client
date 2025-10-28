@@ -134,7 +134,7 @@ function YourCreditsSectionHandler() {
               <span className='text-xs font-bold text-green-600'>1</span>
             </div>
             <p>
-              <strong className='text-gray-900'>Purchase credits</strong> - Get 20 credits for $700 CAD
+              <strong className='text-gray-900'>Purchase credits</strong>
             </p>
           </div>
           <div className='flex items-start gap-3'>
@@ -142,7 +142,7 @@ function YourCreditsSectionHandler() {
               <span className='text-xs font-bold text-green-600'>2</span>
             </div>
             <p>
-              <strong className='text-gray-900'>Submit bids for free</strong> - Each bid costs 1 credit instead of $70
+              <strong className='text-gray-900'>Submit bids for free</strong>
             </p>
           </div>
           <div className='flex items-start gap-3'>
@@ -150,7 +150,7 @@ function YourCreditsSectionHandler() {
               <span className='text-xs font-bold text-green-600'>3</span>
             </div>
             <p>
-              <strong className='text-gray-900'>Save money</strong> - 20 credits = $700 (normally $1,400 for 20 bids)
+              <strong className='text-gray-900'>Save money</strong>
             </p>
           </div>
         </div>
@@ -170,9 +170,9 @@ function YourCreditsSectionHandler() {
                 <span className='bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium'>Best Value</span>
               </div>
               <div className='font-inter text-gray-600'>
-                <span className='text-lg font-semibold text-gray-900'>$700 CAD</span>
-                <span className='ml-2 text-sm line-through text-gray-400'>$1,400</span>
-                <span className='ml-2 text-sm text-green-600 font-medium'>Save 50%</span>
+                <span className='text-lg font-semibold text-gray-900'>$550 CAD</span>
+                <span className='ml-2 text-sm line-through text-gray-400'>$900</span>
+                <span className='ml-2 text-sm text-green-600 font-medium'>Save nearly 40%</span>
               </div>
             </div>
           </div>
