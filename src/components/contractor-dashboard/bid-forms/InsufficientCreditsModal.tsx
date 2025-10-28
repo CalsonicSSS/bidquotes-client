@@ -42,7 +42,7 @@ export function InsufficientCreditsModal({ isOpen, onClose, onBuySingleBid, onGo
               className='font-roboto bg-green-600 hover:bg-green-700 w-full'
               disabled={isProcessingPayment}
             >
-              {isProcessingPayment ? 'Creating Payment...' : 'Pay This Bid ($70)'}
+              {isProcessingPayment ? 'Creating Payment...' : 'Pay This Bid ($45 CAD)'}
             </Button>
 
             <Button
